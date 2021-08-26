@@ -7,7 +7,8 @@
 
 
 class Point {
-
+public:
+    virtual ~Point();
 };
 
 

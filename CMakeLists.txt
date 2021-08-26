@@ -13,7 +13,7 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-add_executable(plantsim src/main.cpp src/Environment.cpp src/Environment.h src/WorldState.cpp src/WorldState.h src/Constraint.cpp src/Constraint.h src/Point.cpp src/Point.h)
+add_executable(plantsim src/main.cpp src/Environment.cpp src/Environment.h src/WorldState.cpp src/WorldState.h src/Constraint.cpp src/Constraint.h src/Point.cpp src/Point.h src/Air.cpp src/Air.h src/Soil.cpp src/Soil.h src/Cell.cpp src/Cell.h src/genetics/Chromosome.cpp src/genetics/Chromosome.h src/genetics/Gene.cpp src/genetics/Gene.h)
 
 if(Boost_FOUND)
     target_link_libraries(plantsim ${Boost_LIBRARIES})
