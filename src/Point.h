@@ -8,7 +8,11 @@
 
 class Point {
 public:
+    explicit Point(int x, int y);
     virtual ~Point();
+private:
+    int x;
+    int y;
 };
 
 

@@ -11,31 +11,35 @@
 #include <stdexcept>
 
 
-template <typename TGene>
+template<typename TGene>
 class Chromosome {
 public:
     explicit Chromosome(int length);
+
     std::vector<Gene<TGene>> getGenes() const;
+
     Gene<TGene> getGene(int index) const;
+
 private:
     int length;
     std::vector<Gene<TGene>> genes;
 };
 
-template <typename TGene>
-Chromosome<TGene>::Chromosome(int length) {
+template<typename TGene>
+Chromosome<TGene>::Chromosome(int length)
+        : genes(length) {
     if (length < 2) {
         throw std::invalid_argument("length");
     }
     length = length;
 }
 
-template <typename TGene>
+template<typename TGene>
 std::vector<Gene<TGene>> Chromosome<TGene>::getGenes() const {
     return genes;
 }
 
-template <typename TGene>
+template<typename TGene>
 Gene<TGene> Chromosome<TGene>::getGene(int index) const {
     if (index < 0 || index >= length) {
         throw std::out_of_range("index");

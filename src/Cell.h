@@ -8,11 +8,14 @@
 
 #include "Point.h"
 #include "genetics/Chromosome.h"
+#include "Process.h"
 #include <memory>
 
 class Cell : public Point {
-private:
-    std::shared_ptr<Chromosome<int>> chromosome;
+public:
+    explicit Cell(int x, int y);
+    ~Cell();
+
 };
 
 
