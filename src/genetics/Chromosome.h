@@ -29,7 +29,7 @@ template<typename TGene>
 Chromosome<TGene>::Chromosome(int length)
         : genes(length) {
     if (length < 2) {
-        throw std::invalid_argument("length");
+        throw std::invalid_argument("Invalid length in Chromosome. Should be at least 2. Found: " + std::to_string(length));
     }
     length = length;
 }

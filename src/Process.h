@@ -8,6 +8,8 @@
 #include "WorldState.h"
 #include "Cell.h"
 
+class WorldState;
+
 class Process {
 public:
 
@@ -21,6 +23,7 @@ private:
     virtual void doInvoke(WorldState &worldState, std::shared_ptr<Cell> &cell) = 0;
 
     virtual int doGetGenesCount() const = 0;
+
 };
 
 

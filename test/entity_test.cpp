@@ -7,35 +7,25 @@
 #include "Entity.h"
 #include "Cell.h"
 #include "WorldState.h"
-
-class EmptyProcess : public Process {
-private:
-    int doGetGenesCount() const override {
-        // The process requires two genes to define its operation.
-        return 2;
-    }
-
-    void doInvoke(WorldState &worldState, std::shared_ptr<Cell> &cell) override {
-        std::cout << "Invoking empty process." << std::endl;
-    }
-};
+#include "dummies/EmptyProcess.h"
 
 TEST(EntityWithProcess, InvokesProcessForEachCell) {
-    // Create a new world state
-    WorldState state(10, 10);
-
     // Create processes
-    std::unique_ptr<Process> emptyProcess = std::make_unique<EmptyProcess>();
-    std::vector<std::unique_ptr<Process>> processes;
+    std::shared_ptr<Process> emptyProcess = std::make_shared<EmptyProcess>();
+    std::vector<std::shared_ptr<Process>> processes;
     processes.push_back(std::move(emptyProcess));
 
+    // Create a new world state
+    WorldState state(10, 10, processes);
+
+
     // Create entity
-    Entity entity(processes);
+    auto entity = state.getEntity();
 
     // Add cells to entity
-    std::shared_ptr<Cell> cell(new Cell(1, 2));
-    entity.addCell(cell);
+    std::shared_ptr<Cell> cell = std::make_shared<Cell>(1, 2);
+    entity->addCell(cell);
 
     // Invoke processes on the entity
-    entity.invokeProcesses(state);
+    state.invokeProcesses();
 }

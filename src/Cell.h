@@ -6,10 +6,9 @@
 #define PLANTSIM_CELL_H
 
 
-#include "Point.h"
-#include "genetics/Chromosome.h"
-#include "Process.h"
 #include <memory>
+#include "genetics/Chromosome.h"
+#include "Point.h"
 
 class Cell : public Point {
 public:

@@ -5,14 +5,16 @@
 #ifndef PLANTSIM_POINT_H
 #define PLANTSIM_POINT_H
 
+#include <utility>
 
 class Point {
 public:
     explicit Point(int x, int y);
     virtual ~Point();
+    int getX() const;
+    int getY() const;
 private:
-    int x;
-    int y;
+    std::pair<int, int> coords;
 };
 
 

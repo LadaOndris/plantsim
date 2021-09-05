@@ -10,7 +10,7 @@
 
 class Soil : public Point {
 public:
-    Soil(int nutrients, int water);
+    Soil(int x, int y, int nutrients, int water);
 private:
     int nutrients;
     int water;

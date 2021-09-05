@@ -2,37 +2,17 @@
 // Created by lada on 8/27/21.
 //
 
-#include "Entity.h"
-
 #include <utility>
+#include "Entity.h"
+#include "Process.h"
 
 
-Entity::Entity(std::vector<std::unique_ptr<Process>> processes)
-: processes(std::move(processes)), cells() {
-    initChromosome();
+Entity::Entity(int genesCount) :  cells() {
+    initChromosome(genesCount);
 }
 
-void Entity::invokeProcesses(WorldState& worldState) {
-    for (std::unique_ptr<Process> &process : processes) {
-        for (std::shared_ptr<Cell> &cell : cells) {
-            process->invoke(worldState, cell);
-        }
-    }
-}
-
-
-int Entity::getTotalGenesCount() const {
-    int totalGenesCount = 0;
-    for (const std::unique_ptr<Process> &process : processes) {
-        int genesCount = process->getGenesCount();
-        totalGenesCount += genesCount;
-    }
-    return totalGenesCount;
-}
-
-void Entity::initChromosome() {
-    int totalGenesCount = getTotalGenesCount();
-    chromosome = std::make_shared<Chromosome<int>>(totalGenesCount);
+void Entity::initChromosome(int genesCount) {
+    chromosome = std::make_shared<Chromosome<int>>(genesCount);
 }
 
 void Entity::addCell(const std::shared_ptr<Cell>& cell) {
@@ -48,6 +28,10 @@ bool Entity::removeCell(const std::shared_ptr<Cell> &cellToRemove) {
         }
     }
     return false;
+}
+
+std::vector<std::shared_ptr<Cell>> Entity::getCells() const {
+    return cells;
 }
 
 

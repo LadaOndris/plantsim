@@ -7,6 +7,14 @@
 Point::~Point() = default;
 
 Point::Point(int x, int y)
-        : x(x), y(y) {
+        : coords(x, y) {
 
+}
+
+int Point::getX() const {
+    return coords.first;
+}
+
+int Point::getY() const {
+    return coords.second;
 }
