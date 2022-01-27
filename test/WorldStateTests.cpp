@@ -1,8 +1,8 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "WorldState.h"
-#include "Point.h"
+#include "plants/WorldState.h"
+#include "plants/Point.h"
 #include "dummies/EmptyProcess.h"
 
 TEST(WorldState, Indexer_PointsHaveCorrectCoords) {

@@ -4,9 +4,9 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "Entity.h"
-#include "Cell.h"
-#include "WorldState.h"
+#include "plants/Entity.h"
+#include "plants/Cell.h"
+#include "plants/WorldState.h"
 #include "dummies/EmptyProcess.h"
 
 TEST(EntityWithProcess, InvokesProcessForEachCell) {

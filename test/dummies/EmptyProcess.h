@@ -6,9 +6,9 @@
 #define PLANTSIM_EMPTYPROCESS_H
 
 #include <iostream>
-#include "Process.h"
-#include "Cell.h"
-#include "WorldState.h"
+#include "plants/Process.h"
+#include "plants/Cell.h"
+#include "plants/WorldState.h"
 
 class EmptyProcess : public Process {
 private:
