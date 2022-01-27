@@ -1,14 +1,16 @@
 
 
 #include <gtest/gtest.h>
+#include <genetics/SumFitness.h>
 #include "genetics/Chromosome.h"
 #include "genetics/Gene.h"
 #include "genetics/Individual.h"
 #include "genetics/Population.h"
+#include "../dummies/TestIndividual.h"
 
 TEST(GeneticAlgorithm, ProblemConverges) {
-    SumFitness fitness;
-    Population population(&fitness);
+    std::unique_ptr<SumFitness<TestIndividual<int>>> fitness(std::make_unique<SumFitness<TestIndividual<int>>>());
+    Population<TestIndividual<int>> population(fitness, populationSize, chromosomeLength);
     population.evaluate();
     double initial_fitness = population.getMaxFitness();
     std::cout << "Max fitness: " << initial_fitness << std::endl;

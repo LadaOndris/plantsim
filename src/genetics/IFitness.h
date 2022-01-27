@@ -6,9 +6,10 @@
 #define PLANTSIM_IFITNESS_H
 
 
+template<typename TIndividual>
 class IFitness {
 public:
-    void compute(Individual &individual) = 0;
+    virtual void compute(TIndividual &individual) = 0;
 protected:
     virtual ~IFitness() = 0;
 };

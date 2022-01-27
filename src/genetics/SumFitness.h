@@ -9,10 +9,16 @@
 #include "IFitness.h"
 #include "Population.h"
 
-class SumFitness : IFitness {
-    void compute_individual(Individual &individual) override;
+template<typename TIndividual>
+class SumFitness : IFitness<TIndividual> {
+    void compute(TIndividual &individual) override;
 
 };
+
+template<typename TIndividual>
+void SumFitness<TIndividual>::compute(TIndividual &individual) {
+    individual.setFitness(0);
+}
 
 
 #endif //PLANTSIM_SUMFITNESS_H
