@@ -30,8 +30,3 @@ TEST(SumFitness, CorrectMaxFitness) {
     ASSERT_EQ(maxFitness, chromosomeLength);
 }
 
-
-TEST(SumFitness, CorrectFitnessSum) {
-
-}
-

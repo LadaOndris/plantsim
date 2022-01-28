@@ -20,13 +20,14 @@ public:
 
     Chromosome<TGene> &getChromosome();
 
-    virtual std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) = 0;
+    virtual std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &other) = 0;
 
-    virtual std::unique_ptr<Individual<TGene>> mutate(Individual<TGene> &individual) = 0;
+    virtual std::unique_ptr<Individual<TGene>> mutate() = 0;
 
     void setFitness(double value);
 
-    friend bool operator>(const Individual<TGene>& lhs, const Individual<TGene>& rhs);
+    template<typename T>
+    friend bool operator>(const Individual<T>& lhs, const Individual<T>& rhs);
 private:
     Chromosome<TGene> chromosome;
     double fitness;

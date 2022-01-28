@@ -9,6 +9,7 @@
 #include <utility>
 #include <algorithm>    // std::sort
 #include <vector>       // std::vector
+#include <random>
 #include "genetics/Individual.h"
 #include "genetics/IFitness.h"
 
@@ -34,11 +35,12 @@ private:
     std::unique_ptr<IFitness<TIndividual>> fitness;
     std::vector<TIndividual> individuals;
     TIndividual maxFitnessIndividual;
+    int size;
 };
 
 template<typename TIndividual>
 Population<TIndividual>::Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength) :
-        fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)) {
+        fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)), size(size) {
 
 }
 
@@ -68,13 +70,28 @@ void Population<TIndividual>::select() {
     std::sort(individuals.begin(), individuals.end());
     auto populationSize = individuals.size();
     // Select 10% of population
-    int selectionSize = static_cast<int>(populationSize * 0.1);
+    int selectionSize = static_cast<int>(populationSize * 0.5);
     individuals.erase(individuals.begin() + selectionSize, individuals.end());
 }
 
 template<typename TIndividual>
 void Population<TIndividual>::crossover() {
-    return;
+    int poolSize = individuals.size();
+    // Define random generation
+    std::random_device rd; // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the generator
+    std::uniform_int_distribution<int> poolDistribution(0, poolSize - 1); // Define the range
+
+    while (individuals.size() < size) {
+        int index1 = poolDistribution(gen);
+        int index2 = poolDistribution(gen);
+        auto &individual1 = individuals[index1];
+        auto &individual2 = individuals[index2];
+        auto individualPtr = individual1.crossover(individual2);
+        auto testIndividualPtr = dynamic_cast<std::unique_ptr<TIndividual>>(individualPtr);
+        //auto individual = individualPtr.release();
+        individuals.push_back(*testIndividualPtr.get());
+    }
 }
 
 template<typename TIndividual>
