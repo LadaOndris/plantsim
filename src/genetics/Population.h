@@ -16,11 +16,15 @@ public:
     explicit Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength);
 
     std::vector<TIndividual> getIndividuals() const;
+
     double getMaxFitness() const;
 
     void evaluate();
+
     void select();
+
     void crossover();
+
     void mutate();
 
 
@@ -32,8 +36,10 @@ private:
 
 template<typename TIndividual>
 Population<TIndividual>::Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength) :
-        fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)) {
-
+        fitness(std::move(fitness)) {
+    //for (int i = 0; i < size; i++) {
+        individuals.push_back(TIndividual(chromosomeLength));
+    //}
 }
 
 template<typename TIndividual>

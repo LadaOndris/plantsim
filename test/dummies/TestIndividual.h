@@ -13,8 +13,11 @@
 
 template<typename TGene>
 class TestIndividual : public Individual<TGene> {
+public:
+    TestIndividual<TGene>() = default;
 
-    using Individual<TGene>::Individual;
+    explicit TestIndividual(int chromosomeLength) : Individual<TGene>(chromosomeLength) {
+    }
 
     Individual<TGene> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) override {
         return Individual<TGene>(0);

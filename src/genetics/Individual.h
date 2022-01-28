@@ -12,6 +12,8 @@
 template<typename TGene>
 class Individual {
 public:
+    Individual<TGene>() = default;
+
     explicit Individual(int chromosomeLength);
 
     double getFitness() const;
