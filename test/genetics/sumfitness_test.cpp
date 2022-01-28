@@ -7,7 +7,6 @@
 #include "genetics/Individual.h"
 #include "../dummies/TestIndividual.h"
 
-
 TEST(SumFitness, CorrectMaxFitness) {
     // Initialize population
     int populationSize = 10;
@@ -16,9 +15,9 @@ TEST(SumFitness, CorrectMaxFitness) {
     Population<TestIndividual<int>> population(std::move(fitness), populationSize, chromosomeLength);
 
     // Set all genes to 1
-    for (TestIndividual<int> &ind : population.getIndividuals()) {
-        Chromosome<int> &chromosome = ind.getChromosome();
-        for (Gene<int> &gene : chromosome.getGenes()) {
+    for (auto &ind : population.getIndividuals()) {
+        auto &chromosome = ind.getChromosome();
+        for (auto &gene : chromosome.getGenes()) {
             gene.setValue(1);
         }
     }

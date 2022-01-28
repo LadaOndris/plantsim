@@ -15,7 +15,7 @@ class Population {
 public:
     explicit Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength);
 
-    std::vector<TIndividual> getIndividuals() const;
+    std::vector<TIndividual> &getIndividuals();
 
     double getMaxFitness() const;
 
@@ -45,12 +45,14 @@ void Population<TIndividual>::evaluate() {
     for (TIndividual &ind : this->individuals) {
         double ind_fitness = this->fitness->compute(ind);
         ind.setFitness(ind_fitness);
-        maxFitnessIndividual = ind;
+        if (ind_fitness > maxFitnessIndividual.getFitness()) {
+            maxFitnessIndividual = ind;
+        }
     }
 }
 
 template<typename TIndividual>
-std::vector<TIndividual> Population<TIndividual>::getIndividuals() const {
+std::vector<TIndividual> &Population<TIndividual>::getIndividuals() {
     return individuals;
 }
 

@@ -16,7 +16,7 @@ class Chromosome {
 public:
     explicit Chromosome(int length);
 
-    std::vector<Gene<TGene>> getGenes() const;
+    std::vector<Gene<TGene>> &getGenes();
 
     Gene<TGene> getGene(int index) const;
 
@@ -35,7 +35,7 @@ Chromosome<TGene>::Chromosome(int length)
 }
 
 template<typename TGene>
-std::vector<Gene<TGene>> Chromosome<TGene>::getGenes() const {
+std::vector<Gene<TGene>> &Chromosome<TGene>::getGenes() {
     return genes;
 }
 

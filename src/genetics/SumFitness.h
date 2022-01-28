@@ -21,6 +21,7 @@ double SumFitness<TIndividual>::compute(TIndividual &individual) {
     for (auto &gene : individual.getChromosome().getGenes()) {
         fitnessSum += gene.getValue();
     }
+    return fitnessSum;
 }
 
 
