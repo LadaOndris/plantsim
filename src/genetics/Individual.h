@@ -12,17 +12,17 @@
 template<typename TGene>
 class Individual {
 public:
-    Individual<TGene>() = default;
+    Individual<TGene>();
 
     explicit Individual(int chromosomeLength);
 
     double getFitness() const;
 
-    Chromosome<TGene> getChromosome() const;
+    Chromosome<TGene> &getChromosome();
 
-    virtual Individual<TGene> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) = 0;
+    virtual std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) = 0;
 
-    virtual Individual<TGene> mutate(Individual<TGene> &individual) = 0;
+    virtual std::unique_ptr<Individual<TGene>> mutate(Individual<TGene> &individual) = 0;
 
     void setFitness(double value);
 
@@ -32,7 +32,16 @@ private:
 };
 
 template<typename TGene>
-Chromosome<TGene> Individual<TGene>::getChromosome() const {
+Individual<TGene>::Individual() : fitness(0), chromosome(0) {
+}
+
+template<typename TGene>
+Individual<TGene>::Individual(int chromosomeLength) : chromosome(chromosomeLength) {
+    fitness = -std::numeric_limits<double>::infinity();
+}
+
+template<typename TGene>
+Chromosome<TGene> &Individual<TGene>::getChromosome() {
     return chromosome;
 }
 
@@ -42,13 +51,9 @@ double Individual<TGene>::getFitness() const {
 }
 
 template<typename TGene>
-Individual<TGene>::Individual(int chromosomeLength) : chromosome(chromosomeLength) {
-    fitness = -std::numeric_limits<double>::infinity();
-}
-
-template<typename TGene>
 void Individual<TGene>::setFitness(double value) {
     fitness = value;
 }
+
 
 #endif //PLANTSIM_INDIVIDUAL_H

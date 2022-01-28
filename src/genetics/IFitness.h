@@ -9,8 +9,8 @@
 template<typename TIndividual>
 class IFitness {
 public:
-    virtual void compute(TIndividual &individual) = 0;
-    virtual ~IFitness() = 0;
+    virtual double compute(TIndividual &individual) = 0;
+    virtual ~IFitness() = default;
 };
 
 

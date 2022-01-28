@@ -13,7 +13,9 @@ public:
 
     explicit Gene(T value);
 
-    void setValue(T value);
+    T getValue() const;
+
+    void setValue(T other);
 
     friend bool operator==(const Gene<T> &lhs, const Gene<T> &rhs) {
         return lhs.value == rhs.value;
@@ -21,7 +23,6 @@ public:
 
 private:
     T value;
-
 };
 
 
@@ -38,8 +39,13 @@ Gene<T>::Gene(T value)
 }
 
 template<typename T>
+T Gene<T>::getValue() const {
+    return value;
+}
+
+template<typename T>
 void Gene<T>::setValue(T other) {
-    this->value = other;
+    value = other;
 }
 
 

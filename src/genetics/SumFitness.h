@@ -11,13 +11,16 @@
 
 template<typename TIndividual>
 class SumFitness : public IFitness<TIndividual> {
-    void compute(TIndividual &individual) override;
+    double compute(TIndividual &individual) override;
 
 };
 
 template<typename TIndividual>
-void SumFitness<TIndividual>::compute(TIndividual &individual) {
-    individual.setFitness(0);
+double SumFitness<TIndividual>::compute(TIndividual &individual) {
+    double fitnessSum = 0;
+    for (auto &gene : individual.getChromosome().getGenes()) {
+        fitnessSum += gene.getValue();
+    }
 }
 
 

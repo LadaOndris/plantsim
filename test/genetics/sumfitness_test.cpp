@@ -17,7 +17,7 @@ TEST(SumFitness, CorrectMaxFitness) {
 
     // Set all genes to 1
     for (TestIndividual<int> &ind : population.getIndividuals()) {
-        Chromosome<int> chromosome = ind.getChromosome();
+        Chromosome<int> &chromosome = ind.getChromosome();
         for (Gene<int> &gene : chromosome.getGenes()) {
             gene.setValue(1);
         }

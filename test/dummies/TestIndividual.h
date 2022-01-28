@@ -14,17 +14,18 @@
 template<typename TGene>
 class TestIndividual : public Individual<TGene> {
 public:
-    TestIndividual<TGene>() = default;
+    TestIndividual<TGene>() : Individual<TGene>()  {
+    }
 
     explicit TestIndividual(int chromosomeLength) : Individual<TGene>(chromosomeLength) {
     }
 
-    Individual<TGene> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) override {
-        return Individual<TGene>(0);
+    std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) override {
+        return std::make_unique<TestIndividual<TGene>>(0);
     }
 
-    Individual<TGene> mutate(Individual<TGene> &individual) override {
-        return Individual<TGene>(0);
+    std::unique_ptr<Individual<TGene>> mutate(Individual<TGene> &individual) override {
+        return std::make_unique<TestIndividual<TGene>>(0);
     }
 };
 
