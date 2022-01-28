@@ -10,7 +10,6 @@ template<typename TIndividual>
 class IFitness {
 public:
     virtual void compute(TIndividual &individual) = 0;
-protected:
     virtual ~IFitness() = 0;
 };
 

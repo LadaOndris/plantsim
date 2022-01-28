@@ -9,8 +9,10 @@
 #include "../dummies/TestIndividual.h"
 
 TEST(GeneticAlgorithm, ProblemConverges) {
-    std::unique_ptr<SumFitness<TestIndividual<int>>> fitness(std::make_unique<SumFitness<TestIndividual<int>>>());
-    Population<TestIndividual<int>> population(fitness, populationSize, chromosomeLength);
+    std::unique_ptr<IFitness<TestIndividual<int>>> fitness = std::make_unique<SumFitness<TestIndividual<int>>>();
+    int populationSize = 10;
+    int chromosomeLength = 20;
+    Population<TestIndividual<int>> population(std::move(fitness), populationSize, chromosomeLength);
     population.evaluate();
     double initial_fitness = population.getMaxFitness();
     std::cout << "Max fitness: " << initial_fitness << std::endl;
@@ -20,7 +22,7 @@ TEST(GeneticAlgorithm, ProblemConverges) {
         population.crossover();
         population.mutate();
         population.evaluate();
-        std::cout << "Max fitness: " << populatoin.getMaxFitness() << std::endl;
+        std::cout << "Max fitness: " << population.getMaxFitness() << std::endl;
     }
     double final_fitness = population.getMaxFitness();
 

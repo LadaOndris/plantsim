@@ -10,7 +10,7 @@
 #include "Population.h"
 
 template<typename TIndividual>
-class SumFitness : IFitness<TIndividual> {
+class SumFitness : public IFitness<TIndividual> {
     void compute(TIndividual &individual) override;
 
 };

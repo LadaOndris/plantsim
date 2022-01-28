@@ -12,7 +12,10 @@
 #include "genetics/Individual.h"
 
 template<typename TGene>
-class TestIndividual : Individual<TGene> {
+class TestIndividual : public Individual<TGene> {
+
+    using Individual<TGene>::Individual;
+
     Individual<TGene> crossover(Individual<TGene> &lhs, Individual<TGene> &rhs) override {
         return Individual<TGene>(0);
     }

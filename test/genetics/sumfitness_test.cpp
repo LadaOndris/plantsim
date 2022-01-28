@@ -10,10 +10,10 @@
 
 TEST(SumFitness, CorrectMaxFitness) {
     // Initialize population
-    std::unique_ptr<SumFitness<TestIndividual<int>>> fitness(std::make_unique<SumFitness<TestIndividual<int>>>());
+    std::unique_ptr<IFitness<TestIndividual<int>>> fitness = std::make_unique<SumFitness<TestIndividual<int>>>();
     int populationSize = 10;
     int chromosomeLength = 20;
-    Population<TestIndividual<int>> population(fitness, populationSize, chromosomeLength);
+    Population<TestIndividual<int>> population(std::move(fitness), populationSize, chromosomeLength);
 
     // Set all genes to 1
     for (TestIndividual<int> &ind : population.getIndividuals()) {

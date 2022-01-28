@@ -14,22 +14,25 @@ template<typename TIndividual>
 class Population {
 public:
     explicit Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength);
+
+    std::vector<TIndividual> getIndividuals() const;
+    double getMaxFitness() const;
+
     void evaluate();
-    std::vector<TIndividual> getIndividuals();
-    Population<TIndividual> select();
-    Population<TIndividual> crossover();
-    Population<TIndividual> mutate();
-    double getMaxFitness();
+    void select();
+    void crossover();
+    void mutate();
+
 
 private:
     std::unique_ptr<IFitness<TIndividual>> fitness;
     std::vector<TIndividual> individuals;
-    TIndividual maxFitnessIndividual = nullptr;
+    TIndividual maxFitnessIndividual;
 };
 
 template<typename TIndividual>
 Population<TIndividual>::Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength) :
-fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)) {
+        fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)) {
 
 }
 
@@ -43,30 +46,30 @@ void Population<TIndividual>::evaluate() {
 }
 
 template<typename TIndividual>
-std::vector<TIndividual> Population<TIndividual>::getIndividuals() {
+std::vector<TIndividual> Population<TIndividual>::getIndividuals() const {
     return individuals;
 }
 
 template<typename TIndividual>
-double Population<TIndividual>::getMaxFitness() {
-    if (maxFitnessIndividual != 0)
+double Population<TIndividual>::getMaxFitness() const {
+    if (maxFitnessIndividual)
         return maxFitnessIndividual.getFitness();
     return 0;
 }
 
 template<typename TIndividual>
-Population<TIndividual> Population<TIndividual>::select() {
-    return this;
+void Population<TIndividual>::select() {
+    return;
 }
 
 template<typename TIndividual>
-Population<TIndividual> Population<TIndividual>::crossover() {
-    return this;
+void Population<TIndividual>::crossover() {
+    return;
 }
 
 template<typename TIndividual>
-Population<TIndividual> Population<TIndividual>::mutate() {
-    return this;
+void Population<TIndividual>::mutate() {
+    return;
 }
 
 
