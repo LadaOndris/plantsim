@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <utility>
+#include <algorithm>    // std::sort
+#include <vector>       // std::vector
 #include "genetics/Individual.h"
 #include "genetics/IFitness.h"
 
@@ -63,7 +65,11 @@ double Population<TIndividual>::getMaxFitness() const {
 
 template<typename TIndividual>
 void Population<TIndividual>::select() {
-    return;
+    std::sort(individuals.begin(), individuals.end());
+    auto populationSize = individuals.size();
+    // Select 10% of population
+    int selectionSize = static_cast<int>(populationSize * 0.1);
+    individuals.erase(individuals.begin() + selectionSize, individuals.end());
 }
 
 template<typename TIndividual>
