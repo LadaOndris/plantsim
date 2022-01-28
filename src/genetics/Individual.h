@@ -26,6 +26,7 @@ public:
 
     void setFitness(double value);
 
+    friend bool operator>(const Individual<TGene>& lhs, const Individual<TGene>& rhs);
 private:
     Chromosome<TGene> chromosome;
     double fitness;
@@ -53,6 +54,11 @@ double Individual<TGene>::getFitness() const {
 template<typename TGene>
 void Individual<TGene>::setFitness(double value) {
     fitness = value;
+}
+
+template<typename TGene>
+bool operator>(const Individual<TGene> &lhs, const Individual<TGene> &rhs) {
+    return lhs.getFitness() > rhs.getFitness();
 }
 
 
