@@ -5,11 +5,12 @@
 #ifndef PLANTSIM_IFITNESS_H
 #define PLANTSIM_IFITNESS_H
 
+#include "genetics/Individual.h"
 
-template<typename TIndividual>
+template<typename TGene>
 class IFitness {
 public:
-    virtual double compute(TIndividual &individual) = 0;
+    virtual double compute(Individual<TGene> &individual) = 0;
     virtual ~IFitness() = default;
 };
 

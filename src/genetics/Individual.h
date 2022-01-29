@@ -20,9 +20,9 @@ public:
 
     Chromosome<TGene> &getChromosome();
 
-    virtual std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &other) = 0;
+    virtual std::shared_ptr<Individual<TGene>> crossover(Individual<TGene> &other) = 0;
 
-    virtual std::unique_ptr<Individual<TGene>> mutate() = 0;
+    virtual std::shared_ptr<Individual<TGene>> mutate() = 0;
 
     void setFitness(double value);
 

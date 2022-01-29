@@ -12,13 +12,15 @@
 #include <random>
 #include "genetics/Individual.h"
 #include "genetics/IFitness.h"
+#include "genetics/IndividualFactory.h"
 
-template<typename TIndividual>
+template<typename TGene>
 class Population {
 public:
-    explicit Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength);
+    explicit Population(std::unique_ptr<IFitness<TGene>> fitness, int size,
+                        const IndividualFactory<TGene> &factory, int chromosomeLength);
 
-    std::vector<TIndividual> &getIndividuals();
+    std::vector<std::shared_ptr<Individual<TGene>>> &getIndividuals();
 
     double getMaxFitness() const;
 
@@ -32,41 +34,45 @@ public:
 
 
 private:
-    std::unique_ptr<IFitness<TIndividual>> fitness;
-    std::vector<TIndividual> individuals;
-    TIndividual maxFitnessIndividual;
+    std::unique_ptr<IFitness<TGene>> fitness;
+    std::vector<std::shared_ptr<Individual<TGene>>> individuals;
+    std::shared_ptr<Individual<TGene>> maxFitnessIndividual;
     int size;
 };
 
-template<typename TIndividual>
-Population<TIndividual>::Population(std::unique_ptr<IFitness<TIndividual>> fitness, int size, int chromosomeLength) :
-        fitness(std::move(fitness)), individuals(size, TIndividual(chromosomeLength)), size(size) {
-
+template<typename TGene>
+Population<TGene>::Population(std::unique_ptr<IFitness<TGene>> fitness, int size,
+                              const IndividualFactory<TGene> &factory, int chromosomeLength) :
+        fitness(std::move(fitness)), individuals(), size(size) {
+    for (int i = 0; i < size; i++) {
+        auto individual = factory.create(chromosomeLength);
+        individuals.push_back(individual);
+    }
 }
 
-template<typename TIndividual>
-void Population<TIndividual>::evaluate() {
-    for (TIndividual &ind : this->individuals) {
-        double ind_fitness = this->fitness->compute(ind);
-        ind.setFitness(ind_fitness);
-        if (ind_fitness > maxFitnessIndividual.getFitness()) {
+template<typename TGene>
+void Population<TGene>::evaluate() {
+    for (std::shared_ptr<Individual<TGene>> &ind : this->individuals) {
+        double ind_fitness = this->fitness->compute(*ind);
+        ind->setFitness(ind_fitness);
+        if (maxFitnessIndividual == nullptr || ind_fitness > maxFitnessIndividual->getFitness()) {
             maxFitnessIndividual = ind;
         }
     }
 }
 
-template<typename TIndividual>
-std::vector<TIndividual> &Population<TIndividual>::getIndividuals() {
+template<typename TGene>
+std::vector<std::shared_ptr<Individual<TGene>>> &Population<TGene>::getIndividuals() {
     return individuals;
 }
 
-template<typename TIndividual>
-double Population<TIndividual>::getMaxFitness() const {
-    return maxFitnessIndividual.getFitness();
+template<typename TGene>
+double Population<TGene>::getMaxFitness() const {
+    return maxFitnessIndividual->getFitness();
 }
 
-template<typename TIndividual>
-void Population<TIndividual>::select() {
+template<typename TGene>
+void Population<TGene>::select() {
     std::sort(individuals.begin(), individuals.end());
     auto populationSize = individuals.size();
     // Select 10% of population
@@ -74,8 +80,8 @@ void Population<TIndividual>::select() {
     individuals.erase(individuals.begin() + selectionSize, individuals.end());
 }
 
-template<typename TIndividual>
-void Population<TIndividual>::crossover() {
+template<typename TGene>
+void Population<TGene>::crossover() {
     int poolSize = individuals.size();
     // Define random generation
     std::random_device rd; // Obtain a random number from hardware
@@ -85,17 +91,15 @@ void Population<TIndividual>::crossover() {
     while (individuals.size() < size) {
         int index1 = poolDistribution(gen);
         int index2 = poolDistribution(gen);
-        auto &individual1 = individuals[index1];
-        auto &individual2 = individuals[index2];
-        auto individualPtr = individual1.crossover(individual2);
-        auto testIndividualPtr = dynamic_cast<std::unique_ptr<TIndividual>>(individualPtr);
-        //auto individual = individualPtr.release();
-        individuals.push_back(*testIndividualPtr.get());
+        auto individual1 = individuals[index1];
+        auto individual2 = individuals[index2];
+        auto individualPtr = individual1->crossover(*individual2);
+        individuals.push_back(individualPtr);
     }
 }
 
-template<typename TIndividual>
-void Population<TIndividual>::mutate() {
+template<typename TGene>
+void Population<TGene>::mutate() {
     return;
 }
 

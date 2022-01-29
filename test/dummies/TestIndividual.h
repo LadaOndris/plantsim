@@ -20,12 +20,12 @@ public:
     explicit TestIndividual(int chromosomeLength) : Individual<TGene>(chromosomeLength) {
     }
 
-    std::unique_ptr<Individual<TGene>> crossover(Individual<TGene> &other) override {
-        return std::make_unique<TestIndividual<TGene>>(0);
+    std::shared_ptr<Individual<TGene>> crossover(Individual<TGene> &other) override {
+        return std::make_shared<TestIndividual<TGene>>(0);
     }
 
-    std::unique_ptr<Individual<TGene>> mutate() override {
-        return std::make_unique<TestIndividual<TGene>>(0);
+    std::shared_ptr<Individual<TGene>> mutate() override {
+        return std::make_shared<TestIndividual<TGene>>(0);
     }
 };
 

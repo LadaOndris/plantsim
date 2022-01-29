@@ -7,12 +7,14 @@
 #include "genetics/Individual.h"
 #include "genetics/Population.h"
 #include "../dummies/TestIndividual.h"
+#include "../dummies/TestIndividualFactory.h"
 
 TEST(GeneticAlgorithm, ProblemConverges) {
-    std::unique_ptr<IFitness<TestIndividual<int>>> fitness = std::make_unique<SumFitness<TestIndividual<int>>>();
+    std::unique_ptr<IFitness<int>> fitness = std::make_unique<SumFitness<int>>();
     int populationSize = 10;
     int chromosomeLength = 20;
-    Population<TestIndividual<int>> population(std::move(fitness), populationSize, chromosomeLength);
+    TestIndividualFactory<int> factory;
+    Population<int> population(std::move(fitness), populationSize, factory, chromosomeLength);
     population.evaluate();
     double initial_fitness = population.getMaxFitness();
     std::cout << "Max fitness: " << initial_fitness << std::endl;

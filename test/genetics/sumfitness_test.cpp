@@ -6,17 +6,19 @@
 #include "genetics/Gene.h"
 #include "genetics/Individual.h"
 #include "../dummies/TestIndividual.h"
+#include "../dummies/TestIndividualFactory.h"
 
 TEST(SumFitness, CorrectMaxFitness) {
     // Initialize population
     int populationSize = 10;
     int chromosomeLength = 20;
-    std::unique_ptr<IFitness<TestIndividual<int>>> fitness = std::make_unique<SumFitness<TestIndividual<int>>>();
-    Population<TestIndividual<int>> population(std::move(fitness), populationSize, chromosomeLength);
+    std::unique_ptr<IFitness<int>> fitness = std::make_unique<SumFitness<int>>();
+    TestIndividualFactory<int> factory;
+    Population<int> population(std::move(fitness), populationSize, factory, chromosomeLength);
 
     // Set all genes to 1
     for (auto &ind : population.getIndividuals()) {
-        auto &chromosome = ind.getChromosome();
+        auto &chromosome = ind->getChromosome();
         for (auto &gene : chromosome.getGenes()) {
             gene.setValue(1);
         }
