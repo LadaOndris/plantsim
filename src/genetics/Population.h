@@ -13,6 +13,7 @@
 #include "genetics/Individual.h"
 #include "genetics/IFitness.h"
 #include "genetics/IndividualFactory.h"
+#include "Random.h"
 
 template<typename TGene>
 class Population {
@@ -23,6 +24,8 @@ public:
     std::vector<std::shared_ptr<Individual<TGene>>> &getIndividuals();
 
     double getMaxFitness() const;
+
+    void initialize();
 
     void evaluate();
 
@@ -51,11 +54,24 @@ Population<TGene>::Population(std::unique_ptr<IFitness<TGene>> fitness, int size
 }
 
 template<typename TGene>
+void Population<TGene>::initialize() {
+    auto generator = Random::getGenerator();
+    std::uniform_int_distribution<int> distribution(0, 1);
+
+    for (auto &ind : individuals) {
+        for (auto &gene : ind->getChromosome().getGenes()) {
+            int randomGeneValue = distribution(generator);
+            gene.setValue(randomGeneValue);
+        }
+    }
+}
+
+template<typename TGene>
 void Population<TGene>::evaluate() {
-    for (std::shared_ptr<Individual<TGene>> &ind : this->individuals) {
-        double ind_fitness = this->fitness->compute(*ind);
-        ind->setFitness(ind_fitness);
-        if (maxFitnessIndividual == nullptr || ind_fitness > maxFitnessIndividual->getFitness()) {
+    for (std::shared_ptr<Individual<TGene>> &ind : individuals) {
+        double indFitness = fitness->compute(*ind);
+        ind->setFitness(indFitness);
+        if (maxFitnessIndividual == nullptr || indFitness > maxFitnessIndividual->getFitness()) {
             maxFitnessIndividual = ind;
         }
     }
@@ -72,8 +88,13 @@ double Population<TGene>::getMaxFitness() const {
 }
 
 template<typename TGene>
+bool individualsComparer(std::shared_ptr<Individual<TGene>> lhs, std::shared_ptr<Individual<TGene>> rhs) {
+    return lhs->getFitness() > rhs->getFitness();
+}
+
+template<typename TGene>
 void Population<TGene>::select() {
-    std::sort(individuals.begin(), individuals.end());
+    std::sort(individuals.begin(), individuals.end(), individualsComparer<TGene>);
     auto populationSize = individuals.size();
     // Select 10% of population
     int selectionSize = static_cast<int>(populationSize * 0.5);
@@ -84,23 +105,25 @@ template<typename TGene>
 void Population<TGene>::crossover() {
     int poolSize = individuals.size();
     // Define random generation
-    std::random_device rd; // Obtain a random number from hardware
-    std::mt19937 gen(rd()); // Seed the generator
+    auto &gen = Random::getGenerator();
     std::uniform_int_distribution<int> poolDistribution(0, poolSize - 1); // Define the range
 
     while (individuals.size() < size) {
         int index1 = poolDistribution(gen);
         int index2 = poolDistribution(gen);
-        auto individual1 = individuals[index1];
-        auto individual2 = individuals[index2];
-        auto individualPtr = individual1->crossover(*individual2);
+        //std::cout << index1 << " " << index2 << std::endl;
+        auto &individual1 = individuals[index1];
+        auto &individual2 = individuals[index2];
+        auto individualPtr = individual1->crossover(*individual2.get());
         individuals.push_back(individualPtr);
     }
 }
 
 template<typename TGene>
 void Population<TGene>::mutate() {
-    return;
+    for (auto &ind : individuals) {
+        ind->mutate();
+    }
 }
 
 

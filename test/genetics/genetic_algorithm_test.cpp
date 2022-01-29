@@ -11,15 +11,16 @@
 
 TEST(GeneticAlgorithm, ProblemConverges) {
     std::unique_ptr<IFitness<int>> fitness = std::make_unique<SumFitness<int>>();
-    int populationSize = 10;
-    int chromosomeLength = 20;
+    int populationSize = 100;
+    int chromosomeLength = 100;
     TestIndividualFactory<int> factory;
     Population<int> population(std::move(fitness), populationSize, factory, chromosomeLength);
+    population.initialize();
     population.evaluate();
     double initial_fitness = population.getMaxFitness();
     std::cout << "Max fitness: " << initial_fitness << std::endl;
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 100; i++) {
         population.select();
         population.crossover();
         population.mutate();

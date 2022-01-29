@@ -22,13 +22,13 @@ public:
 
     virtual std::shared_ptr<Individual<TGene>> crossover(Individual<TGene> &other) = 0;
 
-    virtual std::shared_ptr<Individual<TGene>> mutate() = 0;
+    virtual void mutate() = 0;
 
     void setFitness(double value);
 
     template<typename T>
-    friend bool operator>(const Individual<T>& lhs, const Individual<T>& rhs);
-private:
+    friend bool operator<(const Individual<T>& lhs, const Individual<T>& rhs);
+protected:
     Chromosome<TGene> chromosome;
     double fitness;
 };
@@ -58,8 +58,8 @@ void Individual<TGene>::setFitness(double value) {
 }
 
 template<typename TGene>
-bool operator>(const Individual<TGene> &lhs, const Individual<TGene> &rhs) {
-    return lhs.getFitness() > rhs.getFitness();
+bool operator<(const Individual<TGene> &lhs, const Individual<TGene> &rhs) {
+    return lhs.getFitness() < rhs.getFitness();
 }
 
 
