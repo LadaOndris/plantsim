@@ -11,6 +11,7 @@
 #include "Point.h"
 #include "Entity.h"
 #include "Process.h"
+#include "Map.h"
 
 class Process;
 
@@ -29,6 +30,12 @@ public:
 
 private:
     std::vector<std::shared_ptr<Point>> points;
+    /**
+     * Representation of the hexagonal lattice providing
+     * an interface to access the points on the lattice.
+     */
+    std::shared_ptr<Map> map;
+
     /**
      * An entity contains the processes that each cell
      * can do and a chromosome all cells share.

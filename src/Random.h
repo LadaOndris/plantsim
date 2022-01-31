@@ -5,6 +5,7 @@
 #ifndef PLANTSIM_RANDOM_H
 #define PLANTSIM_RANDOM_H
 
+#include <random>
 
 class Random {
 public:

@@ -7,7 +7,7 @@
 #include "plants/Entity.h"
 #include "plants/Cell.h"
 #include "plants/WorldState.h"
-#include "dummies/EmptyProcess.h"
+#include "../dummies/EmptyProcess.h"
 
 TEST(EntityWithProcess, InvokesProcessForEachCell) {
     // Create processes

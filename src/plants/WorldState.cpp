@@ -32,6 +32,12 @@ void WorldState::invokeProcesses() {
     }
 }
 
+/*
+ * A process requires certain signals to be activated in order
+ * for the process to perform.
+ * The certain signals are encoded as genes.
+ * Thus, each process has to define how much deciding signals it needs.
+ */
 int WorldState::getTotalGenesCount() const {
     int totalGenesCount = 0;
     for (const auto& process : processes) {

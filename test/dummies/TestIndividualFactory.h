@@ -6,6 +6,7 @@
 #define PLANTSIM_TESTINDIVIDUALFACTORY_H
 
 #include "genetics/IndividualFactory.h"
+#include "TestIndividual.h"
 
 template <typename TGene>
 class TestIndividualFactory : public IndividualFactory<TGene> {
