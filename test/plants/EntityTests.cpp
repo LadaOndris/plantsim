@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <plants/AxialRectangularMap.h>
 #include "plants/Entity.h"
 #include "plants/Cell.h"
 #include "plants/WorldState.h"
@@ -15,17 +16,14 @@ TEST(EntityWithProcess, InvokesProcessForEachCell) {
     std::vector<std::shared_ptr<Process>> processes;
     processes.push_back(std::move(emptyProcess));
 
-    // Create a new world state
-    WorldState state(10, 10, processes);
+    auto map = std::make_shared<AxialRectangularMap>(10, 10);
+    WorldState state(map, processes);
 
-
-    // Create entity
     auto entity = state.getEntity();
 
     // Add cells to entity
     std::shared_ptr<Cell> cell = std::make_shared<Cell>(1, 2);
     entity->addCell(cell);
 
-    // Invoke processes on the entity
     state.invokeProcesses();
 }

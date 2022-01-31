@@ -4,25 +4,15 @@
 
 #include "WorldState.h"
 
-WorldState::WorldState(int width, int height, std::vector<std::shared_ptr<Process>> processes)
-    : processes(std::move(processes)), width(width), height(height) {
+#include <utility>
+#include "AxialRectangularMap.h"
+
+WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes)
+    : map(std::move(map)), processes(std::move(processes)) {
 
     int genesCount = getTotalGenesCount();
     entity = std::make_unique<Entity>(genesCount);
-
-
-    //scoped_array mapTemp(new Point[width * height]);
-    //map.swap(mapTemp);
 }
-
-std::shared_ptr<Point> WorldState::getPoint(std::size_t x, std::size_t y) const {
-    return (*this)[x * width + y];
-}
-
-std::shared_ptr<Point> WorldState::operator[](std::size_t index) const {
-    return points[index];
-}
-
 
 void WorldState::invokeProcesses() {
     for (auto& process : processes) {

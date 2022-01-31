@@ -17,9 +17,7 @@ class Process;
 
 class WorldState {
 public:
-    WorldState(int width, int height, std::vector<std::shared_ptr<Process>> processes);
-    std::shared_ptr<Point> getPoint(std::size_t x, std::size_t y) const;
-    std::shared_ptr<Point> operator[](std::size_t index) const;
+    WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes);
     /**
      * Calls each process and gives the process corresponding genes, and
      * the process itself determines what to do.
@@ -28,8 +26,8 @@ public:
 
     std::shared_ptr<Entity> getEntity();
 
+    int getTotalGenesCount() const;
 private:
-    std::vector<std::shared_ptr<Point>> points;
     /**
      * Representation of the hexagonal lattice providing
      * an interface to access the points on the lattice.
@@ -46,10 +44,7 @@ private:
      * Each process is performed only if its corresponding gene dictates it.
      */
     std::vector<std::shared_ptr<Process>> processes;
-    int width;
-    int height;
 
-    int getTotalGenesCount() const;
 };
 
 

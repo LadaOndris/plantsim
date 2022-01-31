@@ -17,5 +17,5 @@ int Process::getGenesCount() const {
 }
 
 void Process::invoke(WorldState &worldState, std::shared_ptr<Cell> &cell) {
-    doGetGenesCount();
+    doInvoke(worldState, cell);
 }
