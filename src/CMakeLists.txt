@@ -1,24 +1,36 @@
-cmake_minimum_required(VERSION 3.0)
-project(plantsim)
 
-set(CMAKE_CXX_STANDARD 14)
 set(BINARY ${CMAKE_PROJECT_NAME})
 
-find_package(Boost 1.57.0 COMPONENTS system filesystem REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
+find_package(imgui REQUIRED)
+find_package(Freetype REQUIRED)
+#find_package(Boost 1.57.0 COMPONENTS system filesystem REQUIRED)
 
-if(Boost_FOUND)
-    message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-    message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
-    message(STATUS "Boost_VERSION: ${Boost_VERSION}")
+include_directories(${GLFW_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${FREETYPE_INCLUDE_DIRS})
+include_directories(../include)
 
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
+#if(Boost_FOUND)
+#    message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+#    message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
+#    message(STATUS "Boost_VERSION: ${Boost_VERSION}")
+#
+#    include_directories(${Boost_INCLUDE_DIRS})
+#endif()
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp *.c)
 set(SOURCES ${SOURCES})
+
 add_executable(${BINARY}_run ${SOURCES})
-# add_executable(plantsim main.cpp Environment.cpp Environment.h WorldState.cpp WorldState.h Constraint.cpp Constraint.h Point.cpp Point.h Air.cpp Air.h Soil.cpp Soil.h Cell.cpp Cell.h genetics/Chromosome.cpp genetics/Chromosome.h genetics/Gene.cpp genetics/Gene.h)
+target_link_libraries(${BINARY}_run
+        ${OPENGL_gl_LIBRARY} glfw glm imgui)
+
 add_library(${BINARY}_lib STATIC ${SOURCES})
+target_link_libraries(${BINARY}_lib
+        ${OPENGL_gl_LIBRARY} glfw glm imgui)
 
 if(Boost_FOUND)
     target_link_libraries(${BINARY}_run ${Boost_LIBRARIES})
