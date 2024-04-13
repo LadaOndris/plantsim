@@ -8,16 +8,14 @@
 #include <iostream>
 #include "plants/Process.h"
 #include "plants/Cell.h"
-#include "plants/WorldState.h"
+#include "plants/Entity.h"
 
 class EmptyProcess : public Process {
 private:
-    int doGetGenesCount() const override {
-        // The process requires two genes to define its operation.
-        return 2;
-    }
 
-    void doInvoke(WorldState &worldState, std::shared_ptr<Cell> &cell) override {
+    void doInvoke(Entity &entity, std::shared_ptr<Cell> &cell) override {
+        auto chromosome = entity.getChromosome();
+        
         std::cout << "Invoking empty process." << std::endl;
     }
 };

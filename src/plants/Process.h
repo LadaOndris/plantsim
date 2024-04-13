@@ -5,7 +5,7 @@
 #ifndef PLANTSIM_PROCESS_H
 #define PLANTSIM_PROCESS_H
 
-#include "WorldState.h"
+#include "Entity.h"
 #include "Cell.h"
 
 class WorldState;
@@ -15,14 +15,10 @@ public:
 
     virtual ~Process();
 
-    void invoke(WorldState &worldState, std::shared_ptr<Cell> &cell);
-
-    int getGenesCount() const;
+    void invoke(Entity &entity, std::shared_ptr<Cell> &cell);
 
 private:
-    virtual void doInvoke(WorldState &worldState, std::shared_ptr<Cell> &cell) = 0;
-
-    virtual int doGetGenesCount() const = 0;
+    virtual void doInvoke(Entity &entity, std::shared_ptr<Cell> &cell) = 0;
 
 };
 

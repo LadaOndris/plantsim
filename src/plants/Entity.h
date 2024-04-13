@@ -8,6 +8,7 @@
 #include <memory>
 #include "Cell.h"
 #include "genetics/Chromosome.h"
+#include "EntityChromosome.h"
 
 class Entity {
 public:
@@ -16,7 +17,7 @@ public:
      * Registers given processes that go on inside a cell.
      * Set ups a corresponding chromosome from the defined processes.
      */
-    Entity(int genesCount);
+    explicit Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources);
 
     void addCell(const std::shared_ptr<Cell> &cell);
 
@@ -31,19 +32,21 @@ public:
 
     std::vector<std::shared_ptr<Cell>> getCells() const;
 
+    std::shared_ptr<EntityChromosome> getChromosome() const;
+
 private:
     /**
      * A chromosome is a composition of genes, which dictate
      * what processes should be performed.
      */
-    std::shared_ptr<Chromosome<int>> chromosome;
+    std::shared_ptr<EntityChromosome> chromosome;
     /**
      * Cells of this entity.
      * They interact with each other through processes.
      */
     std::vector<std::shared_ptr<Cell>> cells;
 
-    void initChromosome(int genesCount);
+    void initChromosome(unsigned NOptions, unsigned NHormones, unsigned NResources);
 };
 
 

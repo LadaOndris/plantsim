@@ -8,16 +8,17 @@
 #include "AxialRectangularMap.h"
 
 WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes)
-    : map(std::move(map)), processes(std::move(processes)) {
+        : map(std::move(map)), processes(std::move(processes)) {
 
     int genesCount = getTotalGenesCount();
-    entity = std::make_unique<Entity>(genesCount);
+    throw std::logic_error("Not implemented");
+//    entity = std::make_unique<Entity>(genesCount);
 }
 
 void WorldState::invokeProcesses() {
-    for (auto& process : processes) {
-        for (auto& cell : entity->getCells()) {
-            process->invoke(*this, cell);
+    for (auto &process: processes) {
+        for (auto &cell: entity->getCells()) {
+            process->invoke(*entity, cell);
         }
     }
 }
@@ -30,10 +31,11 @@ void WorldState::invokeProcesses() {
  */
 int WorldState::getTotalGenesCount() const {
     int totalGenesCount = 0;
-    for (const auto& process : processes) {
-        int genesCount = process->getGenesCount();
-        totalGenesCount += genesCount;
-    }
+    throw std::logic_error("Not Implemented");
+    //    for (const auto& process : processes) {
+//        int genesCount = process->getGenesCount();
+//        totalGenesCount += genesCount;
+//    }
     return totalGenesCount;
 }
 

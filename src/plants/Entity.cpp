@@ -7,13 +7,14 @@
 #include "Process.h"
 
 
-Entity::Entity(int genesCount) :  cells() {
-    initChromosome(genesCount);
+Entity::Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources) :  cells() {
+    initChromosome(NOptions, NHormones, NResources);
 }
 
-void Entity::initChromosome(int genesCount) {
-    chromosome = std::make_shared<Chromosome<int>>(genesCount);
+void Entity::initChromosome(unsigned int NOptions, unsigned int NHormones, unsigned int NResources) {
+    chromosome = std::make_shared<EntityChromosome>(NOptions, NHormones, NResources);
 }
+
 
 void Entity::addCell(const std::shared_ptr<Cell>& cell) {
     cells.push_back(cell);
@@ -32,6 +33,10 @@ bool Entity::removeCell(const std::shared_ptr<Cell> &cellToRemove) {
 
 std::vector<std::shared_ptr<Cell>> Entity::getCells() const {
     return cells;
+}
+
+std::shared_ptr<EntityChromosome> Entity::getChromosome() const {
+    return chromosome;
 }
 
 
