@@ -233,7 +233,7 @@ namespace {
 
     std::unique_ptr<WorldState> initializeWorld() {
         std::vector<std::shared_ptr<Process>> processes{};
-        auto map = std::make_shared<AxialRectangularMap>(10, 10);
+        auto map = std::make_shared<AxialRectangularMap>(100, 100);
 
         return std::make_unique<WorldState>(map, processes);
     }

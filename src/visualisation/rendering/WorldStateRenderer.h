@@ -28,7 +28,9 @@ private:
 
     unsigned int VAO;
     unsigned int VBO;
+    unsigned int EBO;
 
+    std::vector<unsigned int> mapVertexIndices;
     std::vector<GLVertex> mapVertices;
 
     void constructVertices();
