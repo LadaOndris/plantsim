@@ -5,5 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(src)
 
-add_subdirectory (src)
-add_subdirectory (test)
+add_subdirectory(src)
+add_subdirectory(test)
+
+file(COPY shaders/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/shaders)

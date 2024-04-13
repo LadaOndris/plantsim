@@ -8,10 +8,13 @@
 
 #include "Renderer.h"
 #include "plants/WorldState.h"
+#include "GLVertex.h"
+#include "visualisation/rendering/shaders/ShaderProgram.h"
+
 
 class WorldStateRenderer : public Renderer {
 public:
-    WorldStateRenderer(const WorldState &worldState);
+    WorldStateRenderer(const WorldState &worldState, ShaderProgram &program);
 
     bool initialize() override;
 
@@ -21,6 +24,16 @@ public:
 
 private:
     const WorldState &worldState;
+    ShaderProgram &shaderProgram;
+
+    unsigned int VAO;
+    unsigned int VBO;
+
+    std::vector<GLVertex> mapVertices;
+
+    void constructVertices();
+
+    void setupVertexArrays();
 };
 
 

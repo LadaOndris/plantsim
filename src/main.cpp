@@ -244,7 +244,15 @@ namespace {
 
         std::vector<std::shared_ptr<Renderer>> renderers;
 
-        auto worldStateRenderer{std::make_shared<WorldStateRenderer>(*worldState)};
+        ShaderProgram worldStateRendererProgram;
+        worldStateRendererProgram.addShader(
+                std::make_unique<Shader>("../shaders/map/shader.vert", ShaderType::Vertex)
+        );
+        worldStateRendererProgram.addShader(
+                std::make_unique<Shader>("../shaders/map/shader.frag", ShaderType::Fragment)
+        );
+
+        auto worldStateRenderer{std::make_shared<WorldStateRenderer>(*worldState, worldStateRendererProgram)};
         renderers.push_back(worldStateRenderer);
 
         auto guiFrameRenderer{std::make_shared<GuiFrameRenderer>()};
