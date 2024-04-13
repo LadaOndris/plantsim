@@ -15,6 +15,11 @@
 #include "visualisation/rendering/Renderer.h"
 #include "visualisation/rendering/RenderingOptionsProvider.h"
 #include "visualisation/rendering/GuiFrameRenderer.h"
+#include "simulation/Simulator.h"
+#include "simulation/SimulatorOptionsProvider.h"
+#include "visualisation/rendering/WorldStateRenderer.h"
+#include "plants/WorldState.h"
+#include "plants/AxialRectangularMap.h"
 
 namespace {
     GLFWwindow *window{};
@@ -117,13 +122,18 @@ namespace {
     }
 
     void startRendering(const std::vector<std::shared_ptr<Renderer>> &renderers,
-                        const RenderingOptionsProvider &renderingOptionsProvider) {
+                        const RenderingOptionsProvider &renderingOptionsProvider,
+                        const SimulatorOptionsProvider &simulatorOptionsProvider,
+                        Simulator &simulator) {
         glViewport(0, 0, windowDefinition.width, windowDefinition.height);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
 
         while (!glfwWindowShouldClose(window)) {
-            RenderingOptions options = renderingOptionsProvider.getRenderingOptions();
+            SimulatorOptions simOptions{simulatorOptionsProvider.getSimulatorOptions()};
+            simulator.step(simOptions);
+
+            RenderingOptions options{renderingOptionsProvider.getRenderingOptions()};
 
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -137,11 +147,13 @@ namespace {
         }
     }
 
-    void cleanup(const std::vector<std::shared_ptr<Renderer>> &renderers) {
+    void destroyRenderers(const std::vector<std::shared_ptr<Renderer>> &renderers) {
         for (const auto &renderer: renderers) {
             renderer->destroy();
         }
+    }
 
+    void cleanup() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -219,39 +231,47 @@ namespace {
         fprintf(stderr, format, str_source, str_type, id, message);
     }
 
+    std::unique_ptr<WorldState> initializeWorld() {
+        std::vector<std::shared_ptr<Process>> processes{};
+        auto map = std::make_shared<AxialRectangularMap>(10, 10);
+
+        return std::make_unique<WorldState>(map, processes);
+    }
 
     int runApplication() {
-        if (!initializeGlfw() || !initializeGlad() || !initializeImgui()) {
-            return EXIT_FAILURE;
-        }
-        glDebugMessageCallback(processErrorMessageCallback, nullptr);
+        auto worldState = initializeWorld();
+        Simulator simulator(*worldState);
 
         std::vector<std::shared_ptr<Renderer>> renderers;
+
+        auto worldStateRenderer{std::make_shared<WorldStateRenderer>(*worldState)};
+        renderers.push_back(worldStateRenderer);
 
         auto guiFrameRenderer{std::make_shared<GuiFrameRenderer>()};
         renderers.push_back(guiFrameRenderer);
 
-//        RenderingOptions options{
-//                .isSimulationRunning {false}
-//        };
-//
         bool result = initializeRenderers(renderers);
         if (!result) {
-            cleanup(renderers);
+            destroyRenderers(renderers);
             return EXIT_FAILURE;
         }
 
-        startRendering(renderers, *guiFrameRenderer);
-        cleanup(renderers);
+        startRendering(renderers, *guiFrameRenderer, *guiFrameRenderer, simulator);
 
+        destroyRenderers(renderers);
         return EXIT_SUCCESS;
     }
 }
 
 int main() {
     std::cout << "Starting the application..." << std::endl;
+    if (!initializeGlfw() || !initializeGlad() || !initializeImgui()) {
+        return EXIT_FAILURE;
+    }
+    glDebugMessageCallback(processErrorMessageCallback, nullptr);
 
     int returnCode = runApplication();
 
+    cleanup();
     return returnCode;
 }

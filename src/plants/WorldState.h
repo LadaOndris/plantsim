@@ -18,6 +18,7 @@ class Process;
 class WorldState {
 public:
     WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes);
+
     /**
      * Calls each process and gives the process corresponding genes, and
      * the process itself determines what to do.
@@ -26,7 +27,12 @@ public:
 
     std::shared_ptr<Entity> getEntity();
 
+    [[nodiscard]] Map &getMap() const {
+        return *map;
+    }
+
     int getTotalGenesCount() const;
+
 private:
     /**
      * Representation of the hexagonal lattice providing

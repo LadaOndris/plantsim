@@ -28,7 +28,7 @@ add_executable(${BINARY}_run ${SOURCES})
 target_link_libraries(${BINARY}_run
         ${OPENGL_gl_LIBRARY} glfw glm imgui)
 
-add_library(${BINARY}_lib STATIC ${SOURCES})
+add_library(${BINARY}_lib STATIC ${SOURCES} simulation/SimulatorOptionsProvider.h)
 target_link_libraries(${BINARY}_lib
         ${OPENGL_gl_LIBRARY} glfw glm imgui)
 

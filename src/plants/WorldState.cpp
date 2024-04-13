@@ -10,8 +10,8 @@
 WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes)
         : map(std::move(map)), processes(std::move(processes)) {
 
-    int genesCount = getTotalGenesCount();
-    throw std::logic_error("Not implemented");
+    //int genesCount = getTotalGenesCount();
+    //throw std::logic_error("Not implemented");
 //    entity = std::make_unique<Entity>(genesCount);
 }
 
