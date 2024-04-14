@@ -5,6 +5,8 @@
 #ifndef PLANTSIM_MAP_H
 #define PLANTSIM_MAP_H
 
+#include <memory>
+#include <vector>
 #include "Point.h"
 
 class Map {

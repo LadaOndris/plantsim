@@ -20,6 +20,7 @@
 #include "visualisation/rendering/WorldStateRenderer.h"
 #include "plants/WorldState.h"
 #include "plants/AxialRectangularMap.h"
+#include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
 
 namespace {
     GLFWwindow *window{};
@@ -235,7 +236,12 @@ namespace {
         std::vector<std::shared_ptr<Process>> processes{};
         auto map = std::make_shared<AxialRectangularMap>(100, 100);
 
-        return std::make_unique<WorldState>(map, processes);
+        auto worldState{std::make_unique<WorldState>(map, processes)};
+
+        //
+        //    auto point = map.getPoint(2, 2);
+        //    auto neighbors = map.getNeighbors(point);
+        return worldState;
     }
 
     int runApplication() {
@@ -252,7 +258,9 @@ namespace {
                 std::make_unique<Shader>("../shaders/map/shader.frag", ShaderType::Fragment)
         );
 
-        auto worldStateRenderer{std::make_shared<WorldStateRenderer>(*worldState, worldStateRendererProgram)};
+        AxialRectangularMapToMeshConverter mapConverter{};
+        auto worldStateRenderer{
+                std::make_shared<WorldStateRenderer>(*worldState, mapConverter, worldStateRendererProgram)};
         renderers.push_back(worldStateRenderer);
 
         auto guiFrameRenderer{std::make_shared<GuiFrameRenderer>()};

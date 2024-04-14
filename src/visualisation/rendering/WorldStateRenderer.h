@@ -10,11 +10,12 @@
 #include "plants/WorldState.h"
 #include "GLVertex.h"
 #include "visualisation/rendering/shaders/ShaderProgram.h"
+#include "visualisation/rendering/converters/MapConverter.h"
 
 
 class WorldStateRenderer : public Renderer {
 public:
-    WorldStateRenderer(const WorldState &worldState, ShaderProgram &program);
+    WorldStateRenderer(const WorldState &worldState, const MapConverter &mapConverter, ShaderProgram &program);
 
     bool initialize() override;
 
@@ -24,6 +25,7 @@ public:
 
 private:
     const WorldState &worldState;
+    const MapConverter &mapConverter;
     ShaderProgram &shaderProgram;
 
     unsigned int VAO;

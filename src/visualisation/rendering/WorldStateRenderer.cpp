@@ -4,10 +4,12 @@
 
 #include <algorithm>
 #include "WorldStateRenderer.h"
+#include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
 
 
-WorldStateRenderer::WorldStateRenderer(const WorldState &worldState, ShaderProgram &program)
+WorldStateRenderer::WorldStateRenderer(const WorldState &worldState, const MapConverter &mapConverter, ShaderProgram &program)
         : worldState{worldState},
+          mapConverter(mapConverter),
           shaderProgram{program} {
 }
 
@@ -25,66 +27,10 @@ bool WorldStateRenderer::initialize() {
 }
 
 void WorldStateRenderer::constructVertices() {
-    // TODO: This depends on the specific Map used. Abstract this away.
-
     auto &map{this->worldState.getMap()};
-    auto width = map.getWidth();
-    auto height = map.getHeight();
-    std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;
-    assert (width == height);
-
-    double cellCentersDistance = 1 / static_cast<double>(width - 1);
-    double cellRadius = cellCentersDistance / 2;
-    double triangleHeight = sqrt(3) / 2 * cellRadius;
-
-    std::vector<GLVertex> vertices;
-    std::vector<unsigned int> indices;
-
-    constexpr int indicesPerCell = 18;
-    constexpr int verticesPerCell = 7;
-    std::vector<unsigned int> singleCellIndices(indicesPerCell); // 6 triangles * 3 vertices = 18
-    for (int i = 0; i < 6; ++i) {
-        singleCellIndices[i * 3 + 0] = 0; // The center of the cell
-        singleCellIndices[i * 3 + 1] = i + 1; // First vertex on the boundary
-        singleCellIndices[i * 3 + 2] = (i + 1) % 6 + 1; // Second vertex on the boundary
-    }
-
-    float heightFloat = static_cast<float>(height);
-    float widthFloat = static_cast<float>(width);
-
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-            std::vector<unsigned int> currentCellIndices{singleCellIndices};
-            // Shift the base cell indices to form indices for the current cell.
-            std::transform(currentCellIndices.begin(), currentCellIndices.end(), currentCellIndices.begin(),
-                           [i, j, height](auto &item) {
-                               return item + (i * height + j) * verticesPerCell;
-                           });
-            indices.insert(indices.end(), currentCellIndices.begin(), currentCellIndices.end());
-
-            float maxY = (heightFloat) * 2 * triangleHeight;
-            float maxX = (widthFloat) * 3 / 2 * cellRadius + cellRadius;
-            float centerY = static_cast<float>(i) * 2 * triangleHeight / maxY + triangleHeight;
-            float centerX = static_cast<float>(j) * 3 / 2 * cellRadius / maxX + cellRadius;
-
-            // Shift the center for specific odd columns
-            if (j % 2 == 1) {
-                centerY -= triangleHeight;
-            }
-
-            vertices.push_back(GLVertex{centerX, centerY, 0});
-            float angle = 0.0f;
-            for (int k = 0; k < 6; ++k) {
-                float x = centerX + cellRadius * cos(k * (2.0f * M_PI) / 6.0f);
-                float y = centerY + cellRadius * sin(k * (2.0f * M_PI) / 6.0f);
-                vertices.push_back(GLVertex{x, y, 0});
-            }
-        }
-    }
-
-    //std::vector<GLVertex> vertices{GLVertex{0, 1, 0}, GLVertex{0, 0, 0}, GLVertex{1, 0, 0}};
-    mapVertexIndices = indices;
-    mapVertices = vertices;
+    auto mesh = mapConverter.convert(map);
+    mapVertexIndices = mesh.indices;
+    mapVertices = mesh.vertices;
 }
 
 void WorldStateRenderer::setupVertexArrays() {
