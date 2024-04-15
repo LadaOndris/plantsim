@@ -32,12 +32,15 @@ private:
     unsigned int VBO;
     unsigned int EBO;
 
-    std::vector<unsigned int> mapVertexIndices;
-    std::vector<GLVertex> mapVertices;
+    MeshData meshData;
 
     void constructVertices();
 
     void setupVertexArrays();
+
+    void updateVisualizationInternalState();
+
+    glm::vec3 convertPointToColour(const Point &point) const;
 };
 
 

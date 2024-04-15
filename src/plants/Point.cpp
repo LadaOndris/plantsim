@@ -18,3 +18,7 @@ int Point::getX() const {
 int Point::getY() const {
     return coords.second;
 }
+
+std::pair<int, int> Point::getCoords() const {
+    return coords;
+}

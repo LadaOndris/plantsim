@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
+#include <glm/vec3.hpp>
 #include "AxialRectangularMapToMeshConverter.h"
 
 MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
@@ -34,6 +35,7 @@ MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
 
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
+            auto currentCellVertexIndices = &meshData.cellVerticesMap[std::make_pair(i, j)];
             std::vector<unsigned int> currentCellIndices{singleCellIndices};
             // Shift the base cell indices to form indices for the current cell.
             std::transform(currentCellIndices.begin(), currentCellIndices.end(), currentCellIndices.begin(),
@@ -52,10 +54,14 @@ MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
                 centerY -= triangleHeight;
             }
 
-            meshData.vertices.push_back(GLVertex{centerX, centerY, 0});
+            currentCellVertexIndices->push_back(meshData.vertices.size());
+            meshData.vertices.push_back(GLVertex{{centerX, centerY, 0}});
+
             for (int k = 0; k < 6; ++k) {
                 float x = centerX + cellRadius * cos(k * (2.0f * M_PI) / 6.0f);
                 float y = centerY + cellRadius * sin(k * (2.0f * M_PI) / 6.0f);
+
+                currentCellVertexIndices->push_back(meshData.vertices.size());
                 meshData.vertices.push_back(GLVertex{x, y, 0});
             }
         }

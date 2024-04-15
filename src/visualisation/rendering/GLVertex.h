@@ -7,9 +7,8 @@
 
 
 struct GLVertex {
-    float x;
-    float y;
-    float z;
+    float position[3];
+    float color[3];
 };
 
 

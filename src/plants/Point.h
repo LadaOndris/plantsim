@@ -13,6 +13,7 @@ public:
     virtual ~Point();
     int getX() const;
     int getY() const;
+    std::pair<int, int> getCoords() const;
 private:
     std::pair<int, int> coords;
 };

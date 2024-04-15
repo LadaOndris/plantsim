@@ -238,9 +238,11 @@ namespace {
 
         auto worldState{std::make_unique<WorldState>(map, processes)};
 
-        //
-        //    auto point = map.getPoint(2, 2);
-        //    auto neighbors = map.getNeighbors(point);
+
+//        auto point = map.getPoint(2, 2);
+//        auto neighbors = map.getNeighbors(point);
+
+
         return worldState;
     }
 
