@@ -16,6 +16,8 @@ public:
     void step(const SimulatorOptions &options);
 
 private:
+    void transferResources();
+
     void replicateCells();
 
     WorldState &worldState;
