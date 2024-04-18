@@ -14,17 +14,17 @@ class AxialRectangularMap : public Map {
 public:
     AxialRectangularMap(std::size_t width, std::size_t height);
 
-    size_t getWidth() const override;
+    [[nodiscard]] size_t getWidth() const override;
 
-    size_t getHeight() const override;
+    [[nodiscard]] size_t getHeight() const override;
 
-    std::shared_ptr<Point> getPoint(int x, int y) override;
+    [[nodiscard]] Point *getPoint(int x, int y) override;
 
-    std::vector<std::shared_ptr<Point>> getPoints() const override;
+    [[nodiscard]] std::vector<Point> &getPoints() override;
 
-    std::vector<std::shared_ptr<Point>> getNeighbors(std::shared_ptr<Point> point) override;
+    [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point) override;
 
-    double euclideanDistance(std::shared_ptr<Point> lhs, std::shared_ptr<Point> rhs) override;
+    [[nodiscard]] double euclideanDistance(const Point &lhs, const Point &rhs) const override;
 
     ~AxialRectangularMap() override = default;
 
@@ -37,12 +37,12 @@ private:
      * See the following for more information:
      * https://www.redblobgames.com/grids/hexagons/#map-storagehttps://www.redblobgames.com/grids/hexagons/#map-storage
      */
-    std::vector<std::vector<std::shared_ptr<Point>>> storage;
+    std::vector<std::vector<Point>> storage;
     /**
      * Contains the flat representation of the storage without
      * the unused/invalid points.
      */
-    std::vector<std::shared_ptr<Point>> validPoints;
+    std::vector<Point> validPoints;
     /**
      * Some of the cells in storage are unused due to the hexagonal nature
      * and rectangle shape. Thus, each line is padded has a padding

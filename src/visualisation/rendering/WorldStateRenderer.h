@@ -15,7 +15,7 @@
 
 class WorldStateRenderer : public Renderer {
 public:
-    WorldStateRenderer(const WorldState &worldState, const MapConverter &mapConverter, ShaderProgram &program);
+    WorldStateRenderer(WorldState &worldState, const MapConverter &mapConverter, ShaderProgram &program);
 
     bool initialize() override;
 
@@ -24,7 +24,7 @@ public:
     void render(const WindowDefinition &window, const RenderingOptions &options) override;
 
 private:
-    const WorldState &worldState;
+    WorldState &worldState;
     const MapConverter &mapConverter;
     ShaderProgram &shaderProgram;
 

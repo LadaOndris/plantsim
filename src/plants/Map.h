@@ -14,12 +14,17 @@ class Map {
 public:
     virtual ~Map() = default;
 
-    virtual std::size_t getWidth() const = 0;
-    virtual std::size_t getHeight() const = 0;
-    virtual std::shared_ptr<Point> getPoint(int x, int y) = 0;
-    virtual std::vector<std::shared_ptr<Point>> getPoints() const = 0;
-    virtual std::vector<std::shared_ptr<Point>> getNeighbors(std::shared_ptr<Point> point) = 0;
-    virtual double euclideanDistance(std::shared_ptr<Point> lhs, std::shared_ptr<Point> rhs) = 0;
+    [[nodiscard]] virtual std::size_t getWidth() const = 0;
+
+    [[nodiscard]] virtual std::size_t getHeight() const = 0;
+
+    virtual Point *getPoint(int x, int y) = 0;
+
+    [[nodiscard]] virtual std::vector<Point> &getPoints() = 0;
+
+    [[nodiscard]] virtual std::vector<Point *> getNeighbors(const Point &point) = 0;
+
+    virtual double euclideanDistance(const Point &lhs, const Point &rhs) const = 0;
 };
 
 

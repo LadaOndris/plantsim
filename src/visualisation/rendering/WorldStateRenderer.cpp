@@ -7,7 +7,7 @@
 #include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
 #include <GLFW/glfw3.h>
 
-WorldStateRenderer::WorldStateRenderer(const WorldState &worldState, const MapConverter &mapConverter,
+WorldStateRenderer::WorldStateRenderer(WorldState &worldState, const MapConverter &mapConverter,
                                        ShaderProgram &program)
         : worldState{worldState},
           mapConverter(mapConverter),
@@ -103,9 +103,9 @@ void WorldStateRenderer::updateVisualizationInternalState() {
     auto &map{this->worldState.getMap()};
 
     for (auto &point: map.getPoints()) {
-        auto coords = point->getCoords();
+        auto coords = point.coords;
 
-        glm::vec3 pointColor = convertPointToColour(*point);
+        glm::vec3 pointColor = convertPointToColour(point);
 
         auto verticesIndices = meshData.cellVerticesMap[coords];
 
@@ -116,39 +116,48 @@ void WorldStateRenderer::updateVisualizationInternalState() {
             colorVector[2] = pointColor[2];
         }
     }
-
-    auto getRotMatrix = [](float angle) {
-        return glm::mat3(glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)));
-    };
-
-    float angle = static_cast<float>(glfwGetTime()) * 2.0f;
-    glm::vec3 pointToRotate = glm::vec3(50.f, 5.f, 1.0f);
-    glm::vec3 centerOfRotation = glm::vec3(50, 50, 0.0f);
-    glm::vec3 rotatedPoint = getRotMatrix(angle) * (pointToRotate - centerOfRotation) + centerOfRotation;
-    int pointX = static_cast<int>(rotatedPoint[0]);
-    int pointY = static_cast<int>(rotatedPoint[1]);
-    std::cout << pointX << " " << pointY << std::endl;
-
-    auto point = map.getPoint(pointX, pointY);
-    auto verticesIndices = meshData.cellVerticesMap[point->getCoords()];
-    for (auto &index: verticesIndices) {
-        auto colorVector = this->meshData.vertices[index].color;
-        colorVector[0] = 0.2;
-        colorVector[1] = 0.3;
-        colorVector[2] = 0.6;
-    }
-
-    auto neighbors = map.getNeighbors(point);
-
-    for (auto &neighbor: neighbors) {
-        auto verticesIndices = meshData.cellVerticesMap[neighbor->getCoords()];
-        for (auto &index: verticesIndices) {
+    auto entity = this->worldState.getEntity();
+    for (auto &point : entity->getCells()) {
+        auto verticesIndices = meshData.cellVerticesMap[point->coords];
+        for (const auto &index: verticesIndices) {
             auto colorVector = this->meshData.vertices[index].color;
             colorVector[0] = 0.2;
-            colorVector[1] = 0.6;
-            colorVector[2] = 0.3;
+            colorVector[1] = 0.3;
+            colorVector[2] = 0.6;
         }
     }
+
+//    auto getRotMatrix = [](float angle) {
+//        return glm::mat3(glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)));
+//    };
+//
+//    float angle = static_cast<float>(glfwGetTime()) * 2.0f;
+//    glm::vec3 pointToRotate = glm::vec3(50.f, 5.f, 1.0f);
+//    glm::vec3 centerOfRotation = glm::vec3(50, 50, 0.0f);
+//    glm::vec3 rotatedPoint = getRotMatrix(angle) * (pointToRotate - centerOfRotation) + centerOfRotation;
+//    int pointX = static_cast<int>(rotatedPoint[0]);
+//    int pointY = static_cast<int>(rotatedPoint[1]);
+//
+//    const auto point = map.getPoint(pointX, pointY);
+//    auto verticesIndices = meshData.cellVerticesMap[point->coords];
+//    for (const auto &index: verticesIndices) {
+//        auto colorVector = this->meshData.vertices[index].color;
+//        colorVector[0] = 0.2;
+//        colorVector[1] = 0.3;
+//        colorVector[2] = 0.6;
+//    }
+//    // Draw neighbors
+//    auto neighbors = map.getNeighbors(*point);
+//
+//    for (const auto &neighbor: neighbors) {
+//        auto verticesIndices = meshData.cellVerticesMap[neighbor->coords];
+//        for (auto &index: verticesIndices) {
+//            auto colorVector = this->meshData.vertices[index].color;
+//            colorVector[0] = 0.2;
+//            colorVector[1] = 0.6;
+//            colorVector[2] = 0.3;
+//        }
+//    }
 }
 
 glm::vec3 WorldStateRenderer::convertPointToColour(const Point &point) const {

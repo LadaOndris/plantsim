@@ -15,10 +15,10 @@ public:
 
     virtual ~Process();
 
-    void invoke(Entity &entity, std::shared_ptr<Cell> &cell);
+    void invoke(Entity &entity, Point &cell);
 
 private:
-    virtual void doInvoke(Entity &entity, std::shared_ptr<Cell> &cell) = 0;
+    virtual void doInvoke(Entity &entity, Point &cell) = 0;
 
 };
 

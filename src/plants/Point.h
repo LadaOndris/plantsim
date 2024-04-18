@@ -7,15 +7,29 @@
 
 #include <utility>
 
-class Point {
-public:
+struct Point {
+    enum Type {
+        Air,
+        Cell
+    };
+
     explicit Point(int x, int y);
-    virtual ~Point();
-    int getX() const;
-    int getY() const;
-    std::pair<int, int> getCoords() const;
-private:
+
     std::pair<int, int> coords;
+    int resources;
+    Type type;
+
+    [[nodiscard]] int getX() const {
+        return coords.first;
+    }
+
+    [[nodiscard]] int getY() const {
+        return coords.second;
+    }
+
+    bool operator==(const Point &other) const {
+        return coords == other.coords;
+    }
 };
 
 

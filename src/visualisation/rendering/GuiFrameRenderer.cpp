@@ -9,11 +9,9 @@ bool GuiFrameRenderer::initialize() {
 }
 
 void GuiFrameRenderer::destroy() {
-    std::cout << "Destroing" << std::endl;
 }
 
 void GuiFrameRenderer::render(const WindowDefinition &window, const RenderingOptions &options) {
-    std::cout << "Rendering" << std::endl;
 }
 
 RenderingOptions GuiFrameRenderer::getRenderingOptions() const {

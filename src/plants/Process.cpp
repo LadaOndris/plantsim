@@ -8,6 +8,6 @@
 
 Process::~Process() = default;
 
-void Process::invoke(Entity &entity, std::shared_ptr<Cell> &cell) {
+void Process::invoke(Entity &entity, Point &cell) {
     doInvoke(entity, cell);
 }

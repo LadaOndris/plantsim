@@ -19,7 +19,7 @@ public:
      */
     explicit Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources);
 
-    void addCell(const std::shared_ptr<Cell> &cell);
+    void addCell(Point *cell);
 
     /**
      * Removes a cell.
@@ -28,11 +28,11 @@ public:
      * @return Returns 'true' if the cell was removed.
      * Returns 'false' if no such cell was found.
      */
-    bool removeCell(const std::shared_ptr<Cell> &cell);
+    bool removeCell(const Point *cell);
 
-    std::vector<std::shared_ptr<Cell>> getCells() const;
+    [[nodiscard]] std::vector<Point *> &getCells();
 
-    std::shared_ptr<EntityChromosome> getChromosome() const;
+    [[nodiscard]] std::shared_ptr<EntityChromosome> getChromosome() const;
 
 private:
     /**
@@ -44,7 +44,7 @@ private:
      * Cells of this entity.
      * They interact with each other through processes.
      */
-    std::vector<std::shared_ptr<Cell>> cells;
+    std::vector<Point *> cells;
 
     void initChromosome(unsigned NOptions, unsigned NHormones, unsigned NResources);
 };

@@ -237,7 +237,8 @@ namespace {
         auto map = std::make_shared<AxialRectangularMap>(100, 100);
 
         auto worldState{std::make_unique<WorldState>(map, processes)};
-
+        auto entity = worldState->getEntity();
+        entity->addCell(map->getPoint(50, 10));
 
 //        auto point = map.getPoint(2, 2);
 //        auto neighbors = map.getNeighbors(point);

@@ -8,7 +8,7 @@
 #include "AxialRectangularMap.h"
 
 WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes)
-        : map(std::move(map)), processes(std::move(processes)) {
+        : map(std::move(map)), processes(std::move(processes)), entity {std::make_shared<Entity>(0, 0, 0)} {
 
     //int genesCount = getTotalGenesCount();
     //throw std::logic_error("Not implemented");
@@ -17,8 +17,8 @@ WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Pro
 
 void WorldState::invokeProcesses() {
     for (auto &process: processes) {
-        for (auto &cell: entity->getCells()) {
-            process->invoke(*entity, cell);
+        for (auto cell: entity->getCells()) {
+            process->invoke(*entity, *cell);
         }
     }
 }

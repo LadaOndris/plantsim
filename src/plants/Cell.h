@@ -13,8 +13,19 @@
 class Cell : public Point {
 public:
     explicit Cell(int x, int y);
-    ~Cell();
 
+    virtual ~Cell();
+
+    [[nodiscard]] int getResources() const {
+        return resources;
+    }
+
+    void setResources(int value) {
+        this->resources = value;
+    }
+
+private:
+    int resources;
 };
 
 

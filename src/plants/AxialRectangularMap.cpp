@@ -20,7 +20,7 @@ AxialRectangularMap::AxialRectangularMap(std::size_t width, std::size_t height) 
 void AxialRectangularMap::initializeStorageSize() {
     storage.resize(height);
     for (int r = 0; r < height; r++) {
-        storage[r].resize(width);
+        storage[r].reserve(width);
     }
 }
 
@@ -30,7 +30,7 @@ void AxialRectangularMap::initializeStoragePoints() {
         for (int q = 0; q < width; q++) {
             // For simplicity initialize even the empty space.
 //            if (areCoordsOutOfBounds(q, r)) {
-            storage[r][q] = std::make_shared<Point>(q, r);
+            storage[r][q] = Point{q, r};
             validPoints.push_back(storage[r][q]);
 //            } else {
 //                storage[r][q] = nullptr;
@@ -47,22 +47,22 @@ std::size_t AxialRectangularMap::getHeight() const {
     return height;
 }
 
-std::shared_ptr<Point> AxialRectangularMap::getPoint(int x, int y) {
+Point *AxialRectangularMap::getPoint(int x, int y) {
     if (areCoordsOutOfBounds(x, y)) {
         throw std::out_of_range("Indices q=" + std::to_string(x) +
                                 " r=" + std::to_string(y) + " are out of range.");
     }
-    return storage[y][x];
+    return &storage[y][x];
 }
 
-std::vector<std::shared_ptr<Point>> AxialRectangularMap::getNeighbors(std::shared_ptr<Point> point) {
+std::vector<Point *> AxialRectangularMap::getNeighbors(const Point &point) {
     // The neighbor indices are different odd and even columns
-    const auto &axialDirectionVectors = (point->getY() % 2 == 0) ? axialDirectionVectorsEven : axialDirectionVectorsOdd;
+    const auto &axialDirectionVectors = (point.getY() % 2 == 0) ? axialDirectionVectorsEven : axialDirectionVectorsOdd;
 
-    std::vector<std::shared_ptr<Point>> neighbors;
+    std::vector<Point *> neighbors;
     for (auto directionVector: axialDirectionVectors) {
-        int newQ = directionVector[0] + point->getX();
-        int newR = directionVector[1] + point->getY();
+        int newQ = directionVector[0] + point.getX();
+        int newR = directionVector[1] + point.getY();
         if (!areCoordsOutOfBounds(newQ, newR)) {
             auto neighbor = getPoint(newQ, newR);
             neighbors.push_back(neighbor);
@@ -85,11 +85,11 @@ bool AxialRectangularMap::areCoordsOutOfBounds(int q, int r) const {
 //    return false;
 }
 
-double AxialRectangularMap::euclideanDistance(std::shared_ptr<Point> lhs, std::shared_ptr<Point> rhs) {
+double AxialRectangularMap::euclideanDistance(const Point &lhs, const Point &rhs) const {
     throw NotImplementedException();
 }
 
-std::vector<std::shared_ptr<Point>> AxialRectangularMap::getPoints() const {
+std::vector<Point> &AxialRectangularMap::getPoints() {
     return validPoints;
 }
 

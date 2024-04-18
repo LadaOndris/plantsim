@@ -6,7 +6,7 @@
 #include <iostream>
 
 
-Cell::Cell(int x, int y) : Point(x, y) {
+Cell::Cell(int x, int y) : Point(x, y), resources(0) {
     std::cout << "Constructing a cell." << std::endl;
 }
 
