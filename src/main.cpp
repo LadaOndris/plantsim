@@ -132,7 +132,9 @@ namespace {
 
         while (!glfwWindowShouldClose(window)) {
             SimulatorOptions simOptions{simulatorOptionsProvider.getSimulatorOptions()};
-            simulator.step(simOptions);
+            for (int i = 0; i < 20; i++) {
+                simulator.step(simOptions);
+            }
 
             RenderingOptions options{renderingOptionsProvider.getRenderingOptions()};
 

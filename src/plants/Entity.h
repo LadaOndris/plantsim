@@ -9,6 +9,7 @@
 #include "Cell.h"
 #include "genetics/Chromosome.h"
 #include "EntityChromosome.h"
+#include <unordered_set>
 
 class Entity {
 public:
@@ -20,6 +21,7 @@ public:
     explicit Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources);
 
     void addCell(Point *cell);
+    void updateCellsWithResources(Point *cell);
 
     /**
      * Removes a cell.
@@ -31,6 +33,8 @@ public:
     bool removeCell(const Point *cell);
 
     [[nodiscard]] std::vector<Point *> &getCells();
+
+    [[nodiscard]] std::unordered_set<Point *> &getCellsWithResources();
 
     [[nodiscard]] std::shared_ptr<EntityChromosome> getChromosome() const;
 
@@ -45,6 +49,8 @@ private:
      * They interact with each other through processes.
      */
     std::vector<Point *> cells;
+
+    std::unordered_set<Point *> cellsWithResources;
 
     void initChromosome(unsigned NOptions, unsigned NHormones, unsigned NResources);
 };

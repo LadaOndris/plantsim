@@ -9,7 +9,8 @@ Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
     auto entity = worldState.getEntity();
     auto cells = entity->getCells();
 
-    cells[0]->resources = 5000;
+    cells[0]->resources = 10000;
+    entity->updateCellsWithResources(cells[0]);
 }
 
 
@@ -20,13 +21,10 @@ void Simulator::step(const SimulatorOptions &options) {
 
 void Simulator::transferResources() {
     auto entity = worldState.getEntity();
-    auto cells = entity->getCells();
+    auto cellsWithResources = entity->getCellsWithResources();
 
-    for (auto cell: cells) {
-        // Nothing to transfer
-        if (cell->resources <= 0) {
-            continue;
-        }
+    for (auto cell : cellsWithResources) {
+        assert(cell->resources > 0);
 
         auto neighbors = worldState.getMap().getNeighbors(*cell);
         for (auto neighbor: neighbors) {
@@ -35,20 +33,22 @@ void Simulator::transferResources() {
                 // Move the one resource.
                 neighbor->resources++;
                 cell->resources--;
+
+                entity->updateCellsWithResources(neighbor);
             }
         }
+        entity->updateCellsWithResources(cell);
     }
 
 }
 
 void Simulator::replicateCells() {
     auto entity = worldState.getEntity();
-    auto cells = entity->getCells();
+    auto cellsWithResources = entity->getCellsWithResources();
 
-    for (auto cell: cells) {
-        if (cell->resources <= 0) {
-            continue;
-        }
+    for (auto cell : cellsWithResources) {
+        assert(cell->resources > 0);
+
         auto neighbors = worldState.getMap().getNeighbors(*cell);
         for (auto neighbor: neighbors) {
             if (cell->resources <= 0) {
@@ -61,5 +61,6 @@ void Simulator::replicateCells() {
                 cell->resources--;
             }
         }
+        entity->updateCellsWithResources(cell);
     }
 }

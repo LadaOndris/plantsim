@@ -7,7 +7,8 @@
 #include "Process.h"
 
 
-Entity::Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources) : cells{} {
+Entity::Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources)
+        : cells{}, cellsWithResources{} {
     //initChromosome(NOptions, NHormones, NResources);
 }
 
@@ -18,6 +19,14 @@ void Entity::initChromosome(unsigned int NOptions, unsigned int NHormones, unsig
 
 void Entity::addCell(Point *cell) {
     cells.push_back(cell);
+}
+
+void Entity::updateCellsWithResources(Point *cell) {
+    if (cell->resources > 0) {
+        cellsWithResources.insert(cell);
+    } else {
+        cellsWithResources.erase(cell);
+    }
 }
 
 bool Entity::removeCell(const Point *cellToRemove) {
@@ -37,6 +46,10 @@ std::vector<Point *> &Entity::getCells() {
 
 std::shared_ptr<EntityChromosome> Entity::getChromosome() const {
     return chromosome;
+}
+
+std::unordered_set<Point *> &Entity::getCellsWithResources() {
+    return cellsWithResources;
 }
 
 
