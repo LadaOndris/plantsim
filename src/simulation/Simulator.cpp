@@ -30,11 +30,13 @@ void Simulator::transferResources() {
         for (auto neighbor: neighbors) {
             if (neighbor->type == Point::Type::Cell &&
                 neighbor->resources < cell->resources) {
-                // Move the one resource.
-                neighbor->resources++;
-                cell->resources--;
-
+                neighbor->resources += cell->resources;
+                cell->resources = 0;
                 entity->updateCellsWithResources(neighbor);
+                break;
+//                neighbor->resources++;
+//                cell->resources--;
+
             }
         }
         entity->updateCellsWithResources(cell);

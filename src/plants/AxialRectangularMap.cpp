@@ -31,7 +31,7 @@ void AxialRectangularMap::initializeStoragePoints() {
             // For simplicity initialize even the empty space.
 //            if (areCoordsOutOfBounds(q, r)) {
             storage[r][q] = Point{q, r};
-            validPoints.push_back(storage[r][q]);
+            validPoints.push_back(&storage[r][q]);
 //            } else {
 //                storage[r][q] = nullptr;
 //            }
@@ -89,7 +89,7 @@ double AxialRectangularMap::euclideanDistance(const Point &lhs, const Point &rhs
     throw NotImplementedException();
 }
 
-std::vector<Point> &AxialRectangularMap::getPoints() {
+std::vector<Point *> &AxialRectangularMap::getPoints() {
     return validPoints;
 }
 

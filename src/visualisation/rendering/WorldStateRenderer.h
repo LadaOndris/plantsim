@@ -40,7 +40,7 @@ private:
 
     void updateVisualizationInternalState();
 
-    glm::vec3 convertPointToColour(const Point &point) const;
+    glm::vec3 convertPointToColour(const Point *point) const;
 };
 
 

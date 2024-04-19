@@ -20,7 +20,7 @@ public:
 
     virtual Point *getPoint(int x, int y) = 0;
 
-    [[nodiscard]] virtual std::vector<Point> &getPoints() = 0;
+    [[nodiscard]] virtual std::vector<Point *> &getPoints() = 0;
 
     [[nodiscard]] virtual std::vector<Point *> getNeighbors(const Point &point) = 0;
 

@@ -20,7 +20,7 @@ public:
 
     [[nodiscard]] Point *getPoint(int x, int y) override;
 
-    [[nodiscard]] std::vector<Point> &getPoints() override;
+    [[nodiscard]] std::vector<Point *> &getPoints() override;
 
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point) override;
 
@@ -42,7 +42,7 @@ private:
      * Contains the flat representation of the storage without
      * the unused/invalid points.
      */
-    std::vector<Point> validPoints;
+    std::vector<Point *> validPoints;
     /**
      * Some of the cells in storage are unused due to the hexagonal nature
      * and rectangle shape. Thus, each line is padded has a padding

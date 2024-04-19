@@ -101,9 +101,13 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
  */
 void WorldStateRenderer::updateVisualizationInternalState() {
     auto &map{this->worldState.getMap()};
+    //std::cout << worldState.getEntity()->getCellsWithResources().size() << std::endl;
 
-    for (auto &point: map.getPoints()) {
-        auto coords = point.coords;
+    //auto cellWithResources = *worldState.getEntity()->getCellsWithResources().begin();
+    //std::cout << worldState.getMap().getPoint(cellWithResources->getX(), cellWithResources->getY())->resources << std::endl;
+
+    for (auto point: map.getPoints()) {
+        auto coords = point->coords;
 
         glm::vec3 pointColor = convertPointToColour(point);
 
@@ -116,16 +120,17 @@ void WorldStateRenderer::updateVisualizationInternalState() {
             colorVector[2] = pointColor[2];
         }
     }
-    auto entity = this->worldState.getEntity();
-    for (auto &point : entity->getCells()) {
-        auto verticesIndices = meshData.cellVerticesMap[point->coords];
-        for (const auto &index: verticesIndices) {
-            auto colorVector = this->meshData.vertices[index].color;
-            colorVector[0] = 0.2;
-            colorVector[1] = 0.3;
-            colorVector[2] = 0.6;
-        }
-    }
+
+//    auto entity = this->worldState.getEntity();
+//    for (auto &point : entity->getCells()) {
+//        auto verticesIndices = meshData.cellVerticesMap[point->coords];
+//        for (const auto &index: verticesIndices) {
+//            auto colorVector = this->meshData.vertices[index].color;
+//            colorVector[0] = 0.2;
+//            colorVector[1] = 0.3;
+//            colorVector[2] = 0.6;
+//        }
+//    }
 
 //    auto getRotMatrix = [](float angle) {
 //        return glm::mat3(glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)));
@@ -160,6 +165,11 @@ void WorldStateRenderer::updateVisualizationInternalState() {
 //    }
 }
 
-glm::vec3 WorldStateRenderer::convertPointToColour(const Point &point) const {
-    return {0.2, 0.2, 0.2};
+glm::vec3 WorldStateRenderer::convertPointToColour(const Point *point) const {
+    double resource_factor = fmin(point->resources / 4.0, 1.0f);
+    double G = 0.2f * (point->type == Point::Type::Cell);
+    double B = 0.2f * (point->type == Point::Type::Cell);
+
+
+    return {resource_factor, G, B};
 }
