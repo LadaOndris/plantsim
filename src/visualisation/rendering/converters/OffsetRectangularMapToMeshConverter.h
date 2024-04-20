@@ -10,7 +10,7 @@
 class OffsetRectangularMapToMeshConverter : public MapConverter {
 
 public:
-    MeshData convert(Map &map) const override;
+    MeshData convert(AxialRectangularMap &map) const override;
 
 };
 

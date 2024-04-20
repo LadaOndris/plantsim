@@ -9,7 +9,8 @@
 #include <glm/vec3.hpp>
 #include "OffsetRectangularMapToMeshConverter.h"
 
-MeshData OffsetRectangularMapToMeshConverter::convert(Map &map) const {
+MeshData OffsetRectangularMapToMeshConverter::convert(AxialRectangularMap &map) const {
+    // Todo: Remove duplicate code between converters
     auto width = map.getWidth();
     auto height = map.getHeight();
     std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;

@@ -7,7 +7,7 @@
 #include <utility>
 #include "AxialRectangularMap.h"
 
-WorldState::WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes)
+WorldState::WorldState(std::shared_ptr<AxialRectangularMap> map, std::vector<std::shared_ptr<Process>> processes)
         : map(std::move(map)), processes(std::move(processes)), entity {std::make_shared<Entity>(0, 0, 0)} {
 
     //int genesCount = getTotalGenesCount();

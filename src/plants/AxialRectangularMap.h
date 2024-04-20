@@ -9,7 +9,7 @@
 #include <array>
 #include "Map.h"
 
-class AxialRectangularMap : public Map {
+class AxialRectangularMap {
 
 public:
     /**
@@ -21,23 +21,23 @@ public:
      */
     explicit AxialRectangularMap(int width, int height);
 
-    [[nodiscard]] int getWidth() const override;
+    [[nodiscard]] int getWidth() const;
 
-    [[nodiscard]] int getHeight() const override;
+    [[nodiscard]] int getHeight() const;
 
-    [[nodiscard]] std::pair<int, int> getMaxCoords() const override;
+    [[nodiscard]] std::pair<int, int> getMaxCoords() const;
 
-    [[nodiscard]] Point *getPoint(int x, int y) override;
+    [[nodiscard]] Point *getPoint(int x, int y);
 
-    [[nodiscard]] std::vector<Point *> &getPoints() override;
+    [[nodiscard]] std::vector<Point *> &getPoints();
 
-    [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point) override;
+    [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point);
 
-    [[nodiscard]] const std::vector<std::pair<int, int>> &getNeighborOffsets() const override;
+    [[nodiscard]] const std::vector<std::pair<int, int>> &getNeighborOffsets() const;
 
-    [[nodiscard]] double euclideanDistance(const Point &lhs, const Point &rhs) const override;
+    [[nodiscard]] double euclideanDistance(const Point &lhs, const Point &rhs) const;
 
-    ~AxialRectangularMap() override = default;
+    ~AxialRectangularMap() = default;
 
 
 private:

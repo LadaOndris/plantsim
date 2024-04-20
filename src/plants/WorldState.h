@@ -12,12 +12,13 @@
 #include "Entity.h"
 #include "Process.h"
 #include "Map.h"
+#include "AxialRectangularMap.h"
 
 class Process;
 
 class WorldState {
 public:
-    WorldState(std::shared_ptr<Map> map, std::vector<std::shared_ptr<Process>> processes);
+    WorldState(std::shared_ptr<AxialRectangularMap> map, std::vector<std::shared_ptr<Process>> processes);
 
     /**
      * Calls each process and gives the process corresponding genes, and
@@ -27,7 +28,7 @@ public:
 
     std::shared_ptr<Entity> getEntity();
 
-    [[nodiscard]] Map &getMap() const {
+    [[nodiscard]] AxialRectangularMap &getMap() const {
         return *map;
     }
 
@@ -38,7 +39,7 @@ private:
      * Representation of the hexagonal lattice providing
      * an interface to access the points on the lattice.
      */
-    std::shared_ptr<Map> map;
+    std::shared_ptr<AxialRectangularMap> map;
 
     /**
      * An entity contains the processes that each cell

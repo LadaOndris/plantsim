@@ -29,15 +29,22 @@ void Simulator::transferResources() {
     auto neighborOffsets = map.getNeighborOffsets();
     auto offset = neighborOffsets[0];
 
+
+    // Contains padding around the borders vectorization purposes
+    std::vector<bool> &validityMask = map.getValidityMask();
+    // A matrix of resources per cell. Stored in the same way as storage.
+    std::vector<int> &resources = map.getResources();
+
     for (int r = 0; r < maxCoords.second; r++) {
         for (int q = 0; q < maxCoords.first; q++) {
             // TODO: can be out of bounds, create a validity mask
-            auto cell = map.getPoint(q, r);
-            auto neighbor = map.getPoint(q + offset.first, r + offset.second);
-            if (cell->resources > 0) {
-                cell->resources--;
-                neighbor->resources++;
-            }
+            auto cell = map.getPointMaybeInvalid(q, r);
+            auto neighbor = map.getPointMaybeInvalid(q + offset.first, r + offset.second);
+
+            int moveResource = cell->resources > 0 && validityMask[q, r] && validityMaskk[q + offset.first, r + offset.second];
+
+            cell->resources -= moveResource;
+            neighbor->resources += moveResource;
         }
     }
 

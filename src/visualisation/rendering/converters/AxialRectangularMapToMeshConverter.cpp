@@ -9,7 +9,7 @@
 #include <glm/vec3.hpp>
 #include "AxialRectangularMapToMeshConverter.h"
 
-MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
+MeshData AxialRectangularMapToMeshConverter::convert(AxialRectangularMap &map) const {
     auto width = map.getWidth();
     auto height = map.getHeight();
     std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;
