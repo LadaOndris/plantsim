@@ -33,6 +33,8 @@ public:
 
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point) override;
 
+    [[nodiscard]] const std::vector<std::pair<int, int>> &getNeighborOffsets() const override;
+
     [[nodiscard]] double euclideanDistance(const Point &lhs, const Point &rhs) const override;
 
     ~AxialRectangularMap() override = default;
@@ -82,6 +84,11 @@ private:
                     {1, -1},
                     {1, 1}
             }};
+
+    const std::vector<std::pair<int, int>> neighborOffsets{
+            {-1, -1}, {-1, 0}, {0, 1}, {1, 1}, {1, 0}, {0, -1}
+    };
+
 
     void initializeStorageSize();
 

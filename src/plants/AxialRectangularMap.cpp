@@ -101,3 +101,7 @@ std::pair<int, int> AxialRectangularMap::getMaxCoords() const {
     return {maxCoordQ, maxCoordR};
 }
 
+const std::vector<std::pair<int, int>> &AxialRectangularMap::getNeighborOffsets() const {
+    return neighborOffsets;
+}
+

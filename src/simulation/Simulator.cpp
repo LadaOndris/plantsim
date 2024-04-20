@@ -23,24 +23,42 @@ void Simulator::transferResources() {
     auto entity = worldState.getEntity();
     auto cellsWithResources = entity->getCellsWithResources();
 
-    for (auto cell : cellsWithResources) {
-        assert(cell->resources > 0);
+    auto &map = worldState.getMap();
+    auto maxCoords = map.getMaxCoords();
 
-        auto neighbors = worldState.getMap().getNeighbors(*cell);
-        for (auto neighbor: neighbors) {
-            if (neighbor->type == Point::Type::Cell &&
-                neighbor->resources < cell->resources) {
-                neighbor->resources += cell->resources;
-                cell->resources = 0;
-                entity->updateCellsWithResources(neighbor);
-                break;
-//                neighbor->resources++;
-//                cell->resources--;
+    auto neighborOffsets = map.getNeighborOffsets();
+    auto offset = neighborOffsets[0];
 
+    for (int r = 0; r < maxCoords.second; r++) {
+        for (int q = 0; q < maxCoords.first; q++) {
+            // TODO: can be out of bounds, create a validity mask
+            auto cell = map.getPoint(q, r);
+            auto neighbor = map.getPoint(q + offset.first, r + offset.second);
+            if (cell->resources > 0) {
+                cell->resources--;
+                neighbor->resources++;
             }
         }
-        entity->updateCellsWithResources(cell);
     }
+
+//    for (auto cell : cellsWithResources) {
+//        assert(cell->resources > 0);
+//
+//        auto neighbors = worldState.getMap().getNeighbors(*cell);
+//        for (auto neighbor: neighbors) {
+//            if (neighbor->type == Point::Type::Cell &&
+//                neighbor->resources < cell->resources) {
+//                neighbor->resources += cell->resources;
+//                cell->resources = 0;
+//                entity->updateCellsWithResources(neighbor);
+//                break;
+////                neighbor->resources++;
+////                cell->resources--;
+//
+//            }
+//        }
+//        entity->updateCellsWithResources(cell);
+//    }
 
 }
 
@@ -48,7 +66,7 @@ void Simulator::replicateCells() {
     auto entity = worldState.getEntity();
     auto cellsWithResources = entity->getCellsWithResources();
 
-    for (auto cell : cellsWithResources) {
+    for (auto cell: cellsWithResources) {
         assert(cell->resources > 0);
 
         auto neighbors = worldState.getMap().getNeighbors(*cell);

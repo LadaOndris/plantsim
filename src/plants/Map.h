@@ -26,6 +26,8 @@ public:
 
     [[nodiscard]] virtual std::vector<Point *> getNeighbors(const Point &point) = 0;
 
+    [[nodiscard]] virtual const std::vector<std::pair<int, int>> &getNeighborOffsets() const = 0;
+
     virtual double euclideanDistance(const Point &lhs, const Point &rhs) const = 0;
 };
 
