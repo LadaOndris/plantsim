@@ -13,7 +13,7 @@
 class EmptyProcess : public Process {
 private:
 
-    void doInvoke(Entity &entity, std::shared_ptr<Cell> &cell) override {
+    virtual void doInvoke(Entity &entity, Point &cell) {
         auto chromosome = entity.getChromosome();
         
         std::cout << "Invoking empty process." << std::endl;

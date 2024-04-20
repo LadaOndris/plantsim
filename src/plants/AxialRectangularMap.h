@@ -12,11 +12,20 @@
 class AxialRectangularMap : public Map {
 
 public:
-    AxialRectangularMap(std::size_t width, std::size_t height);
+    /**
+     * Initializes the storage of the map.
+     * It uses the axial coordiantes (q, r).
+     *
+     * @param width The maximmum q coordinate.
+     * @param height The maximum r coordinate.
+     */
+    explicit AxialRectangularMap(int width, int height);
 
-    [[nodiscard]] size_t getWidth() const override;
+    [[nodiscard]] int getWidth() const override;
 
-    [[nodiscard]] size_t getHeight() const override;
+    [[nodiscard]] int getHeight() const override;
+
+    [[nodiscard]] std::pair<int, int> getMaxCoords() const override;
 
     [[nodiscard]] Point *getPoint(int x, int y) override;
 
@@ -30,26 +39,28 @@ public:
 
 
 private:
-    std::size_t width;
-    std::size_t height;
+    int width;
+    int height;
+    int maxCoordQ;
+    int maxCoordR;
+    std::pair<int, int> storageDims;
     /**
      * 2D array is used as the storage representation.
      * See the following for more information:
      * https://www.redblobgames.com/grids/hexagons/#map-storagehttps://www.redblobgames.com/grids/hexagons/#map-storage
      */
-    std::vector<std::vector<Point>> storage;
+    std::vector<Point> storage{};
     /**
      * Contains the flat representation of the storage without
      * the unused/invalid points.
      */
-    std::vector<Point *> validPoints;
+    std::vector<Point *> validPoints{};
     /**
      * Some of the cells in storage are unused due to the hexagonal nature
      * and rectangle shape. Thus, each line is padded has a padding
      * in front of it or at the back. The padding of each line is
      * expressed by this variable.
      */
-    std::size_t widthStorageOffset;
 
     constexpr static std::array<std::array<int, 2>, 6> axialDirectionVectorsOdd{
             {

@@ -23,12 +23,15 @@ include_directories(../include)
 
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp *.c)
 set(SOURCES ${SOURCES})
+set(TEST_SOURCES ${SOURCES})
+list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
+message("TEST_SOURCES: ${TEST_SOURCES}")
 
 add_executable(${BINARY}_run ${SOURCES})
 target_link_libraries(${BINARY}_run
         ${OPENGL_gl_LIBRARY} glfw glm imgui)
 
-add_library(${BINARY}_lib STATIC ${SOURCES} simulation/SimulatorOptionsProvider.h)
+add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
 target_link_libraries(${BINARY}_lib
         ${OPENGL_gl_LIBRARY} glfw glm imgui)
 

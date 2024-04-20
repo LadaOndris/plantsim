@@ -14,9 +14,11 @@ class Map {
 public:
     virtual ~Map() = default;
 
-    [[nodiscard]] virtual std::size_t getWidth() const = 0;
+    [[nodiscard]] virtual int getWidth() const = 0;
 
-    [[nodiscard]] virtual std::size_t getHeight() const = 0;
+    [[nodiscard]] virtual int getHeight() const = 0;
+
+    [[nodiscard]] virtual std::pair<int, int> getMaxCoords() const = 0;
 
     virtual Point *getPoint(int x, int y) = 0;
 

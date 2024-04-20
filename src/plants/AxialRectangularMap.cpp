@@ -5,54 +5,55 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include <cassert>
 #include "AxialRectangularMap.h"
 #include "../NotImplementedException.h"
 #include "plants/iterators/AxialRectangularMapIterator.h"
 
 
-AxialRectangularMap::AxialRectangularMap(std::size_t width, std::size_t height) :
+AxialRectangularMap::AxialRectangularMap(int width, int height) :
         width(width), height(height) {
-    widthStorageOffset = (height - 1) / 2;
+    assert(("Only square dimensions are supported.", width == height));
+    maxCoordQ = width - 1;
+    maxCoordR = maxCoordQ / 2 + maxCoordQ;
+    storageDims = {maxCoordQ + 1, maxCoordR + 1};
+
     initializeStorageSize();
     initializeStoragePoints();
 }
 
 void AxialRectangularMap::initializeStorageSize() {
-    storage.resize(height);
-    for (int r = 0; r < height; r++) {
-        storage[r].reserve(width);
-    }
+    storage.reserve(storageDims.first * storageDims.second);
 }
 
 void AxialRectangularMap::initializeStoragePoints() {
-    for (int r = 0; r < height; r++) {
-//        auto widthWithOffset = widthStorageOffset + width;
-        for (int q = 0; q < width; q++) {
-            // For simplicity initialize even the empty space.
-//            if (areCoordsOutOfBounds(q, r)) {
-            storage[r][q] = Point{q, r};
-            validPoints.push_back(&storage[r][q]);
-//            } else {
-//                storage[r][q] = nullptr;
-//            }
+    for (int r = 0; r < storageDims.second; r++) {
+        for (int q = 0; q < storageDims.first; q++) {
+            storage[r * storageDims.first + q] = Point{q, r};
+
+            if (!areCoordsOutOfBounds(q, r)) {
+                validPoints.push_back(&storage[r * storageDims.first + q]);
+            }
         }
     }
 }
 
-std::size_t AxialRectangularMap::getWidth() const {
+int AxialRectangularMap::getWidth() const {
     return width;
 }
 
-std::size_t AxialRectangularMap::getHeight() const {
+int AxialRectangularMap::getHeight() const {
     return height;
 }
 
 Point *AxialRectangularMap::getPoint(int x, int y) {
+    // q = x;
+    // r = y;
     if (areCoordsOutOfBounds(x, y)) {
         throw std::out_of_range("Indices q=" + std::to_string(x) +
                                 " r=" + std::to_string(y) + " are out of range.");
     }
-    return &storage[y][x];
+    return &storage[y * storageDims.first + x];
 }
 
 std::vector<Point *> AxialRectangularMap::getNeighbors(const Point &point) {
@@ -73,16 +74,19 @@ std::vector<Point *> AxialRectangularMap::getNeighbors(const Point &point) {
 }
 
 bool AxialRectangularMap::areCoordsOutOfBounds(int q, int r) const {
-    if (r < 0 || r >= height)
+    int offset = maxCoordQ / 2;
+
+    int offsetTop = q / 2;
+    int offsetBottom = offset - offsetTop;
+
+    if (q < 0 || q > maxCoordQ) {
         return true;
-    if (q < 0 || q >= width)
+    }
+
+    if (r < offsetTop || r > maxCoordR - offsetBottom) {
         return true;
+    }
     return false;
-//    if (q < widthStorageOffset - r / 2)
-//        return true;
-//    if (q >= width + widthStorageOffset - r / 2)
-//        return true;
-//    return false;
 }
 
 double AxialRectangularMap::euclideanDistance(const Point &lhs, const Point &rhs) const {
@@ -91,5 +95,9 @@ double AxialRectangularMap::euclideanDistance(const Point &lhs, const Point &rhs
 
 std::vector<Point *> &AxialRectangularMap::getPoints() {
     return validPoints;
+}
+
+std::pair<int, int> AxialRectangularMap::getMaxCoords() const {
+    return {maxCoordQ, maxCoordR};
 }
 
