@@ -99,6 +99,25 @@ TEST_F(AxialRectangularMapAccessTest, ElementAccessOutOfBounds) {
     }
 }
 
+TEST_F(AxialRectangularMapAccessTest, AccessAllPointsWithinOffsetCoordsRegion) {
+    /**
+     * All points within the width-height region should be accessible
+     * after conversion to axial coordinates.
+     * The map.getPoint accepts axial coordinates as input.
+     */
+    for (int i = 0; i < map.getHeight(); i++) {
+        for (int j = 0; j < map.getWidth(); j++) {
+            // Convert offset to axial.
+            int q = j;
+            int r = q / 2 + i;
+
+            auto point = map.getPoint(q, r);
+            ASSERT_EQ(q, point->getX());
+            ASSERT_EQ(r, point->getY());
+        }
+    }
+}
+
 //TEST_F(AxialRectangularMapTest, NeighboursInside) {
 //    int q = 5;
 //    int r = 2;

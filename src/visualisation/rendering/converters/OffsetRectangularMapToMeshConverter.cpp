@@ -7,13 +7,13 @@
 #include <cmath>
 #include <cassert>
 #include <glm/vec3.hpp>
-#include "AxialRectangularMapToMeshConverter.h"
+#include "OffsetRectangularMapToMeshConverter.h"
 
-MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
+MeshData OffsetRectangularMapToMeshConverter::convert(Map &map) const {
     auto width = map.getWidth();
     auto height = map.getHeight();
     std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;
-    //assert (width == height);
+    assert (width == height);
 
     double cellCentersDistance = 1 / static_cast<double>(width - 1);
     double cellRadius = cellCentersDistance / 2;
@@ -33,12 +33,8 @@ MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
     float heightFloat = static_cast<float>(height);
     float widthFloat = static_cast<float>(width);
 
-
-    for (int i = 0; i < map.getHeight(); i++) {
-        for (int j = 0; j < map.getWidth(); j++) {
-//            auto axialCoords = convertOffsetToAxial(point->coords);
-//            auto point = map.getPoint(axialCoords.first, axialCoords.second);
-
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < width; ++j) {
             auto currentCellVertexIndices = &meshData.cellVerticesMap[std::make_pair(i, j)];
             std::vector<unsigned int> currentCellIndices{singleCellIndices};
             // Shift the base cell indices to form indices for the current cell.
@@ -70,6 +66,5 @@ MeshData AxialRectangularMapToMeshConverter::convert(Map &map) const {
             }
         }
     }
-
     return meshData;
 }

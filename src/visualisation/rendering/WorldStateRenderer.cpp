@@ -106,12 +106,30 @@ void WorldStateRenderer::updateVisualizationInternalState() {
     //auto cellWithResources = *worldState.getEntity()->getCellsWithResources().begin();
     //std::cout << worldState.getMap().getPoint(cellWithResources->getX(), cellWithResources->getY())->resources << std::endl;
 
+    auto convertOffsetToAxial = [](std::pair<int, int> offsetCoords) {
+        int i = offsetCoords.first;
+        int j = offsetCoords.second;
+        int q = j;
+        int r = q / 2 + i;
+        return std::make_pair(q, r);
+    };
+
+    auto convertAxialToOffset = [](std::pair<int, int> coords) {
+        int q = coords.first;
+        int r = coords.second;
+        int i = q;
+        int j = r - q / 2;
+        return std::make_pair(i, j);
+    };
+
     for (auto point: map.getPoints()) {
-        auto coords = point->coords;
+        auto axialCoords = point->coords;
+        // TODO: Implementation detail which shouldn't be here.
+        auto offsetCoords = convertAxialToOffset(axialCoords);
 
         glm::vec3 pointColor = convertPointToColour(point);
 
-        auto verticesIndices = meshData.cellVerticesMap[coords];
+        auto verticesIndices = meshData.cellVerticesMap[offsetCoords];
 
         for (auto &index: verticesIndices) {
             auto colorVector = this->meshData.vertices[index].color;
