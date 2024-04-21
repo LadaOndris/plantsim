@@ -12,8 +12,8 @@ protected:
         map = AxialRectangularMap(width, height);
     }
 
-    std::size_t width = 4;
-    std::size_t height = 4;
+    int width = 4;
+    int height = 4;
     AxialRectangularMap map;
 };
 

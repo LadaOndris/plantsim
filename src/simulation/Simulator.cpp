@@ -3,6 +3,7 @@
 //
 
 #include "Simulator.h"
+#include <omp.h>
 
 
 Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
@@ -16,7 +17,7 @@ Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
     for (auto coord: coords) {
         int storageCoord = map.getStorageCoord(coord.first, coord.second);
         types[storageCoord] = Point::Type::Cell;
-        resources[storageCoord] = 10000;
+        resources[storageCoord] = 200000;
     }
 }
 
@@ -40,20 +41,19 @@ void Simulator::transferResources() {
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
+#pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
-                int pointType = pointTypes[r * storageDims.first + q];
-                int neighborType = pointTypes[(r + offset.second) * storageDims.first + (q + offset.first)];
+                int pointType = pointTypes[map.getStorageCoord(r, q)];
+                int neighborType = pointTypes[map.getStorageCoord(r + offset.second, q + offset.first)];
 
-                int *pointResources = &resources[r * storageDims.first + q];
-                int *neighborResources = &resources[(r + offset.second) * storageDims.first + (q + offset.first)];
+                int *pointResources = &resources[map.getStorageCoord(r, q)];
+                int *neighborResources = &resources[map.getStorageCoord(r + offset.second, q + offset.first)];
 
-                int offsettedR = r + offset.second;
-                int offsettedQ = q + offset.first;
                 int moveResource = *pointResources > 0 &&
                                    pointType == Point::Type::Cell && neighborType == Point::Type::Cell &&
-                                   validityMask[r * (storageDims.first + 2) + q + 1] &&
-                                   validityMask[offsettedR * (storageDims.first + 2) + offsettedQ + 1];
+                                   validityMask[map.getValidityMaskCoord(r, q)] &&
+                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
 
                 *pointResources -= moveResource;
                 *neighborResources += moveResource;
@@ -74,6 +74,7 @@ void Simulator::replicateCells() {
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
+#pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
                 int pointType = pointTypes[map.getStorageCoord(r, q)];

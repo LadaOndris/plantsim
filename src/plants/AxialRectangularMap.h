@@ -131,12 +131,11 @@ private:
             }};
 
     const std::vector<std::pair<int, int>> neighborOffsets{
-
-            {0,  -1},
             {-1, -1},
             {-1, 0},
             {0,  1},
             {1,  1},
+            {0,  -1},
             {1,  0}
     };
 

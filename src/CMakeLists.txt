@@ -6,6 +6,7 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(OpenMP REQUIRED)
 #find_package(Boost 1.57.0 COMPONENTS system filesystem REQUIRED)
 
 include_directories(${GLFW_INCLUDE_DIRS})
@@ -29,11 +30,11 @@ message("TEST_SOURCES: ${TEST_SOURCES}")
 
 add_executable(${BINARY}_run ${SOURCES})
 target_link_libraries(${BINARY}_run
-        ${OPENGL_gl_LIBRARY} glfw glm imgui)
+        ${OPENGL_gl_LIBRARY} glfw glm imgui OpenMP::OpenMP_CXX)
 
 add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
 target_link_libraries(${BINARY}_lib
-        ${OPENGL_gl_LIBRARY} glfw glm imgui)
+        ${OPENGL_gl_LIBRARY} glfw glm imgui OpenMP::OpenMP_CXX)
 
 if(Boost_FOUND)
     target_link_libraries(${BINARY}_run ${Boost_LIBRARIES})

@@ -132,7 +132,7 @@ namespace {
 
         while (!glfwWindowShouldClose(window)) {
             SimulatorOptions simOptions{simulatorOptionsProvider.getSimulatorOptions()};
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 100; i++) {
                 simulator.step(simOptions);
             }
 
@@ -236,7 +236,7 @@ namespace {
 
     std::unique_ptr<WorldState> initializeWorld() {
         std::vector<std::shared_ptr<Process>> processes{};
-        auto map = std::make_shared<AxialRectangularMap>(100, 100);
+        auto map = std::make_shared<AxialRectangularMap>(200, 200);
 
         auto worldState{std::make_unique<WorldState>(map, processes)};
         return worldState;
