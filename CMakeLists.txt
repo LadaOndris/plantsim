@@ -3,6 +3,9 @@ project(plantsim)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 include_directories(src)
 
 add_subdirectory(src)

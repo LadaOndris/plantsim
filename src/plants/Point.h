@@ -9,8 +9,8 @@
 
 struct Point {
     enum Type {
-        Air,
-        Cell
+        Air = 0,
+        Cell = 1
     };
 
     explicit Point(int x, int y);

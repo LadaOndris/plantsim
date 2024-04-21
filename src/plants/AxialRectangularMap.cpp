@@ -23,16 +23,28 @@ AxialRectangularMap::AxialRectangularMap(int width, int height) :
 }
 
 void AxialRectangularMap::initializeStorageSize() {
-    storage.reserve(storageDims.first * storageDims.second);
+    int storageSize = storageDims.first * storageDims.second;
+    storage.reserve(storageSize);
+    pointTypes.reserve(storageSize);
+
+    // Initialize to zeros
+    resources.resize(storageSize);
+
+    int storageSizeWithPadding = (storageDims.first + 2) * (storageDims.second + 2);
+    validityMask.resize(storageSizeWithPadding);
 }
 
 void AxialRectangularMap::initializeStoragePoints() {
     for (int r = 0; r < storageDims.second; r++) {
         for (int q = 0; q < storageDims.first; q++) {
             storage[r * storageDims.first + q] = Point{q, r};
+            pointTypes[r * storageDims.first + q] = Point::Type::Air;
 
             if (!areCoordsOutOfBounds(q, r)) {
                 validPoints.push_back(&storage[r * storageDims.first + q]);
+
+                // Set the point as valid
+                validityMask[(r + 1) * (storageDims.first + 2) + q + 1] = true;
             }
         }
     }
@@ -103,5 +115,9 @@ std::pair<int, int> AxialRectangularMap::getMaxCoords() const {
 
 const std::vector<std::pair<int, int>> &AxialRectangularMap::getNeighborOffsets() const {
     return neighborOffsets;
+}
+
+std::pair<int, int> AxialRectangularMap::getStorageDims() const {
+    return storageDims;
 }
 

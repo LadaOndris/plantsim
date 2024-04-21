@@ -6,11 +6,18 @@
 
 
 Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
-    auto entity = worldState.getEntity();
-    auto cells = entity->getCells();
+    auto &map = worldState.getMap();
+    std::vector<int> &resources = map.getResources();
+    std::vector<Point::Type> &types = map.getPointTypes();
 
-    cells[0]->resources = 10000;
-    entity->updateCellsWithResources(cells[0]);
+    std::vector<std::pair<int, int>> coords{
+            {20, 20},
+    };
+    for (auto coord: coords) {
+        int storageCoord = map.getStorageCoord(coord.first, coord.second);
+        types[storageCoord] = Point::Type::Cell;
+        resources[storageCoord] = 10000;
+    }
 }
 
 
@@ -20,74 +27,69 @@ void Simulator::step(const SimulatorOptions &options) {
 }
 
 void Simulator::transferResources() {
-    auto entity = worldState.getEntity();
-    auto cellsWithResources = entity->getCellsWithResources();
-
     auto &map = worldState.getMap();
-    auto maxCoords = map.getMaxCoords();
 
     auto neighborOffsets = map.getNeighborOffsets();
-    auto offset = neighborOffsets[0];
 
-
-    // Contains padding around the borders vectorization purposes
+    // Contains padding [(1, 1), (1, 1)] around the borders vectorization purposes
     std::vector<bool> &validityMask = map.getValidityMask();
     // A matrix of resources per cell. Stored in the same way as storage.
     std::vector<int> &resources = map.getResources();
+    std::vector<Point::Type> &pointTypes = map.getPointTypes();
 
-    for (int r = 0; r < maxCoords.second; r++) {
-        for (int q = 0; q < maxCoords.first; q++) {
-            // TODO: can be out of bounds, create a validity mask
-            auto cell = map.getPointMaybeInvalid(q, r);
-            auto neighbor = map.getPointMaybeInvalid(q + offset.first, r + offset.second);
+    std::pair<int, int> storageDims = map.getStorageDims();
 
-            int moveResource = cell->resources > 0 && validityMask[q, r] && validityMaskk[q + offset.first, r + offset.second];
+    for (auto offset: neighborOffsets) {
+        for (int r = 0; r < storageDims.second; r++) {
+            for (int q = 0; q < storageDims.first; q++) {
+                int pointType = pointTypes[r * storageDims.first + q];
+                int neighborType = pointTypes[(r + offset.second) * storageDims.first + (q + offset.first)];
 
-            cell->resources -= moveResource;
-            neighbor->resources += moveResource;
+                int *pointResources = &resources[r * storageDims.first + q];
+                int *neighborResources = &resources[(r + offset.second) * storageDims.first + (q + offset.first)];
+
+                int offsettedR = r + offset.second;
+                int offsettedQ = q + offset.first;
+                int moveResource = *pointResources > 0 &&
+                                   pointType == Point::Type::Cell && neighborType == Point::Type::Cell &&
+                                   validityMask[r * (storageDims.first + 2) + q + 1] &&
+                                   validityMask[offsettedR * (storageDims.first + 2) + offsettedQ + 1];
+
+                *pointResources -= moveResource;
+                *neighborResources += moveResource;
+            }
         }
     }
-
-//    for (auto cell : cellsWithResources) {
-//        assert(cell->resources > 0);
-//
-//        auto neighbors = worldState.getMap().getNeighbors(*cell);
-//        for (auto neighbor: neighbors) {
-//            if (neighbor->type == Point::Type::Cell &&
-//                neighbor->resources < cell->resources) {
-//                neighbor->resources += cell->resources;
-//                cell->resources = 0;
-//                entity->updateCellsWithResources(neighbor);
-//                break;
-////                neighbor->resources++;
-////                cell->resources--;
-//
-//            }
-//        }
-//        entity->updateCellsWithResources(cell);
-//    }
-
 }
 
 void Simulator::replicateCells() {
-    auto entity = worldState.getEntity();
-    auto cellsWithResources = entity->getCellsWithResources();
+    auto &map = worldState.getMap();
 
-    for (auto cell: cellsWithResources) {
-        assert(cell->resources > 0);
+    auto neighborOffsets = map.getNeighborOffsets();
 
-        auto neighbors = worldState.getMap().getNeighbors(*cell);
-        for (auto neighbor: neighbors) {
-            if (cell->resources <= 0) {
-                break;
-            }
-            // Replicate the point to its neighbors
-            if (neighbor->type != Point::Type::Cell) {
-                neighbor->type = Point::Type::Cell;
-                entity->addCell(neighbor);
-                cell->resources--;
+    std::vector<bool> &validityMask = map.getValidityMask();
+    std::vector<int> &resources = map.getResources();
+    std::vector<Point::Type> &pointTypes = map.getPointTypes();
+
+    std::pair<int, int> storageDims = map.getStorageDims();
+
+    for (auto offset: neighborOffsets) {
+        for (int r = 0; r < storageDims.second; r++) {
+            for (int q = 0; q < storageDims.first; q++) {
+                int pointType = pointTypes[map.getStorageCoord(r, q)];
+                auto neighborType = &pointTypes[map.getStorageCoord(r + offset.second, q + offset.first)];
+
+                int *pointResources = &resources[map.getStorageCoord(r, q)];
+
+                int canReplicate = *pointResources > 0 &&
+                                   pointType == Point::Type::Cell && *neighborType == Point::Type::Air &&
+                                   validityMask[map.getValidityMaskCoord(r, q)] &&
+                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
+
+                *pointResources -= canReplicate;
+                *neighborType = canReplicate ? static_cast<Point::Type>(Point::Type::Cell) : *neighborType;
             }
         }
-        entity->updateCellsWithResources(cell);
     }
+
 }

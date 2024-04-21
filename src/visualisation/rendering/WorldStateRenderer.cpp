@@ -101,41 +101,32 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
  */
 void WorldStateRenderer::updateVisualizationInternalState() {
     auto &map{this->worldState.getMap()};
-    //std::cout << worldState.getEntity()->getCellsWithResources().size() << std::endl;
 
-    //auto cellWithResources = *worldState.getEntity()->getCellsWithResources().begin();
-    //std::cout << worldState.getMap().getPoint(cellWithResources->getX(), cellWithResources->getY())->resources << std::endl;
+    auto &validityMask = map.getValidityMask();
+    auto &resources = map.getResources();
+    auto &types = map.getPointTypes();
+    auto storageDims = map.getStorageDims();
 
-    auto convertOffsetToAxial = [](std::pair<int, int> offsetCoords) {
-        int i = offsetCoords.first;
-        int j = offsetCoords.second;
-        int q = j;
-        int r = q / 2 + i;
-        return std::make_pair(q, r);
-    };
+    for (int r = 0; r < storageDims.second; r++) {
+        for (int q = 0; q < storageDims.first; q++) {
+            if (!validityMask[map.getValidityMaskCoord(r, q)]) {
+                continue;
+            }
 
-    auto convertAxialToOffset = [](std::pair<int, int> coords) {
-        int q = coords.first;
-        int r = coords.second;
-        int i = q;
-        int j = r - q / 2;
-        return std::make_pair(i, j);
-    };
+            auto coord = map.getStorageCoord(r, q);
+            auto pointType = types[coord];
+            auto pointResources = resources[coord];
 
-    for (auto point: map.getPoints()) {
-        auto axialCoords = point->coords;
-        // TODO: Implementation detail which shouldn't be here.
-        auto offsetCoords = convertAxialToOffset(axialCoords);
+            glm::vec3 pointColor = convertPointToColour(pointResources, pointType);
 
-        glm::vec3 pointColor = convertPointToColour(point);
+            auto verticesIndices = meshData.cellVerticesMap[map.convertAxialToOffset({q, r})];
 
-        auto verticesIndices = meshData.cellVerticesMap[offsetCoords];
-
-        for (auto &index: verticesIndices) {
-            auto colorVector = this->meshData.vertices[index].color;
-            colorVector[0] = pointColor[0];
-            colorVector[1] = pointColor[1];
-            colorVector[2] = pointColor[2];
+            for (auto &index: verticesIndices) {
+                auto colorVector = this->meshData.vertices[index].color;
+                colorVector[0] = pointColor[0];
+                colorVector[1] = pointColor[1];
+                colorVector[2] = pointColor[2];
+            }
         }
     }
 
@@ -183,10 +174,10 @@ void WorldStateRenderer::updateVisualizationInternalState() {
 //    }
 }
 
-glm::vec3 WorldStateRenderer::convertPointToColour(const Point *point) const {
-    double resource_factor = fmin(point->resources / 4.0, 1.0f);
-    double G = 0.2f * (point->type == Point::Type::Cell);
-    double B = 0.2f * (point->type == Point::Type::Cell);
+glm::vec3 WorldStateRenderer::convertPointToColour(int resources, Point::Type type) const {
+    double resource_factor = fmin(resources / 4.0, 1.0f);
+    double G = 0.2f * (type == Point::Type::Cell);
+    double B = 0.2f * (type == Point::Type::Cell);
 
 
     return {resource_factor, G, B};

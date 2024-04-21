@@ -27,6 +27,30 @@ public:
 
     [[nodiscard]] std::pair<int, int> getMaxCoords() const;
 
+    [[nodiscard]] std::pair<int, int> getStorageDims() const;
+
+    [[nodiscard]] inline int getStorageCoord(int r, int q) const {
+        return r * storageDims.first + q;
+    }
+
+
+    [[nodiscard]] inline int getValidityMaskCoord(int r, int q) const {
+        // Offset of one point on each side
+        return (r + 1) * (storageDims.first + 2) + q + 1;
+    }
+
+    std::vector<int> &getResources() {
+        return resources;
+    }
+
+    std::vector<bool> &getValidityMask() {
+        return validityMask;
+    }
+
+    std::vector<Point::Type> &getPointTypes() {
+        return pointTypes;
+    }
+
     [[nodiscard]] Point *getPoint(int x, int y);
 
     [[nodiscard]] std::vector<Point *> &getPoints();
@@ -34,6 +58,24 @@ public:
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point);
 
     [[nodiscard]] const std::vector<std::pair<int, int>> &getNeighborOffsets() const;
+
+
+    [[nodiscard]] inline std::pair<int, int> convertOffsetToAxial(std::pair<int, int> offsetCoords) const {
+        int i = offsetCoords.first;
+        int j = offsetCoords.second;
+        int q = j;
+        int r = q / 2 + i;
+        return {q, r};
+    }
+
+    [[nodiscard]] inline std::pair<int, int> convertAxialToOffset(std::pair<int, int> coords) const {
+        int q = coords.first;
+        int r = coords.second;
+        int j = q;
+        int i = r - q / 2;
+        return {i, j};
+    };
+
 
     [[nodiscard]] double euclideanDistance(const Point &lhs, const Point &rhs) const;
 
@@ -52,6 +94,9 @@ private:
      * https://www.redblobgames.com/grids/hexagons/#map-storagehttps://www.redblobgames.com/grids/hexagons/#map-storage
      */
     std::vector<Point> storage{};
+    std::vector<int> resources{};
+    std::vector<bool> validityMask{};
+    std::vector<Point::Type> pointTypes{};
     /**
      * Contains the flat representation of the storage without
      * the unused/invalid points.
@@ -86,7 +131,13 @@ private:
             }};
 
     const std::vector<std::pair<int, int>> neighborOffsets{
-            {-1, -1}, {-1, 0}, {0, 1}, {1, 1}, {1, 0}, {0, -1}
+
+            {0,  -1},
+            {-1, -1},
+            {-1, 0},
+            {0,  1},
+            {1,  1},
+            {1,  0}
     };
 
 

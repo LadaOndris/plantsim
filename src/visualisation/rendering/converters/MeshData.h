@@ -25,5 +25,4 @@ struct MeshData {
     std::unordered_map<std::pair<int, int>, std::vector<size_t>, PairHash> cellVerticesMap{};
 };
 
-
 #endif //PLANTSIM_MESHDATA_H
