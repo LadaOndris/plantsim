@@ -102,17 +102,18 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
 void WorldStateRenderer::updateVisualizationInternalState() {
     auto &map{this->worldState.getMap()};
 
+    auto &validityMask = map.getValidityMask();
     auto &cells = map.getCells();
     auto storageDims = map.getStorageDims();
 
     for (int r = 0; r < storageDims.second; r++) {
         for (int q = 0; q < storageDims.first; q++) {
-            const auto &cell = map.getCellAt(r, q);
-            
-            if (!cell.valid) {
+            if (!validityMask[map.getValidityMaskCoord(r, q)]) {
                 continue;
             }
 
+            auto coord = map.getStorageCoord(r, q);
+            const auto &cell = cells[coord];
             auto pointType = cell.type;
             auto pointResources = cell.resources;
 

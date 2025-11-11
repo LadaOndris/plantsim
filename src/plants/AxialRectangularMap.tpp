@@ -22,6 +22,7 @@ template<typename CellData>
 void AxialRectangularMap<CellData>::initializeStorageSize() {
     int storageSizeWithPadding = (storageDims.first + 2) * (storageDims.second + 2);
     cells.resize(storageSizeWithPadding, CellData());
+    validityMask.resize(storageSizeWithPadding, 0);
 }
 
 template<typename CellData>
@@ -30,8 +31,14 @@ void AxialRectangularMap<CellData>::initializeStoragePoints() {
         for (int q = 0; q < storageDims.first; q++) {
             int storageIdx = (r + 1) * (storageDims.first + 2) + q + 1;
 
-            cells[storageIdx].valid = static_cast<uint8_t>(!areCoordsOutOfBounds(q, r));
+            if (!areCoordsOutOfBounds(q, r)) {
+                // Note: validPoints stores Point pointers, but we don't store Points anymore
+                // This will need to be refactored in a future iteration
+                // For now, we maintain empty validPoints vector for compatibility
 
+                // Set the cell as valid
+                validityMask[storageIdx] = 1;
+            }
         }
     }
 }

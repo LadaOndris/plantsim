@@ -16,9 +16,7 @@ Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
     };
     for (auto coord: coords) {
         int storageCoord = map.getStorageCoord(coord.second, coord.first);
-        // Preserve the valid flag that was set during map initialization
-        uint8_t wasValid = cells[storageCoord].valid;
-        cells[storageCoord] = CellState(CellState::Type::Cell, 200000, wasValid);
+        cells[storageCoord] = CellState(CellState::Type::Cell, 200000);
     }
 }
 
@@ -33,6 +31,9 @@ void Simulator::transferResources() {
 
     auto neighborOffsets = map.getNeighborOffsets();
 
+    // Contains padding [(1, 1), (1, 1)] around the borders for vectorization purposes
+    std::vector<uint8_t> &validityMask = map.getValidityMask();
+
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
@@ -45,8 +46,8 @@ void Simulator::transferResources() {
                 int moveResource = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 
                                    neighborCell.type == CellState::Type::Cell &&
-                                   pointCell.valid &&
-                                   neighborCell.valid;
+                                   validityMask[map.getValidityMaskCoord(r, q)] &&
+                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
 
                 pointCell.resources -= moveResource;
                 neighborCell.resources += moveResource;
@@ -60,6 +61,8 @@ void Simulator::replicateCells() {
 
     auto neighborOffsets = map.getNeighborOffsets();
 
+    std::vector<uint8_t> &validityMask = map.getValidityMask();
+
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
@@ -72,8 +75,8 @@ void Simulator::replicateCells() {
                 int canReplicate = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 
                                    neighborCell.type == CellState::Type::Air &&
-                                   pointCell.valid &&
-                                   neighborCell.valid;
+                                   validityMask[map.getValidityMaskCoord(r, q)] &&
+                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
 
                 pointCell.resources -= canReplicate;
                 neighborCell.type = canReplicate ? CellState::Type::Cell : neighborCell.type;
