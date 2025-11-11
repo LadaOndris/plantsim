@@ -34,3 +34,5 @@
 # Generated files
 cmake-build-debug
 .idea
+
+build/

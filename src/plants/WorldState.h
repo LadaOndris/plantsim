@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <array>
-#include <boost/scoped_array.hpp>
 #include "Point.h"
 #include "Entity.h"
 #include "Process.h"

@@ -5,7 +5,6 @@
 #ifndef PLANTSIM_CHROMOSOME_H
 #define PLANTSIM_CHROMOSOME_H
 
-#include <boost/scoped_array.hpp>
 #include "Gene.h"
 #include <vector>
 #include <stdexcept>
