@@ -34,13 +34,13 @@ public:
      */
     explicit AxialRectangularMap(int width, int height);
 
-    [[nodiscard]] constexpr int getWidth() const;
+    [[nodiscard]] constexpr int getWidth() const noexcept;
 
-    [[nodiscard]] constexpr int getHeight() const;
+    [[nodiscard]] constexpr int getHeight() const noexcept;
 
-    [[nodiscard]] constexpr std::pair<int, int> getMaxCoords() const;
+    [[nodiscard]] constexpr std::pair<int, int> getMaxCoords() const noexcept;
 
-    [[nodiscard]] constexpr std::pair<int, int> getStorageDims() const;
+    [[nodiscard]] constexpr std::pair<int, int> getStorageDims() const noexcept;
 
     /**
      * Gets the linear storage index for the given axial coordinates.
@@ -48,7 +48,7 @@ public:
      * @param q Column coordinate
      * @return Linear index into the storage array
      */
-    [[nodiscard]] constexpr int getStorageCoord(int r, int q) const {
+    [[nodiscard]] constexpr int getStorageCoord(int r, int q) const noexcept {
         // Storage includes padding: (storageDims.first + 2) x (storageDims.second + 2)
         // Offset by 1 to account for padding on left/top
         return (r + 1) * (storageDims.first + 2) + q + 1;
@@ -60,7 +60,7 @@ public:
      * @param q Column coordinate
      * @return Linear index into the validity mask array
      */
-    [[nodiscard]] constexpr int getValidityMaskCoord(int r, int q) const {
+    [[nodiscard]] constexpr int getValidityMaskCoord(int r, int q) const noexcept {
         // Offset of one point on each side
         return (r + 1) * (storageDims.first + 2) + q + 1;
     }
@@ -70,11 +70,11 @@ public:
      * @param idx Linear storage index
      * @return Reference to the cell data
      */
-    CellData &getCellAt(int idx) {
+    CellData &getCellAt(int idx) noexcept {
         return cells[idx];
     }
 
-    const CellData &getCellAt(int idx) const {
+    const CellData &getCellAt(int idx) const noexcept {
         return cells[idx];
     }
 
@@ -82,11 +82,11 @@ public:
      * Gets mutable reference to all cells (array-of-structs layout).
      * @return Reference to the cells vector
      */
-    std::vector<CellData> &getCells() {
+    std::vector<CellData> &getCells() noexcept {
         return cells;
     }
 
-    CellData &getCellAt(int r, int q) {
+    CellData &getCellAt(int r, int q) noexcept {
         return cells[getStorageCoord(r, q)];
     }
 
@@ -94,7 +94,7 @@ public:
      * Gets const reference to all cells (array-of-structs layout).
      * @return Const reference to the cells vector
      */
-    const std::vector<CellData> &getCells() const {
+    const std::vector<CellData> &getCells() const noexcept {
         return cells;
     }
 
@@ -104,7 +104,7 @@ public:
      * @param q Column coordinate
      * @return true if the cell is valid, false otherwise
      */
-    [[nodiscard]] constexpr bool isValid(int r, int q) const {
+    [[nodiscard]] constexpr bool isValid(int r, int q) const noexcept {
         return validityMask[getValidityMaskCoord(r, q)];
     }
 
@@ -114,11 +114,11 @@ public:
 
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point);
 
-    [[nodiscard]] constexpr std::span<const std::pair<int, int>, 6> getNeighborOffsets() const {
+    [[nodiscard]] constexpr std::span<const std::pair<int, int>, 6> getNeighborOffsets() const noexcept {
         return neighborOffsets;
     }
 
-    [[nodiscard]] constexpr std::pair<int, int> convertOffsetToAxial(std::pair<int, int> offsetCoords) const {
+    [[nodiscard]] constexpr std::pair<int, int> convertOffsetToAxial(std::pair<int, int> offsetCoords) const noexcept {
         int i = offsetCoords.first;
         int j = offsetCoords.second;
         int q = j;
@@ -126,7 +126,7 @@ public:
         return {q, r};
     }
 
-    [[nodiscard]] constexpr std::pair<int, int> convertAxialToOffset(std::pair<int, int> coords) const {
+    [[nodiscard]] constexpr std::pair<int, int> convertAxialToOffset(std::pair<int, int> coords) const noexcept {
         int q = coords.first;
         int r = coords.second;
         int j = q;
