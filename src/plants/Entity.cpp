@@ -21,8 +21,8 @@ void Entity::addCell(Point *cell) {
     cells.push_back(cell);
 }
 
-void Entity::updateCellsWithResources(Point *cell) {
-    if (cell->resources > 0) {
+void Entity::updateCellsWithResources(Point *cell, int resources) {
+    if (resources > 0) {
         cellsWithResources.insert(cell);
     } else {
         cellsWithResources.erase(cell);

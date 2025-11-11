@@ -7,17 +7,15 @@
 
 #include <utility>
 
+/**
+ * Represents a point in the axial coordinate system.
+ * Contains only coordinate information.
+ * Cell-specific data (type, resources) is stored in CellState.
+ */
 struct Point {
-    enum Type {
-        Air = 0,
-        Cell = 1
-    };
-
     explicit Point(int x, int y);
 
     std::pair<int, int> coords;
-    int resources;
-    Type type;
 
     [[nodiscard]] int getX() const {
         return coords.first;

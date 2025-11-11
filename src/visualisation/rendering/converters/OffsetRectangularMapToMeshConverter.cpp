@@ -8,8 +8,9 @@
 #include <cassert>
 #include <glm/vec3.hpp>
 #include "OffsetRectangularMapToMeshConverter.h"
+#include "simulation/CellState.h"
 
-MeshData OffsetRectangularMapToMeshConverter::convert(AxialRectangularMap &map) const {
+MeshData OffsetRectangularMapToMeshConverter::convert(AxialRectangularMap<CellState> &map) const {
     // Todo: Remove duplicate code between converters
     auto width = map.getWidth();
     auto height = map.getHeight();

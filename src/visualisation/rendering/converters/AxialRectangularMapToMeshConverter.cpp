@@ -8,8 +8,9 @@
 #include <cassert>
 #include <glm/vec3.hpp>
 #include "AxialRectangularMapToMeshConverter.h"
+#include "simulation/CellState.h"
 
-MeshData AxialRectangularMapToMeshConverter::convert(AxialRectangularMap &map) const {
+MeshData AxialRectangularMapToMeshConverter::convert(AxialRectangularMap<CellState> &map) const {
     auto width = map.getWidth();
     auto height = map.getHeight();
     std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;

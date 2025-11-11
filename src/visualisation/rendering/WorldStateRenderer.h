@@ -11,6 +11,7 @@
 #include "GLVertex.h"
 #include "visualisation/rendering/shaders/ShaderProgram.h"
 #include "visualisation/rendering/converters/MapConverter.h"
+#include "simulation/CellState.h"
 
 
 class WorldStateRenderer : public Renderer {
@@ -40,7 +41,7 @@ private:
 
     void updateVisualizationInternalState();
 
-    glm::vec3 convertPointToColour(int resources, Point::Type type) const;
+    glm::vec3 convertPointToColour(int resources, CellState::Type type) const;
 };
 
 

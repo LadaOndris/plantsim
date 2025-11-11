@@ -4,8 +4,6 @@
 
 #include "Point.h"
 
-
 Point::Point(int x, int y)
-        : coords(x, y), resources(0), type{Type::Air} {
-
+        : coords(x, y) {
 }

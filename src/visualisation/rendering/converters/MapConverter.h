@@ -7,11 +7,12 @@
 
 #include "MeshData.h"
 #include "plants/AxialRectangularMap.h"
+#include "simulation/CellState.h"
 
 class MapConverter {
 
 public:
-    virtual MeshData convert(AxialRectangularMap &map) const = 0;
+    virtual MeshData convert(AxialRectangularMap<CellState> &map) const = 0;
 
 };
 

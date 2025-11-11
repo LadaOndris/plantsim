@@ -1,9 +1,11 @@
 
+
 #include <gtest/gtest.h>
 #include <memory>
 #include <plants/AxialRectangularMap.h>
 #include "plants/WorldState.h"
 #include "plants/Point.h"
+#include "simulation/CellState.h"
 #include "../dummies/EmptyProcess.h"
 
 TEST(WorldState, getTotalGenesCount) {
@@ -15,10 +17,11 @@ TEST(WorldState, getTotalGenesCount) {
     processes.push_back(emptyProcess);
     processes.push_back(emptyProcess);
 
-    auto map = std::make_shared<AxialRectangularMap>(width, height);
+    auto map = std::make_shared<AxialRectangularMap<CellState>>(width, height);
     WorldState state(map, processes);
 
     int genesCount = state.getTotalGenesCount();
 
     //ASSERT_EQ(2 * emptyProcess->getGenesCount(), genesCount);
 }
+

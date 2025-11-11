@@ -21,7 +21,7 @@ public:
     explicit Entity(unsigned int NOptions, unsigned int NHormones, unsigned int NResources);
 
     void addCell(Point *cell);
-    void updateCellsWithResources(Point *cell);
+    void updateCellsWithResources(Point *cell, int resources);
 
     /**
      * Removes a cell.

@@ -6,37 +6,38 @@
 
 #include "simulation/Simulator.h"
 #include "simulation/SimulatorOptions.h"
+#include "simulation/CellState.h"
 #include "plants/WorldState.h"
 #include "plants/AxialRectangularMap.h"
 
 std::unique_ptr<WorldState> initializeWorld() {
     std::vector<std::shared_ptr<Process>> processes{};
-    auto map = std::make_shared<AxialRectangularMap>(200, 200);
+    auto map = std::make_shared<AxialRectangularMap<CellState>>(200, 200);
 
     auto worldState{std::make_unique<WorldState>(map, processes)};
     return worldState;
 }
 
-uint64_t computeChecksum(const std::vector<Point::Type> &pointTypes, int storageDimsFirst, int storageDimsSecond) {
+uint64_t computeChecksum(const std::vector<CellState> &cells, int storageDimsFirst, int storageDimsSecond) {
     uint64_t checksum = 0;
     for (int r = 0; r < storageDimsSecond; r++) {
         for (int q = 0; q < storageDimsFirst; q++) {
             int idx = (r + 1) * (storageDimsFirst + 2) + q + 1;
-            checksum = checksum * 31 + static_cast<int>(pointTypes[idx]);
+            checksum = checksum * 31 + static_cast<int>(cells[idx].type);
         }
     }
     return checksum;
 }
 
-void printMapCorner(const AxialRectangularMap &map, int cornerSize) {
-    const auto &pointTypes = map.getPointTypes();
+void printMapCorner(const AxialRectangularMap<CellState> &map, int cornerSize) {
+    const auto &cells = map.getCells();
     auto storageDims = map.getStorageDims();
 
     std::cout << "Map corner (" << cornerSize << "x" << cornerSize << "):\n";
     for (int r = 0; r < cornerSize && r < storageDims.second; r++) {
         for (int q = 0; q < cornerSize && q < storageDims.first; q++) {
             int idx = (r + 1) * (storageDims.first + 2) + q + 1;
-            char symbol = (pointTypes[idx] == Point::Type::Cell) ? 'C' : '.';
+            char symbol = (cells[idx].type == CellState::Type::Cell) ? 'C' : '.';
             std::cout << symbol;
         }
         std::cout << '\n';
@@ -63,9 +64,9 @@ int main() {
 
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
 
-    //printMapCorner(map, 20);
+    // printMapCorner(map, 20);
 
-    uint64_t checksum = computeChecksum(map.getPointTypes(), storageDims.first, storageDims.second);
+    uint64_t checksum = computeChecksum(map.getCells(), storageDims.first, storageDims.second);
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;
 
     return 0;

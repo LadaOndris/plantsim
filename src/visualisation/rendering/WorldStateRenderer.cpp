@@ -103,8 +103,7 @@ void WorldStateRenderer::updateVisualizationInternalState() {
     auto &map{this->worldState.getMap()};
 
     auto &validityMask = map.getValidityMask();
-    auto &resources = map.getResources();
-    auto &types = map.getPointTypes();
+    auto &cells = map.getCells();
     auto storageDims = map.getStorageDims();
 
     for (int r = 0; r < storageDims.second; r++) {
@@ -114,8 +113,9 @@ void WorldStateRenderer::updateVisualizationInternalState() {
             }
 
             auto coord = map.getStorageCoord(r, q);
-            auto pointType = types[coord];
-            auto pointResources = resources[coord];
+            const auto &cell = cells[coord];
+            auto pointType = cell.type;
+            auto pointResources = cell.resources;
 
             glm::vec3 pointColor = convertPointToColour(pointResources, pointType);
 
@@ -174,10 +174,10 @@ void WorldStateRenderer::updateVisualizationInternalState() {
 //    }
 }
 
-glm::vec3 WorldStateRenderer::convertPointToColour(int resources, Point::Type type) const {
+glm::vec3 WorldStateRenderer::convertPointToColour(int resources, CellState::Type type) const {
     double resource_factor = fmin(resources / 4.0, 1.0f);
-    double G = 0.2f * (type == Point::Type::Cell);
-    double B = 0.2f * (type == Point::Type::Cell);
+    double G = 0.2f * (type == CellState::Type::Cell);
+    double B = 0.2f * (type == CellState::Type::Cell);
 
 
     return {resource_factor, G, B};

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include "plants/AxialRectangularMap.h"
+#include "simulation/CellState.h"
 
 class AxialRectangularMapAccessTest : public ::testing::Test {
 protected:
@@ -9,12 +10,12 @@ public:
 
 protected:
     void SetUp() override {
-        map = AxialRectangularMap(width, height);
+        map = AxialRectangularMap<CellState>(width, height);
     }
 
     int width = 4;
     int height = 4;
-    AxialRectangularMap map;
+    AxialRectangularMap<CellState> map;
 };
 
 TEST_F(AxialRectangularMapAccessTest, CorrectSizeInRowsAndColumns) {
@@ -42,7 +43,7 @@ TEST_F(AxialRectangularMapAccessTest, CorrectSizeInAxialCoords) {
             {7, 6, 9},
     };
     for (const auto &correspondence: sizeToMaxAxialCoordCorrespondences) {
-        AxialRectangularMap map{correspondence.mapSize, correspondence.mapSize};
+        AxialRectangularMap<CellState> map{correspondence.mapSize, correspondence.mapSize};
         auto givenMaxCoords = map.getMaxCoords();
 
         ASSERT_EQ(correspondence.maxQ, givenMaxCoords.first);
