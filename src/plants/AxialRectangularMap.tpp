@@ -22,7 +22,7 @@ template<typename CellData>
 void AxialRectangularMap<CellData>::initializeStorageSize() {
     int storageSizeWithPadding = (storageDims.first + 2) * (storageDims.second + 2);
     cells.resize(storageSizeWithPadding, CellData());
-    validityMask.resize(storageSizeWithPadding, false);
+    validityMask.resize(storageSizeWithPadding, 0);
 }
 
 template<typename CellData>
@@ -37,7 +37,7 @@ void AxialRectangularMap<CellData>::initializeStoragePoints() {
                 // For now, we maintain empty validPoints vector for compatibility
 
                 // Set the cell as valid
-                validityMask[storageIdx] = true;
+                validityMask[storageIdx] = 1;
             }
         }
     }

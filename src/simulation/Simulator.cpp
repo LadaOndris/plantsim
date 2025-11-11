@@ -32,7 +32,7 @@ void Simulator::transferResources() {
     auto neighborOffsets = map.getNeighborOffsets();
 
     // Contains padding [(1, 1), (1, 1)] around the borders for vectorization purposes
-    std::vector<bool> &validityMask = map.getValidityMask();
+    std::vector<uint8_t> &validityMask = map.getValidityMask();
     // Array-of-structs: each element contains the full cell state
     std::vector<CellState> &cells = map.getCells();
 
@@ -66,7 +66,7 @@ void Simulator::replicateCells() {
 
     auto neighborOffsets = map.getNeighborOffsets();
 
-    std::vector<bool> &validityMask = map.getValidityMask();
+    std::vector<uint8_t> &validityMask = map.getValidityMask();
     std::vector<CellState> &cells = map.getCells();
 
     std::pair<int, int> storageDims = map.getStorageDims();

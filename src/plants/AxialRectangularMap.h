@@ -93,11 +93,11 @@ public:
         return cells;
     }
 
-    std::vector<bool> &getValidityMask() {
+    std::vector<uint8_t> &getValidityMask() {
         return validityMask;
     }
 
-    [[nodiscard]] const std::vector<bool> &getValidityMask() const {
+    [[nodiscard]] const std::vector<uint8_t> &getValidityMask() const {
         return validityMask;
     }
 
@@ -145,8 +145,9 @@ private:
 
     /**
      * Validity mask indicating which cells are valid (within hexagonal bounds).
+     * Uses uint8_t instead of bool for better performance and cache locality.
      */
-    std::vector<bool> validityMask{};
+    std::vector<uint8_t> validityMask{};
 
     /**
      * Contains the flat representation of the storage without the unused/invalid points.
