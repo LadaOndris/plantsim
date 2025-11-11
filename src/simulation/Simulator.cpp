@@ -31,9 +31,6 @@ void Simulator::transferResources() {
 
     auto neighborOffsets = map.getNeighborOffsets();
 
-    // Contains padding [(1, 1), (1, 1)] around the borders for vectorization purposes
-    std::vector<uint8_t> &validityMask = map.getValidityMask();
-
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
@@ -46,8 +43,8 @@ void Simulator::transferResources() {
                 int moveResource = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 
                                    neighborCell.type == CellState::Type::Cell &&
-                                   validityMask[map.getValidityMaskCoord(r, q)] &&
-                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
+                                   map.isValid(r, q) &&
+                                   map.isValid(r + offset.second, q + offset.first);
 
                 pointCell.resources -= moveResource;
                 neighborCell.resources += moveResource;
@@ -61,8 +58,6 @@ void Simulator::replicateCells() {
 
     auto neighborOffsets = map.getNeighborOffsets();
 
-    std::vector<uint8_t> &validityMask = map.getValidityMask();
-
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
@@ -75,8 +70,8 @@ void Simulator::replicateCells() {
                 int canReplicate = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 
                                    neighborCell.type == CellState::Type::Air &&
-                                   validityMask[map.getValidityMaskCoord(r, q)] &&
-                                   validityMask[map.getValidityMaskCoord(r + offset.second, q + offset.first)];
+                                   map.isValid(r, q) &&
+                                   map.isValid(r + offset.second, q + offset.first);
 
                 pointCell.resources -= canReplicate;
                 neighborCell.type = canReplicate ? CellState::Type::Cell : neighborCell.type;

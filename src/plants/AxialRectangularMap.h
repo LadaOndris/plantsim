@@ -97,12 +97,14 @@ public:
         return cells;
     }
 
-    std::vector<uint8_t> &getValidityMask() {
-        return validityMask;
-    }
-
-    [[nodiscard]] const std::vector<uint8_t> &getValidityMask() const {
-        return validityMask;
+    /**
+     * Checks if a cell at the given coordinates is valid (within hexagonal bounds).
+     * @param r Row coordinate
+     * @param q Column coordinate
+     * @return true if the cell is valid, false otherwise
+     */
+    [[nodiscard]] inline bool isValid(int r, int q) const {
+        return validityMask[getValidityMaskCoord(r, q)];
     }
 
     [[nodiscard]] Point *getPoint(int x, int y);
