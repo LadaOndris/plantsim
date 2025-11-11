@@ -34,7 +34,6 @@ void Simulator::transferResources() {
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
-#pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
                 CellState &pointCell = map.getCellAt(r, q);
@@ -61,7 +60,6 @@ void Simulator::replicateCells() {
     std::pair<int, int> storageDims = map.getStorageDims();
 
     for (auto offset: neighborOffsets) {
-#pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
                 CellState &pointCell = map.getCellAt(r, q);
