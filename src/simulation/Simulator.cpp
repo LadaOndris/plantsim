@@ -33,9 +33,9 @@ void Simulator::transferResources() {
 
     std::pair<int, int> storageDims = map.getStorageDims();
 
-    for (auto offset: neighborOffsets) {
-        for (int r = 0; r < storageDims.second; r++) {
-            for (int q = 0; q < storageDims.first; q++) {
+    for (int r = 0; r < storageDims.second; r++) {
+        for (int q = 0; q < storageDims.first; q++) {
+            for (auto offset: neighborOffsets) {
                 CellState &pointCell = map.getCellAt(r, q);
                 CellState &neighborCell = map.getCellAt(r + offset.second, q + offset.first);
 
@@ -59,9 +59,9 @@ void Simulator::replicateCells() {
 
     std::pair<int, int> storageDims = map.getStorageDims();
 
-    for (auto offset: neighborOffsets) {
-        for (int r = 0; r < storageDims.second; r++) {
-            for (int q = 0; q < storageDims.first; q++) {
+    for (int r = 0; r < storageDims.second; r++) {
+        for (int q = 0; q < storageDims.first; q++) {
+            for (auto offset: neighborOffsets) {
                 CellState &pointCell = map.getCellAt(r, q);
                 CellState &neighborCell = map.getCellAt(r + offset.second, q + offset.first);
 
@@ -76,5 +76,4 @@ void Simulator::replicateCells() {
             }
         }
     }
-
 }
