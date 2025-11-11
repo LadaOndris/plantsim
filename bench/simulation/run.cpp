@@ -64,7 +64,7 @@ int main() {
 
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
 
-    // printMapCorner(map, 20);
+    printMapCorner(map, 20);
 
     uint64_t checksum = computeChecksum(map.getCells(), storageDims.first, storageDims.second);
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;

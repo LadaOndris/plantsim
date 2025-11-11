@@ -7,19 +7,21 @@
 /**
  * Represents the state of a single cell in the simulation.
  * Contains application-specific data associated with each cell in the map.
+ * Fields are ordered to minimize padding.
  */
 struct CellState {
-    enum Type {
+    enum Type : uint8_t {
         Air = 0,
         Cell = 1
     };
 
-    Type type;
     int resources;
+    Type type;
+    uint8_t valid;
 
-    CellState() : type(Type::Air), resources(0) {}
+    CellState() : resources(0), type(Type::Air), valid(0) {}
 
-    explicit CellState(Type type, int resources = 0) 
-        : type(type), resources(resources) {}
+    explicit CellState(Type type, int resources = 0, uint8_t valid = 1) 
+        : resources(resources), type(type), valid(valid) {}
 };
 

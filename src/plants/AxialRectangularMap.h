@@ -54,17 +54,6 @@ public:
     }
 
     /**
-     * Gets the validity mask coordinate for the given axial coordinates.
-     * @param r Row coordinate
-     * @param q Column coordinate
-     * @return Linear index into the validity mask array
-     */
-    [[nodiscard]] inline int getValidityMaskCoord(int r, int q) const {
-        // Offset of one point on each side
-        return (r + 1) * (storageDims.first + 2) + q + 1;
-    }
-
-    /**
      * Gets the cell data at the given linear storage index.
      * @param idx Linear storage index
      * @return Reference to the cell data
@@ -95,14 +84,6 @@ public:
      */
     const std::vector<CellData> &getCells() const {
         return cells;
-    }
-
-    std::vector<uint8_t> &getValidityMask() {
-        return validityMask;
-    }
-
-    [[nodiscard]] const std::vector<uint8_t> &getValidityMask() const {
-        return validityMask;
     }
 
     [[nodiscard]] Point *getPoint(int x, int y);
@@ -146,12 +127,6 @@ private:
      * See: https://www.redblobgames.com/grids/hexagons/#map-storage
      */
     std::vector<CellData> cells{};
-
-    /**
-     * Validity mask indicating which cells are valid (within hexagonal bounds).
-     * Uses uint8_t instead of bool for better performance and cache locality.
-     */
-    std::vector<uint8_t> validityMask{};
 
     /**
      * Contains the flat representation of the storage without the unused/invalid points.
