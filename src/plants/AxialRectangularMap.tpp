@@ -32,10 +32,6 @@ void AxialRectangularMap<CellData>::initializeStoragePoints() {
             int storageIdx = (r + 1) * (storageDims.first + 2) + q + 1;
 
             if (!areCoordsOutOfBounds(q, r)) {
-                // Note: validPoints stores Point pointers, but we don't store Points anymore
-                // This will need to be refactored in a future iteration
-                // For now, we maintain empty validPoints vector for compatibility
-
                 // Set the cell as valid
                 validityMask[storageIdx] = 1;
             }
@@ -51,17 +47,6 @@ constexpr int AxialRectangularMap<CellData>::getWidth() const noexcept {
 template<typename CellData>
 constexpr int AxialRectangularMap<CellData>::getHeight() const noexcept {
     return height;
-}
-
-template<typename CellData>
-Point *AxialRectangularMap<CellData>::getPoint(int x, int y) {
-    // Note: This method is deprecated as we no longer store Point objects directly
-    // Keeping for compatibility
-    if (areCoordsOutOfBounds(x, y)) {
-        throw std::out_of_range("Indices q=" + std::to_string(x) +
-                                " r=" + std::to_string(y) + " are out of range.");
-    }
-    throw std::logic_error("getPoint() is deprecated. Use getCellAt() instead.");
 }
 
 template<typename CellData>
@@ -102,11 +87,6 @@ bool AxialRectangularMap<CellData>::areCoordsOutOfBounds(int q, int r) const {
 template<typename CellData>
 double AxialRectangularMap<CellData>::euclideanDistance(const Point &lhs, const Point &rhs) const {
     throw NotImplementedException();
-}
-
-template<typename CellData>
-std::vector<Point *> &AxialRectangularMap<CellData>::getPoints() {
-    return validPoints;
 }
 
 template<typename CellData>

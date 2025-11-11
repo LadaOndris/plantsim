@@ -108,10 +108,6 @@ public:
         return validityMask[getValidityMaskCoord(r, q)];
     }
 
-    [[nodiscard]] Point *getPoint(int x, int y);
-
-    [[nodiscard]] std::vector<Point *> &getPoints();
-
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point);
 
     [[nodiscard]] constexpr std::span<const std::pair<int, int>, 6> getNeighborOffsets() const noexcept {
@@ -157,11 +153,6 @@ private:
      * Uses uint8_t instead of bool for better performance and cache locality.
      */
     std::vector<uint8_t> validityMask{};
-
-    /**
-     * Contains the flat representation of the storage without the unused/invalid points.
-     */
-    std::vector<Point *> validPoints{};
 
     constexpr static std::array<std::array<int, 2>, 6> axialDirectionVectorsOdd{
             {
