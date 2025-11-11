@@ -30,7 +30,9 @@ public:
     [[nodiscard]] std::pair<int, int> getStorageDims() const;
 
     [[nodiscard]] inline int getStorageCoord(int r, int q) const {
-        return r * storageDims.first + q;
+        // Storage includes padding: (storageDims.first + 2) x (storageDims.second + 2)
+        // Offset by 1 to account for padding on left/top
+        return (r + 1) * (storageDims.first + 2) + q + 1;
     }
 
 

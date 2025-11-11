@@ -44,11 +44,13 @@ void Simulator::transferResources() {
 #pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
-                int pointType = pointTypes[map.getStorageCoord(r, q)];
-                int neighborType = pointTypes[map.getStorageCoord(r + offset.second, q + offset.first)];
+                int neighborCoord = map.getStorageCoord(r + offset.second, q + offset.first);
+                int storageCoord = map.getStorageCoord(r, q);
+                int pointType = pointTypes[storageCoord];
+                int neighborType = pointTypes[neighborCoord];
 
-                int *pointResources = &resources[map.getStorageCoord(r, q)];
-                int *neighborResources = &resources[map.getStorageCoord(r + offset.second, q + offset.first)];
+                int *pointResources = &resources[storageCoord];
+                int *neighborResources = &resources[neighborCoord];
 
                 int moveResource = *pointResources > 0 &&
                                    pointType == Point::Type::Cell && neighborType == Point::Type::Cell &&

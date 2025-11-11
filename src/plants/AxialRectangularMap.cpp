@@ -23,28 +23,28 @@ AxialRectangularMap::AxialRectangularMap(int width, int height) :
 }
 
 void AxialRectangularMap::initializeStorageSize() {
-    int storageSize = storageDims.first * storageDims.second;
-    storage.reserve(storageSize);
-    pointTypes.reserve(storageSize);
-
-    // Initialize to zeros
-    resources.resize(storageSize);
-
     int storageSizeWithPadding = (storageDims.first + 2) * (storageDims.second + 2);
-    validityMask.resize(storageSizeWithPadding);
+    storage.reserve(storageSizeWithPadding);
+    pointTypes.resize(storageSizeWithPadding, Point::Type::Air);
+
+    // Initialize to zeros (padding will naturally be 0)
+    resources.resize(storageSizeWithPadding, 0);
+
+    validityMask.resize(storageSizeWithPadding, false);
 }
 
 void AxialRectangularMap::initializeStoragePoints() {
     for (int r = 0; r < storageDims.second; r++) {
         for (int q = 0; q < storageDims.first; q++) {
-            storage[r * storageDims.first + q] = Point{q, r};
-            pointTypes[r * storageDims.first + q] = Point::Type::Air;
+            int storageIdx = (r + 1) * (storageDims.first + 2) + q + 1;
+            storage[storageIdx] = Point{q, r};
+            pointTypes[storageIdx] = Point::Type::Air;
 
             if (!areCoordsOutOfBounds(q, r)) {
-                validPoints.push_back(&storage[r * storageDims.first + q]);
+                validPoints.push_back(&storage[storageIdx]);
 
                 // Set the point as valid
-                validityMask[(r + 1) * (storageDims.first + 2) + q + 1] = true;
+                validityMask[storageIdx] = true;
             }
         }
     }
@@ -65,7 +65,7 @@ Point *AxialRectangularMap::getPoint(int x, int y) {
         throw std::out_of_range("Indices q=" + std::to_string(x) +
                                 " r=" + std::to_string(y) + " are out of range.");
     }
-    return &storage[y * storageDims.first + x];
+    return &storage[(y + 1) * (storageDims.first + 2) + x + 1];
 }
 
 std::vector<Point *> AxialRectangularMap::getNeighbors(const Point &point) {
