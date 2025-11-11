@@ -33,8 +33,6 @@ void Simulator::transferResources() {
 
     // Contains padding [(1, 1), (1, 1)] around the borders for vectorization purposes
     std::vector<uint8_t> &validityMask = map.getValidityMask();
-    // Array-of-structs: each element contains the full cell state
-    std::vector<CellState> &cells = map.getCells();
 
     std::pair<int, int> storageDims = map.getStorageDims();
 
@@ -42,11 +40,8 @@ void Simulator::transferResources() {
 #pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
-                int neighborCoord = map.getStorageCoord(r + offset.second, q + offset.first);
-                int storageCoord = map.getStorageCoord(r, q);
-                
-                CellState &pointCell = cells[storageCoord];
-                CellState &neighborCell = cells[neighborCoord];
+                CellState &pointCell = map.getCellAt(r, q);
+                CellState &neighborCell = map.getCellAt(r + offset.second, q + offset.first);
 
                 int moveResource = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 
@@ -67,7 +62,6 @@ void Simulator::replicateCells() {
     auto neighborOffsets = map.getNeighborOffsets();
 
     std::vector<uint8_t> &validityMask = map.getValidityMask();
-    std::vector<CellState> &cells = map.getCells();
 
     std::pair<int, int> storageDims = map.getStorageDims();
 
@@ -75,11 +69,8 @@ void Simulator::replicateCells() {
 #pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
-                int neighborCoord = map.getStorageCoord(r + offset.second, q + offset.first);
-                int storageCoord = map.getStorageCoord(r, q);
-
-                CellState &pointCell = cells[storageCoord];
-                CellState &neighborCell = cells[neighborCoord];
+                CellState &pointCell = map.getCellAt(r, q);
+                CellState &neighborCell = map.getCellAt(r + offset.second, q + offset.first);
 
                 int canReplicate = pointCell.resources > 0 &&
                                    pointCell.type == CellState::Type::Cell && 

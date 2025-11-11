@@ -85,6 +85,10 @@ public:
         return cells;
     }
 
+    CellData &getCellAt(int r, int q) {
+        return cells[getStorageCoord(r, q)];
+    }
+
     /**
      * Gets const reference to all cells (array-of-structs layout).
      * @return Const reference to the cells vector
