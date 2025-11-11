@@ -8,6 +8,7 @@
 #include <vector>
 #include <array>
 #include <cassert>
+#include <span>
 #include "Map.h"
 #include "Point.h"
 
@@ -33,13 +34,13 @@ public:
      */
     explicit AxialRectangularMap(int width, int height);
 
-    [[nodiscard]] int getWidth() const;
+    [[nodiscard]] constexpr int getWidth() const;
 
-    [[nodiscard]] int getHeight() const;
+    [[nodiscard]] constexpr int getHeight() const;
 
-    [[nodiscard]] std::pair<int, int> getMaxCoords() const;
+    [[nodiscard]] constexpr std::pair<int, int> getMaxCoords() const;
 
-    [[nodiscard]] std::pair<int, int> getStorageDims() const;
+    [[nodiscard]] constexpr std::pair<int, int> getStorageDims() const;
 
     /**
      * Gets the linear storage index for the given axial coordinates.
@@ -47,7 +48,7 @@ public:
      * @param q Column coordinate
      * @return Linear index into the storage array
      */
-    [[nodiscard]] inline int getStorageCoord(int r, int q) const {
+    [[nodiscard]] constexpr int getStorageCoord(int r, int q) const {
         // Storage includes padding: (storageDims.first + 2) x (storageDims.second + 2)
         // Offset by 1 to account for padding on left/top
         return (r + 1) * (storageDims.first + 2) + q + 1;
@@ -59,7 +60,7 @@ public:
      * @param q Column coordinate
      * @return Linear index into the validity mask array
      */
-    [[nodiscard]] inline int getValidityMaskCoord(int r, int q) const {
+    [[nodiscard]] constexpr int getValidityMaskCoord(int r, int q) const {
         // Offset of one point on each side
         return (r + 1) * (storageDims.first + 2) + q + 1;
     }
@@ -103,7 +104,7 @@ public:
      * @param q Column coordinate
      * @return true if the cell is valid, false otherwise
      */
-    [[nodiscard]] inline bool isValid(int r, int q) const {
+    [[nodiscard]] constexpr bool isValid(int r, int q) const {
         return validityMask[getValidityMaskCoord(r, q)];
     }
 
@@ -113,9 +114,11 @@ public:
 
     [[nodiscard]] std::vector<Point *> getNeighbors(const Point &point);
 
-    [[nodiscard]] const std::vector<std::pair<int, int>> &getNeighborOffsets() const;
+    [[nodiscard]] constexpr std::span<const std::pair<int, int>, 6> getNeighborOffsets() const {
+        return neighborOffsets;
+    }
 
-    [[nodiscard]] inline std::pair<int, int> convertOffsetToAxial(std::pair<int, int> offsetCoords) const {
+    [[nodiscard]] constexpr std::pair<int, int> convertOffsetToAxial(std::pair<int, int> offsetCoords) const {
         int i = offsetCoords.first;
         int j = offsetCoords.second;
         int q = j;
@@ -123,7 +126,7 @@ public:
         return {q, r};
     }
 
-    [[nodiscard]] inline std::pair<int, int> convertAxialToOffset(std::pair<int, int> coords) const {
+    [[nodiscard]] constexpr std::pair<int, int> convertAxialToOffset(std::pair<int, int> coords) const {
         int q = coords.first;
         int r = coords.second;
         int j = q;
@@ -181,13 +184,15 @@ private:
                     {1, 1}
             }};
 
-    const std::vector<std::pair<int, int>> neighborOffsets{
-            {-1, -1},
-            {-1, 0},
-            {0,  1},
-            {1,  1},
-            {0,  -1},
-            {1,  0}
+    constexpr static std::array<std::pair<int, int>, 6> neighborOffsets{
+            {
+                    {-1, -1},
+                    {-1, 0},
+                    {0,  1},
+                    {1,  1},
+                    {0,  -1},
+                    {1,  0}
+            }
     };
 
     void initializeStorageSize();

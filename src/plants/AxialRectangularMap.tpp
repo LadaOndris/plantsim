@@ -44,12 +44,12 @@ void AxialRectangularMap<CellData>::initializeStoragePoints() {
 }
 
 template<typename CellData>
-int AxialRectangularMap<CellData>::getWidth() const {
+constexpr int AxialRectangularMap<CellData>::getWidth() const {
     return width;
 }
 
 template<typename CellData>
-int AxialRectangularMap<CellData>::getHeight() const {
+constexpr int AxialRectangularMap<CellData>::getHeight() const {
     return height;
 }
 
@@ -110,16 +110,11 @@ std::vector<Point *> &AxialRectangularMap<CellData>::getPoints() {
 }
 
 template<typename CellData>
-std::pair<int, int> AxialRectangularMap<CellData>::getMaxCoords() const {
+constexpr std::pair<int, int> AxialRectangularMap<CellData>::getMaxCoords() const {
     return {maxCoordQ, maxCoordR};
 }
 
 template<typename CellData>
-const std::vector<std::pair<int, int>> &AxialRectangularMap<CellData>::getNeighborOffsets() const {
-    return neighborOffsets;
-}
-
-template<typename CellData>
-std::pair<int, int> AxialRectangularMap<CellData>::getStorageDims() const {
+constexpr std::pair<int, int> AxialRectangularMap<CellData>::getStorageDims() const {
     return storageDims;
 }
