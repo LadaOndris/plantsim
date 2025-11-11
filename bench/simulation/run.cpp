@@ -52,10 +52,11 @@ int main() {
     auto storageDims = map.getStorageDims();
 
     SimulatorOptions simOptions{};
+    const int simSteps = 2000;
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < 2000; i++) {
+    for (int i = 0; i < simSteps; i++) {
         simulator.step(simOptions);
     }
 
@@ -63,6 +64,8 @@ int main() {
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
+
+    std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
 
     printMapCorner(map, 20);
 
