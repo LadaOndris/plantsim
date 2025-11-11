@@ -79,10 +79,12 @@ void Simulator::replicateCells() {
 #pragma omp simd collapse(2)
         for (int r = 0; r < storageDims.second; r++) {
             for (int q = 0; q < storageDims.first; q++) {
-                int pointType = pointTypes[map.getStorageCoord(r, q)];
-                auto neighborType = &pointTypes[map.getStorageCoord(r + offset.second, q + offset.first)];
+                int neighborCoord = map.getStorageCoord(r + offset.second, q + offset.first);
+                int storageCoord = map.getStorageCoord(r, q);
 
-                int *pointResources = &resources[map.getStorageCoord(r, q)];
+                int pointType = pointTypes[storageCoord];
+                auto neighborType = &pointTypes[neighborCoord];
+                int *pointResources = &resources[storageCoord];
 
                 int canReplicate = *pointResources > 0 &&
                                    pointType == Point::Type::Cell && *neighborType == Point::Type::Air &&

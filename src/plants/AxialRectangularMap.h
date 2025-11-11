@@ -53,6 +53,18 @@ public:
         return pointTypes;
     }
 
+    [[nodiscard]] const std::vector<int> &getResources() const {
+        return resources;
+    }
+
+    [[nodiscard]] const std::vector<bool> &getValidityMask() const {
+        return validityMask;
+    }
+
+    [[nodiscard]] const std::vector<Point::Type> &getPointTypes() const {
+        return pointTypes;
+    }
+
     [[nodiscard]] Point *getPoint(int x, int y);
 
     [[nodiscard]] std::vector<Point *> &getPoints();
