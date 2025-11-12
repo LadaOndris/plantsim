@@ -59,7 +59,6 @@ void Simulator::transferResources() {
                                             range<1>(neighborOffsets.size()));
 
     q.submit([&](handler &h) {
-        // Accessors
         auto res = resBuf.get_access<access::mode::read>(h);
         auto type = typeBuf.get_access<access::mode::read>(h);
         auto deltaAcc = deltaBuf.get_access<access::mode::atomic>(h);
@@ -70,29 +69,27 @@ void Simulator::transferResources() {
             int qx = idx[1];
             int idxFlat = r * width + qx;
 
-            if (type[idxFlat] != CellState::Type::Cell) return;
+            // Check if current cell is valid
+            int selfValid = (type[idxFlat] == CellState::Type::Cell) & (res[idxFlat] > 0);
 
-            int selfRes = res[idxFlat];
-            if (selfRes <= 0) return;
-
-            for (int i = 0; i < offs.size(); ++i) {
+            // Loop over neighbors
+            for (size_t i = 0; i < offs.size(); ++i) {
                 int dq = offs[i].first;
                 int dr = offs[i].second;
                 int nr = r + dr;
                 int nq = qx + dq;
-
-                if (nr < 0 || nq < 0 || nr >= height || nq >= width)
-                    continue;
-
                 int nIdx = nr * width + nq;
 
-                if (type[nIdx] != CellState::Type::Cell)
-                    continue;
+                // Boundary check as mask (0 if invalid, 1 if valid)
+                int boundaryMask = (nr >= 0) & (nq >= 0) & (nr < height) & (nq < width);
 
-                // Each move transfers one resource (could adapt to your logic)
-                int moveResource = 1;
+                // Neighbor type mask
+                int neighborMask = (type[nIdx] == CellState::Type::Cell);
 
-                // Atomically record deltas
+                // Combine all conditions using bitwise AND
+                int moveResource = selfValid & boundaryMask & neighborMask;
+
+                // Atomic updates using moveResource (0 or 1)
                 deltaAcc[idxFlat].fetch_sub(moveResource);
                 deltaAcc[nIdx].fetch_add(moveResource);
             }
