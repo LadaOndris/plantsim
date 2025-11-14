@@ -31,82 +31,103 @@ void Simulator::transferResources() {
 
     auto &map = worldState.getMap();
     auto neighborOffsets = map.getNeighborOffsets();
-    auto [width, height] = map.getStorageDims();
+    std::pair<int, int> storageDims = map.getStorageDims();
+    const int width = storageDims.first;
+    const int height = storageDims.second;
+    const int numNeighbors = neighborOffsets.size();
 
-    // Extract resource and type data from map into simple arrays
-    std::vector<int> resources(width * height);
-    std::vector<int> types(width * height);
+    auto &cells = map.getCells(); // assume vector<CellState>
+    const size_t totalCells = width * height;
 
-    for (int r = 0; r < height; ++r) {
-        for (int q = 0; q < width; ++q) {
-            const auto &cell = map.getCellAt(r, q);
-            resources[r * width + q] = cell.resources;
-            types[r * width + q] = static_cast<int>(cell.type);
-        }
-    }
+    // Host data
+    std::vector<int> resources(totalCells);
+    for (size_t i = 0; i < totalCells; ++i)
+        resources[i] = cells[i].resources;
+    try {
+        // --- SYCL setup ---
+        static queue q{gpu_selector_v};
 
-    // Prepare a delta buffer for moved resources
-    std::vector<int> delta(width * height, 0);
+        auto *neighborOffsetsUSM = malloc_shared<std::pair<int,int>>(numNeighbors, q);
+        int *resUSM = malloc_shared<int>(totalCells, q);
+        int *deltaUSM = malloc_shared<int>(height * width * numNeighbors, q);
 
-    // Set up SYCL queue (use default device, could be GPU)
-    queue q{default_selector_v};
+        for (size_t i = 0; i < numNeighbors; ++i)
+            neighborOffsetsUSM[i] = neighborOffsets[i];
+    
+        for (size_t i = 0; i < totalCells; ++i)
+            resUSM[i] = cells[i].resources;
 
-    // Create SYCL buffers on device
-    buffer<int, 1> resBuf(resources.data(), range<1>(resources.size()));
-    buffer<int, 1> typeBuf(types.data(), range<1>(types.size()));
-    buffer<int, 1> deltaBuf(delta.data(), range<1>(delta.size()));
-    buffer<std::pair<int,int>, 1> offsetBuf(neighborOffsets.data(),
-                                            range<1>(neighborOffsets.size()));
+        // --- Pass 1: compute outgoing deltas ---
+        q.parallel_for(range<2>(height, width), [=](id<2> idx) {
+            const int r = idx[0];
+            const int q_ = idx[1];
+            const int flatIdx = r * width + q_;
 
-    q.submit([&](handler &h) {
-        auto res = resBuf.get_access<access::mode::read>(h);
-        auto type = typeBuf.get_access<access::mode::read>(h);
-        auto deltaAcc = deltaBuf.get_access<access::mode::atomic>(h);
-        auto offs = offsetBuf.get_access<access::mode::read>(h);
+            // zero out all neighbor deltas
+            for (int n = 0; n < numNeighbors; ++n)
+                deltaUSM[flatIdx * numNeighbors + n] = 0;
 
-        h.parallel_for(range<2>(height, width), [=](id<2> idx) {
-            int r = idx[0];
-            int qx = idx[1];
-            int idxFlat = r * width + qx;
+            // determine whether the cell can send
+            int selfRes = resUSM[flatIdx];
+            int canSend = selfRes > 0; // 1 if cell has resource, 0 otherwise
 
-            // Check if current cell is valid
-            int selfValid = (type[idxFlat] == CellState::Type::Cell) & (res[idxFlat] > 0);
+            // choose neighbor deterministically
+            int chosenNeighbor = (r + q_) % numNeighbors;
+            auto off = neighborOffsetsUSM[chosenNeighbor];
+            int nr = r + off.second;
+            int nq = q_ + off.first;
 
-            // Loop over neighbors
-            for (size_t i = 0; i < offs.size(); ++i) {
-                int dq = offs[i].first;
-                int dr = offs[i].second;
-                int nr = r + dr;
-                int nq = qx + dq;
-                int nIdx = nr * width + nq;
+            // compute validity mask
+            int valid = (nr >= 0) & (nr < height) & (nq >= 0) & (nq < width);
 
-                // Boundary check as mask (0 if invalid, 1 if valid)
-                int boundaryMask = (nr >= 0) & (nq >= 0) & (nr < height) & (nq < width);
+            // combine masks
+            int mask = canSend & valid;
 
-                // Neighbor type mask
-                int neighborMask = (type[nIdx] == CellState::Type::Cell);
+            // write the delta using the mask
+            deltaUSM[flatIdx * numNeighbors + chosenNeighbor] = mask;
+        }).wait();
 
-                // Combine all conditions using bitwise AND
-                int moveResource = selfValid & boundaryMask & neighborMask;
+        // --- Pass 2: accumulate deltas into resources ---
+        q.parallel_for(range<2>(height, width), [=](id<2> idx) {
+            const int r = idx[0];
+            const int q_ = idx[1];
+            const int flatIdx = r * width + q_;
 
-                // Atomic updates using moveResource (0 or 1)
-                deltaAcc[idxFlat].fetch_sub(moveResource);
-                deltaAcc[nIdx].fetch_add(moveResource);
+            int gain = 0;
+            int loss = 0;
+
+            // Accumulate incoming deltas branchlessly
+            for (int n = 0; n < numNeighbors; ++n) {
+                auto off = neighborOffsetsUSM[n];
+                int sr = r - off.second;
+                int sq = q_ - off.first;
+
+                // Compute mask: 1 if in bounds, 0 otherwise
+                int valid = (sr >= 0) & (sr < height) & (sq >= 0) & (sq < width);
+                int srcIdx = (sr * width + sq) * numNeighbors + n;
+
+                // Use mask to add only valid deltas
+                gain += deltaUSM[srcIdx] * valid;
             }
-        });
-    });
 
-    q.wait();
+            // Outgoing delta (sent to chosen neighbor)
+            for (int n = 0; n < numNeighbors; ++n)
+                loss += deltaUSM[flatIdx * numNeighbors + n];
 
-    // Retrieve delta results back to host
-    host_accessor deltaHost(deltaBuf, read_only);
+            resUSM[flatIdx] += gain - loss;
+        }).wait();
 
-    // Second sweep: apply delta to map
-    for (int r = 0; r < height; ++r) {
-        for (int qx = 0; qx < width; ++qx) {
-            int idxFlat = r * width + qx;
-            map.getCellAt(r, qx).resources += deltaHost[idxFlat];
-        }
+        // Copy results back to host
+        for (size_t i = 0; i < totalCells; ++i)
+            cells[i].resources = resUSM[i];
+
+        // Free USM memory
+        free(neighborOffsetsUSM, q);
+        free(resUSM, q);
+        free(deltaUSM, q);
+    } catch (const sycl::exception &e) {
+        std::cerr << "SYCL Exception: " << e.what() << "\n";
+        std::cerr << "Error code: " << e.code().value() << "\n";
     }
 }
 

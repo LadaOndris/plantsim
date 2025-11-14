@@ -9,8 +9,10 @@ cmake --build .
 
 For SYCL:
 
-```
-cmake -S ~/plantsim/ -B ~/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=ON   -DBUILD_MAIN=OF
+This shouldn't load any packages that it doesn't need.
+
+```bash
+cmake -S ~/plantsim/ -B ~/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=ON   -DBUILD_MAIN=OFF
 ```
 
 ```bash
@@ -32,3 +34,13 @@ Found platform: Intel(R) OpenCL
    Maximum work items dimesions 3
    Maximum work group size 8192
 ```
+
+
+## Setup
+
+### Configuring WSL2 for GPU workflows
+
+https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-1/configure-wsl-2-for-gpu-workflows.html
+
+Check gpu visibility with: `sycl-ls`
+
