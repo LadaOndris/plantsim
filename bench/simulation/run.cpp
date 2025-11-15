@@ -59,6 +59,7 @@ int main() {
     for (int i = 0; i < simSteps; i++) {
         simulator.step(simOptions);
     }
+    simulator.updateCurrentState();
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);

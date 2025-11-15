@@ -8,6 +8,8 @@
 
 #include "SimulatorOptions.h"
 #include "plants/WorldState.h"
+#include "simulation/GpuContext.h"
+#include <memory>
 
 class Simulator {
 public:
@@ -15,13 +17,19 @@ public:
 
     void step(const SimulatorOptions &options);
 
+    void updateCurrentState();
+
 private:
     void transferResources();
 
     void replicateCells();
 
     WorldState &worldState;
+    std::unique_ptr<ResourcesSimulator> resourcesSimulator{nullptr};
 };
+
+
+
 
 
 #endif //PLANTSIM_SIMULATOR_H
