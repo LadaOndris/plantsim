@@ -15,10 +15,13 @@ option(BUILD_BENCH "Build benchmarks" OFF)
 
 if(BUILD_MAIN)
     add_subdirectory(src)
-    add_subdirectory(test)
     file(COPY shaders/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 endif()
 
 if(BUILD_BENCH)
     add_subdirectory(bench)
+endif()
+
+if(BUILD_TEST)
+    add_subdirectory(test)
 endif()
