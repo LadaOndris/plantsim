@@ -131,7 +131,7 @@ namespace {
         glEnable(GL_MULTISAMPLE);
 
         while (!glfwWindowShouldClose(window)) {
-            SimulatorOptions simOptions{simulatorOptionsProvider.getSimulatorOptions()};
+            Options simOptions{simulatorOptionsProvider.getSimulatorOptions()};
             for (int i = 0; i < 100; i++) {
                 simulator.step(simOptions);
             }
@@ -236,7 +236,7 @@ namespace {
 
     std::unique_ptr<WorldState> initializeWorld() {
         std::vector<std::shared_ptr<Process>> processes{};
-        auto map = std::make_shared<AxialRectangularMap>(200, 200);
+        auto map = std::make_shared<AxialRectangularMap>(80, 80);
 
         auto worldState{std::make_unique<WorldState>(map, processes)};
         return worldState;

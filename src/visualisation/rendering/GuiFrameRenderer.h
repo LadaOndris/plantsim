@@ -19,7 +19,7 @@ public:
 
     RenderingOptions getRenderingOptions() const override;
 
-    SimulatorOptions getSimulatorOptions() const override;
+    Options getSimulatorOptions() const override;
 };
 
 

@@ -5,7 +5,7 @@
 #include <iomanip>
 
 #include "simulation/Simulator.h"
-#include "simulation/SimulatorOptions.h"
+#include "simulation/Options.h"
 #include "simulation/CellState.h"
 #include "plants/WorldState.h"
 #include "plants/AxialRectangularMap.h"
@@ -51,7 +51,7 @@ int main() {
     auto &map = worldState->getMap();
     auto storageDims = map.getStorageDims();
 
-    SimulatorOptions simOptions{};
+    Options simOptions{};
     const int simSteps = 2000;
 
     auto start = std::chrono::high_resolution_clock::now();

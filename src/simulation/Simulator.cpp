@@ -50,7 +50,7 @@ Simulator::Simulator(WorldState &worldState) : worldState{worldState} {
 }
 
 
-void Simulator::step(const SimulatorOptions &options) {
+void Simulator::step(const Options &options) {
     resourcesSimulator->step();
 }
 

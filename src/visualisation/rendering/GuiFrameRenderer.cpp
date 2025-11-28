@@ -18,6 +18,6 @@ RenderingOptions GuiFrameRenderer::getRenderingOptions() const {
     return RenderingOptions{};
 }
 
-SimulatorOptions GuiFrameRenderer::getSimulatorOptions() const {
-    return SimulatorOptions{};
+Options GuiFrameRenderer::getSimulatorOptions() const {
+    return Options{};
 }

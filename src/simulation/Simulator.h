@@ -1,21 +1,16 @@
-//
-// Created by lada on 4/13/24.
-//
 
-#ifndef PLANTSIM_SIMULATOR_H
-#define PLANTSIM_SIMULATOR_H
+#pragma once
 
-
-#include "SimulatorOptions.h"
-#include "plants/WorldState.h"
+#include "simulation/Options.h"
 #include "simulation/GpuContext.h"
+#include "plants/WorldState.h"
 #include <memory>
 
 class Simulator {
 public:
     explicit Simulator(WorldState &worldState);
 
-    void step(const SimulatorOptions &options);
+    void step(const Options &options);
 
     void updateCurrentState();
 
@@ -27,9 +22,3 @@ private:
     WorldState &worldState;
     std::unique_ptr<ResourcesSimulator> resourcesSimulator{nullptr};
 };
-
-
-
-
-
-#endif //PLANTSIM_SIMULATOR_H
