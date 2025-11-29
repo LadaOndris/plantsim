@@ -92,11 +92,10 @@ int main(int argc, char* argv[]) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
-
-    std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
-
     std::cout << MapPrinter::printHexMapResources(topology, finalState) << std::endl;
+
+    std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
+    std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
 
     uint64_t checksum = computeChecksum(finalState.resources, topology.getStorageDimension());
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;
