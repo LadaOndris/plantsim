@@ -25,6 +25,7 @@ set(TEST_SOURCES
     #${CMAKE_CURRENT_SOURCE_DIR}/simulation/GpuContextTests.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/simulation/ResourceTransferTests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/GridTopologyTests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/MapPrinterTests.cpp
 )
 
 set(BINARY_NAME plantsim_tests)

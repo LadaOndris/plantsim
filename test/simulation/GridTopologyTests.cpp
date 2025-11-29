@@ -1,4 +1,3 @@
-
 #include "simulation/GridTopology.h"
 
 #include <gtest/gtest.h>
@@ -7,11 +6,11 @@ TEST(GridTopologyTest, TotalCellsCalculation) {
     GridTopology topology(7, 7);
     EXPECT_EQ(topology.totalCells(), 49);
 }
+
 struct StorageTestParam {
     int cols;
     int rows;
-    int expStorageCols;
-    int expStorageRows;
+    StorageCoord expected;
 };
 
 class GridTopologyStorageTest : public ::testing::TestWithParam<StorageTestParam> {};
@@ -19,24 +18,24 @@ class GridTopologyStorageTest : public ::testing::TestWithParam<StorageTestParam
 TEST_P(GridTopologyStorageTest, StorageDimension) {
     const auto p = GetParam();
     GridTopology topology(p.cols, p.rows);
-    EXPECT_EQ(topology.getStorageDimension(), std::make_pair(p.expStorageCols, p.expStorageRows));
+    EXPECT_EQ(topology.getStorageDimension(), p.expected);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     StorageDimensionCases,
     GridTopologyStorageTest,
     ::testing::Values(
-        StorageTestParam{7, 7, 10, 7},
-        StorageTestParam{1, 3, 2, 3},
-        StorageTestParam{7, 3, 8, 3},
-        StorageTestParam{1, 1, 1, 1},
-        StorageTestParam{4, 4, 5, 4}
+        StorageTestParam{7, 7, {10, 7}},
+        StorageTestParam{1, 3, {2, 3}},
+        StorageTestParam{7, 3, {8, 3}},
+        StorageTestParam{1, 1, {1, 1}},
+        StorageTestParam{4, 4, {5, 4}}
     )
 );
 
 struct AxialToStorageCoordTestParam {
-    std::pair<int, int> axial;
-    std::pair<int, int> storage;
+    AxialCoord axial;
+    StorageCoord storage;
     int width;
     int height;
 };
@@ -88,10 +87,9 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(GridTopologyAxialToStorageCoordTest, ToIndex) {
     const auto p = GetParam();
     GridTopology topology(p.width, p.height);
-    auto [q, r] = p.axial;
-    auto [x, y] = p.storage;
-    int expectedIndex = y * topology.getStorageDimension().first + x;
-    EXPECT_EQ(topology.toIndex(r, q), expectedIndex);
+    StorageCoord dim = topology.getStorageDimension();
+    int expectedIndex = p.storage.y * dim.x + p.storage.x;
+    EXPECT_EQ(topology.toIndex(p.axial), expectedIndex);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -105,5 +103,56 @@ INSTANTIATE_TEST_SUITE_P(
         AxialToStorageCoordTestParam{{0, 0}, {0, 0}, 1, 1},
         AxialToStorageCoordTestParam{{-1, 2}, {0, 2}, 1, 3},
         AxialToStorageCoordTestParam{{0, 1}, {1, 1}, 1, 3}
+    )
+);
+
+struct IsValidTestParam {
+    AxialCoord axial;
+    int width;
+    int height;
+    bool expected;
+};
+
+class GridTopologyIsValidTest : public ::testing::TestWithParam<IsValidTestParam> {};
+
+TEST_P(GridTopologyIsValidTest, IsValid) {
+    const auto p = GetParam();
+    GridTopology topology(p.width, p.height);
+    EXPECT_EQ(topology.isValid(p.axial), p.expected);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    IsValidCases,
+    GridTopologyIsValidTest,
+    ::testing::Values(
+        // 3x3 grid - valid cells
+        IsValidTestParam{{0, 0}, 3, 3, true},   // row 0: q in [0, 2]
+        IsValidTestParam{{1, 0}, 3, 3, true},
+        IsValidTestParam{{2, 0}, 3, 3, true},
+        IsValidTestParam{{0, 1}, 3, 3, true},   // row 1 (odd): q in [0, 2]
+        IsValidTestParam{{1, 1}, 3, 3, true},
+        IsValidTestParam{{2, 1}, 3, 3, true},
+        IsValidTestParam{{-1, 2}, 3, 3, true},  // row 2: q in [-1, 1]
+        IsValidTestParam{{0, 2}, 3, 3, true},
+        IsValidTestParam{{1, 2}, 3, 3, true},
+        
+        // 3x3 grid - invalid cells (storage padding)
+        IsValidTestParam{{-1, 0}, 3, 3, false}, // left of row 0
+        IsValidTestParam{{-1, 1}, 3, 3, false}, // left of row 1
+        IsValidTestParam{{2, 2}, 3, 3, false},  // right of row 2
+
+        // 3x3 grid - invalid cells (out of storage col bounds)
+        IsValidTestParam{{3, 0}, 3, 3, false},  // right of row 0
+        IsValidTestParam{{3, 1}, 3, 3, false},  // right of row 1
+        IsValidTestParam{{-2, 2}, 3, 3, false}, // left of row 2
+        
+        // 3x3 grid - invalid cells (out of storage row bounds)
+        IsValidTestParam{{0, -1}, 3, 3, false},
+        IsValidTestParam{{0, 3}, 3, 3, false},
+        
+        // 1x1 grid
+        IsValidTestParam{{0, 0}, 1, 1, true},
+        IsValidTestParam{{1, 0}, 1, 1, false},
+        IsValidTestParam{{-1, 0}, 1, 1, false}
     )
 );
