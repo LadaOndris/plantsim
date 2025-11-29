@@ -5,7 +5,7 @@
 #include "simulation/Options.h"
 #include "simulation/ISimulator.h"
 #include "simulation/CellState.h"
-#include <iostream>
+#include <omp.h>
 
 /**
  * @brief CPU-based simulator implementation.
@@ -32,41 +32,46 @@ private:
     GridTopology topology{state.width, state.height};
 
     void transferResources() {
-        const int width = state.width;
-        const int height = state.height;
-        const auto& neighborOffsets = topology.neighborOffsets;
-        const StorageCoord &storageDims = topology.getStorageDimension();
+        const StorageCoord storageDims = topology.getStorageDimension();
+        const int storageWidth = storageDims.x;
+        const int storageHeight = storageDims.y;
+        const int totalCells = storageWidth * storageHeight;
 
         backBuffer.resources = state.resources;
 
-        for (int y = 0; y < storageDims.y; y++) {
-            for (int x = 0; x < storageDims.x; x++) {
-                const StorageCoord storage{.x=x, .y=y};
-                const int pointIdx = storage.asFlat(storageDims);
+        const int* __restrict srcResources = state.resources.data();
+        const int* __restrict srcCellTypes = state.cellTypes.data();
+        int* __restrict dstResources = backBuffer.resources.data();
 
-                for (const auto& offset : neighborOffsets) {
-                    // Here, we can treat the AxialCoord offset as StorageCoord.
-                    const StorageCoord neighbor = storage + StorageCoord{.x=offset.q, .y=offset.r};
+        for (const auto& offset : topology.neighborOffsets) {
+            const int dq = offset.q;
+            const int dr = offset.r;
 
-                    if (!topology.isValid(neighbor)) {
-                        continue;
-                    }
+            for (int y = 0; y < storageDims.y; y++) {
+                #pragma omp simd
+                for (int x = 0; x < storageDims.x; x++) {
+                    const StorageCoord storage{.x=x, .y=y};
+                    const int idx = storage.asFlat(storageDims);
 
-                    const int neighborIdx = neighbor.asFlat(storageDims);
+                    const int nx = x + dq;
+                    const int ny = y + dr;
 
-                    // Transfer resource if:
-                    // - source cell has resources
-                    // - source cell is of type Cell
-                    // - neighbor cell is of type Cell
-                    bool canTransfer = state.resources[pointIdx] > 0 &&
-                                       state.cellTypes[pointIdx] == static_cast<int>(CellState::Type::Cell) &&
-                                       state.cellTypes[neighborIdx] == static_cast<int>(CellState::Type::Cell);
-                    
-                    if (canTransfer) {
-                        backBuffer.resources[pointIdx] -= 1;
-                        backBuffer.resources[neighborIdx] += 1;
-                        break;
-                    }
+                    // Compute validity masks
+                    const int valid = topology.isValid(StorageCoord{.x=x, .y=y}) ? 1 : 0;
+                    const int neighborValid = topology.isValid(StorageCoord{.x=nx, .y=ny}) ? 1 : 0;
+
+                    // Safe index: use 0 when invalid to avoid out-of-bounds access
+                    const int safeNeighborIdx = neighborValid * (ny * storageWidth + nx);
+
+                    // Transfer conditions as mask (0 or 1)
+                    const int hasResources = (srcResources[idx] > 0) ? 1 : 0;
+                    const int sourceIsCell = (srcCellTypes[idx] == static_cast<int>(CellState::Type::Cell)) ? 1 : 0;
+                    const int neighborIsCell = (srcCellTypes[safeNeighborIdx] == static_cast<int>(CellState::Type::Cell)) ? 1 : 0;
+
+                    const int canTransfer = valid * neighborValid * hasResources * sourceIsCell * neighborIsCell;
+
+                    dstResources[idx] -= canTransfer;
+                    dstResources[safeNeighborIdx] += canTransfer;
                 }
             }
         }

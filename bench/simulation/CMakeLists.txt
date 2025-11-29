@@ -2,6 +2,23 @@ cmake_minimum_required(VERSION 3.27)
 
 find_package(IntelSYCL REQUIRED)
 
+# Manual OpenMP configuration for Intel SYCL compiler
+# Uses Intel's libiomp5 implementation
+set(OpenMP_CXX_FLAGS "-qopenmp")
+set(OpenMP_CXX_LIB_NAMES "libiomp5")
+# Find libiomp5 in Intel oneAPI installation
+find_library(OpenMP_libiomp5_LIBRARY
+    NAMES iomp5
+    HINTS ENV INTEL_ONEAPI_ROOT
+    PATH_SUFFIXES compiler/latest/lib
+                  compiler/latest/linux/compiler/lib/intel64_lin
+                  lib
+)
+
+if(NOT OpenMP_libiomp5_LIBRARY)
+    message(WARNING "libiomp5 not found, OpenMP SIMD may not work. Set OpenMP_libiomp5_LIBRARY manually.")
+endif()
+
 set(BENCH_SIMULATION_BINARY bench_simulation)
 
 file(GLOB_RECURSE SIMULATION_SOURCES
@@ -11,7 +28,7 @@ file(GLOB_RECURSE SIMULATION_SOURCES
 
 add_executable(${BENCH_SIMULATION_BINARY} run.cpp ${SIMULATION_SOURCES})
 
-target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE sycl)
+target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE sycl ${OpenMP_libiomp5_LIBRARY})
 
 target_include_directories(${BENCH_SIMULATION_BINARY} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src
@@ -25,4 +42,4 @@ set_target_properties(${BENCH_SIMULATION_BINARY} PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
-target_compile_options(${BENCH_SIMULATION_BINARY} PRIVATE -fsycl)
+target_compile_options(${BENCH_SIMULATION_BINARY} PRIVATE -fsycl ${OpenMP_CXX_FLAGS})
