@@ -12,7 +12,7 @@ For SYCL:
 This shouldn't load any packages that it doesn't need.
 
 ```bash
-cmake -S ~/plantsim/ -B ~/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=ON   -DBUILD_MAIN=OFF
+cmake -S ~/plantsim/ -B ~/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=OFF   -DBUILD_MAIN=OFF -DBUILD_TEST=ON
 ```
 
 ```bash
@@ -44,3 +44,9 @@ https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/202
 
 Check gpu visibility with: `sycl-ls`
 
+
+## Testes
+
+```bash
+cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=OFF   -DBUILD_MAIN=OFF -DBUILD_TEST=ON
+```

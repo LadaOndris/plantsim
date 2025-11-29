@@ -154,6 +154,11 @@ private:
      */
     std::vector<uint8_t> validityMask{};
 
+    // TODO: This odd vs even distinction shouldn't be necessary.
+    // The current implementation uses Offset coordinates. If Axial coordinates were used
+    // the neighbor offsets would be the same for all cells.
+    // The Offset coordinates were used here because it leads to no waste in storage.
+    // That however complicates the processing. 
     constexpr static std::array<std::array<int, 2>, 6> axialDirectionVectorsOdd{
             {
                     {1, 0},
@@ -175,6 +180,8 @@ private:
                     {1, 1}
             }};
 
+    // TODO: is this used? This was probably intended for axial coordinates, which are
+    // not used in this class in the end.
     constexpr static std::array<std::pair<int, int>, 6> neighborOffsets{
             {
                     {-1, -1},
