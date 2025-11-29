@@ -23,20 +23,15 @@ public:
     /// Cell types for each cell (size = width * height), values from CellState::Type
     std::vector<int> cellTypes;
     
-    /// Neighbor offsets defining the neighborhood relationship (e.g., for hex grid)
-    std::vector<std::pair<int, int>> neighborOffsets;
-
     State() = default;
 
     State(int width, int height, 
           std::vector<int> resources, 
-          std::vector<int> cellTypes,
-          std::vector<std::pair<int, int>> neighborOffsets)
+          std::vector<int> cellTypes)
         : width(width)
         , height(height)
         , resources(std::move(resources))
-        , cellTypes(std::move(cellTypes))
-        , neighborOffsets(std::move(neighborOffsets)) 
+        , cellTypes(std::move(cellTypes)) 
     {}
 
     /**
@@ -44,19 +39,5 @@ public:
      */
     [[nodiscard]] size_t totalCells() const {
         return static_cast<size_t>(width) * height;
-    }
-
-    /**
-     * @brief Converts 2D coordinates to linear index.
-     */
-    [[nodiscard]] int toIndex(int r, int q) const {
-        return r * width + q;
-    }
-
-    /**
-     * @brief Checks if coordinates are within bounds.
-     */
-    [[nodiscard]] bool isValid(int r, int q) const {
-        return r >= 0 && r < height && q >= 0 && q < width;
     }
 };

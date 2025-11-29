@@ -1,8 +1,10 @@
+#include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/Options.h"
 #include "simulation/ISimulator.h"
 #include "simulation/cpu/CpuSimulator.h"
 #include "simulation/sycl/SyclSimulator.h"
+#include "simulation/MapPrinter.h"
 
 #include <gtest/gtest.h>
 #include <memory>
@@ -36,27 +38,30 @@ std::ostream& operator<<(std::ostream& os, const ResourceTransferParams& param) 
 
 class ResourceTransferFixture : public ::testing::TestWithParam<ResourceTransferParams> {
 protected:
-    State createTestState() {
-        const int width = 10;
-        const int height = 10;
+    State createTestState(const GridTopology &topology) {
+        const int width = topology.width;
+        const int height = topology.height;
         const size_t totalCells = width * height;
 
         std::vector<int> resources(totalCells, 0);
         std::vector<int> cellTypes(totalCells, 0); // Air
-        std::vector<std::pair<int, int>> neighborOffsets = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
         // Set up source cell with resources
-        const int r = 1;
-        const int q = 1;
-        const int sourceIdx = r * width + q;
+        const AxialCoord cell{.q=1, .r=1};
+        const int sourceIdx = cell.asFlat(topology.getDimension());
         resources[sourceIdx] = 1;
-        cellTypes[sourceIdx] = 1; // Cell
+        cellTypes[sourceIdx] = 1; // Cell type
 
         // Set up neighboring cell (right neighbor)
-        const int neighborIdx = r * width + (q + 1);
-        cellTypes[neighborIdx] = 1; // Cell
+        const AxialCoord neighbor{.q=2, .r=1};
+        const int neighborIdx = neighbor.asFlat(topology.getDimension());
+        cellTypes[neighborIdx] = 1; // Cell type
 
-        return State(width, height, resources, cellTypes, neighborOffsets);
+        // State should contain the storage data.
+        auto storedResources = store(resources, width, height, 0);
+        auto storedCellTypes = store(cellTypes, width, height, -1);
+
+        return State(width, height, storedResources, storedCellTypes);
     }
 };
 
@@ -66,12 +71,19 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     };
 
     ResourceTransferParams param = GetParam();
-    State initialState = createTestState();
+    GridTopology topology(5, 5);
+    State initialState = createTestState(topology);
+
+    std::cout << MapPrinter::printHexMapCellTypes(topology, initialState) << std::endl;
+    std::cout << MapPrinter::printHexMapResources(topology, initialState) << std::endl;
 
     auto simulator = param.createSimulator(initialState);
 
     simulator->step(options);
     const State &finalState = simulator->getState();
+
+    std::cout << MapPrinter::printHexMapCellTypes(topology, finalState) << std::endl;
+    std::cout << MapPrinter::printHexMapResources(topology, finalState) << std::endl;
 
     // Verify resource conservation
     int initialTotal = 0;
@@ -83,8 +95,12 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     ASSERT_EQ(initialTotal, finalTotal) << "Resources should be conserved";
 
     // Check that the source cell has transferred its resource to the neighbor
-    const int sourceIdx = 1 * initialState.width + 1;
-    const int neighborIdx = 1 * initialState.width + 2;
+    const AxialCoord cell {.q=1, .r=1};
+    const AxialCoord neighbor{.q=2, .r=1};
+
+    const int sourceIdx = topology.axialToStorageCoord(cell).asFlat(topology.getStorageDimension());
+    const int neighborIdx = topology.axialToStorageCoord(neighbor).asFlat(topology.getStorageDimension());
+
     ASSERT_EQ(finalState.resources[neighborIdx], 1);
     ASSERT_EQ(finalState.resources[sourceIdx], 0);
 }

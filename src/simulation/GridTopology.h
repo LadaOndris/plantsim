@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstddef>
+#include <vector>
 
 enum class NeighborOffset {
     Right,
@@ -16,9 +17,33 @@ enum class NeighborOffset {
 struct AxialCoord { 
     int q; 
     int r; 
+
+    constexpr int asFlat(const AxialCoord& dim) const {
+        return r * dim.q + q;
+    }
     
     constexpr bool operator==(const AxialCoord& other) const {
         return q == other.q && r == other.r;
+    }
+
+    constexpr AxialCoord operator+(const AxialCoord& other) const noexcept {
+        return AxialCoord{q + other.q, r + other.r};
+    }
+
+    constexpr AxialCoord& operator+=(const AxialCoord& other) noexcept {
+        q += other.q;
+        r += other.r;
+        return *this;
+    }
+
+    constexpr AxialCoord operator-(const AxialCoord& other) const noexcept {
+        return AxialCoord{q - other.q, r - other.r};
+    }
+
+    constexpr AxialCoord& operator-=(const AxialCoord& other) noexcept {
+        q -= other.q;
+        r -= other.r;
+        return *this;
     }
 };
 
@@ -26,10 +51,24 @@ struct OffsetCoord { int col; int row; };
 
 struct StorageCoord { 
     int x; 
-    int y; 
+    int y;
+
+    constexpr int asFlat(const StorageCoord& dim) const {
+        return y * dim.x + x;
+    }
     
     constexpr bool operator==(const StorageCoord& other) const {
         return x == other.x && y == other.y;
+    }
+
+    constexpr StorageCoord operator+(const StorageCoord& other) const noexcept {
+        return StorageCoord{x + other.x, y + other.y};
+    }
+
+    constexpr StorageCoord& operator+=(const StorageCoord& other) noexcept {
+        x += other.x;
+        y += other.y;
+        return *this;
     }
 };
 
@@ -61,6 +100,10 @@ public:
 
     [[nodiscard]] constexpr size_t totalCells() const {
         return static_cast<size_t>(width) * height;
+    }
+
+    [[nodiscard]] constexpr AxialCoord getDimension() const {
+        return AxialCoord{width, height};
     }
 
     /**
@@ -156,4 +199,52 @@ public:
         
         return axial.q >= minQ && axial.q <= maxQ;
     }
+
+    [[nodiscard]] constexpr bool isValid(StorageCoord storage) const {
+        // Quick bounds check against underlying storage dimensions
+        StorageCoord dim = getStorageDimension();
+        if (storage.x < 0 || storage.x >= dim.x || storage.y < 0 || storage.y >= dim.y) {
+            return false;
+        }
+
+        int offset = (height - 1) / 2;
+        int parity = storage.y & 1;
+        int minStorageX = offset - ((storage.y - parity) / 2);
+        int maxStorageX = minStorageX + width - 1;
+
+        return storage.x >= minStorageX && storage.x <= maxStorageX;
+    }
 };
+
+
+inline OffsetCoord axialToOddr(const AxialCoord& hex) {
+    int parity = hex.r & 1;
+    int col = hex.q + (hex.r - parity) / 2;
+    int row = hex.r;
+    return OffsetCoord{col, row};
+}
+
+inline AxialCoord oddrToAxial(const OffsetCoord& hex) {
+    int parity = hex.row & 1;
+    int q = hex.col - (hex.row - parity) / 2;
+    int r = hex.row;
+    return AxialCoord{q, r};
+}
+
+inline std::vector<int> store(std::vector<int> data, int width, int height, int defaultFillValue = -1) {
+    std::vector<int> storage;
+    GridTopology topology(width, height);
+    StorageCoord dim = topology.getStorageDimension();
+    storage.resize(dim.x * dim.y, defaultFillValue);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int value = data[y * width + x];
+            AxialCoord axial = oddrToAxial({x, y});
+            StorageCoord storageCoord = topology.axialToStorageCoord(axial);
+            storage[storageCoord.y * dim.x + storageCoord.x] = value;
+        }
+    }
+
+    return storage;
+}

@@ -3,38 +3,6 @@
 #include "simulation/GridTopology.h"
 #include <gtest/gtest.h>
 
-OffsetCoord axialToOddr(const AxialCoord& hex) {
-    int parity = hex.r & 1;
-    int col = hex.q + (hex.r - parity) / 2;
-    int row = hex.r;
-    return OffsetCoord{col, row};
-}
-
-AxialCoord oddrToAxial(const OffsetCoord& hex) {
-    int parity = hex.row & 1;
-    int q = hex.col - (hex.row - parity) / 2;
-    int r = hex.row;
-    return AxialCoord{q, r};
-}
-
-std::vector<int> store(std::vector<int> data, int width, int height, int defaultFillValue = -1) {
-    std::vector<int> storage;
-    GridTopology topology(width, height);
-    StorageCoord dim = topology.getStorageDimension();
-    storage.resize(dim.x * dim.y, defaultFillValue);
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int value = data[y * width + x];
-            AxialCoord axial = oddrToAxial({x, y});
-            StorageCoord storageCoord = topology.axialToStorageCoord(axial);
-            storage[storageCoord.y * dim.x + storageCoord.x] = value;
-        }
-    }
-
-    return storage;
-}
-
 TEST(MapPrinterTest, PrintHexMapResources) {
     const int width = 5;
     const int height = 4;
