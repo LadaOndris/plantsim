@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <cstdlib>
 
 #include "simulation/cpu/CpuSimulator.h"
 #include "simulation/Options.h"
@@ -47,15 +48,39 @@ State createInitialState(const GridTopology &topology) {
     return State(width, height, storedResources, storedCellTypes);
 }
 
-int main() {
-    GridTopology topology{20, 20};
+int main(int argc, char* argv[]) {
+    int simSteps = 1;
+    int gridSize = 20;
+
+    if (argc > 1) {
+        simSteps = std::atoi(argv[1]);
+        if (simSteps <= 0) {
+            std::cerr << "Usage: " << argv[0] << " [steps] [gridSize]" << std::endl;
+            return 1;
+        }
+    }
+    if (argc > 2) {
+        gridSize = std::atoi(argv[2]);
+        if (gridSize <= 0) {
+            std::cerr << "Usage: " << argv[0] << " [steps] [gridSize]" << std::endl;
+            return 1;
+        }
+    }
+
+    std::cout << "=== Simulation Benchmark ===" << std::endl;
+    std::cout << "Steps: " << simSteps << std::endl;
+    std::cout << "Grid size: " << gridSize << "x" << gridSize << std::endl;
+    std::cout << std::endl;
+
+    GridTopology topology{gridSize, gridSize};
     State initialState = createInitialState(topology);
     std::cout << MapPrinter::printHexMapResources(topology, initialState) << std::endl;
 
     CpuSimulator simulator{std::move(initialState)};
 
-    Options simOptions{};
-    const int simSteps = 1;
+    Options simOptions{
+        .enableResourceTransfer = true
+    };
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -72,7 +97,6 @@ int main() {
     std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
 
     std::cout << MapPrinter::printHexMapResources(topology, finalState) << std::endl;
-    std::cout << MapPrinter::printHexMapCellTypes(topology, finalState) << std::endl;
 
     uint64_t checksum = computeChecksum(finalState.resources, topology.getStorageDimension());
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;
