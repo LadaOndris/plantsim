@@ -45,6 +45,18 @@ private:
     Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> validNeighborCounts;
     std::vector<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> neighborValidityCache;
 
+    // Pre-allocated buffers to avoid memory allocation in the simulation loop
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> receiverMask;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount;
+    std::vector<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> neighborReceiverMasks;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> availableOutflow;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalOutgoing;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> shiftedFlow;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowInDirection;
+    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> newResources;
+
     /**
      * @brief Precomputes topology information since grid structure is static.
      * 
@@ -63,6 +75,21 @@ private:
         validNeighborCounts.resize(storageHeight, storageWidth);
         validNeighborCounts.setZero();
         neighborValidityCache.resize(topology.neighborOffsets.size());
+
+        // Resize persistent buffers to avoid reallocation in step()
+        receiverMask.resize(storageHeight, storageWidth);
+        neighborsCanReceiveCount.resize(storageHeight, storageWidth);
+        neighborReceiverMasks.resize(topology.neighborOffsets.size());
+        for(auto& mat : neighborReceiverMasks) {
+            mat.resize(storageHeight, storageWidth);
+        }
+        availableOutflow.resize(storageHeight, storageWidth);
+        totalOutgoing.resize(storageHeight, storageWidth);
+        flowPerNeighbor.resize(storageHeight, storageWidth);
+        totalIncoming.resize(storageHeight, storageWidth);
+        shiftedFlow.resize(storageHeight, storageWidth);
+        flowInDirection.resize(storageHeight, storageWidth);
+        newResources.resize(storageHeight, storageWidth);
 
         // Build validity mask
         for (int y = 0; y < storageHeight; y++) {
@@ -146,64 +173,43 @@ private:
             cellTypes(state.cellTypes.data(), storageHeight, storageWidth);
 
         // receiver_mask = isValidCell & (cellTypes == CellType::Cell)
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> receiverMask =
-            (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<int>()).matrix();
+        receiverMask = (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<int>()).matrix();
 
         // neighborsCanReceiveCount = sum of shifted receiver masks
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount(storageHeight, storageWidth);
         neighborsCanReceiveCount.setZero();
-        
-        std::vector<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> neighborReceiverMask(topology.neighborOffsets.size());
         
         for (size_t dirIdx = 0; dirIdx < topology.neighborOffsets.size(); dirIdx++) {
             const auto& offset = topology.neighborOffsets[dirIdx];
             const int dq = offset.q;
             const int dr = offset.r;
 
-            neighborReceiverMask[dirIdx].resize(storageHeight, storageWidth);
-            neighborReceiverMask[dirIdx].setZero();
+            neighborReceiverMasks[dirIdx].setZero();
 
             // Shift receiver_mask by (-direction) to move the neighbor on top of current cell
-            shiftMatrix(receiverMask.data(), neighborReceiverMask[dirIdx].data(),
+            shiftMatrix(receiverMask.data(), neighborReceiverMasks[dirIdx].data(),
                         -dr, -dq, storageWidth, storageHeight);
 
-            neighborsCanReceiveCount += neighborReceiverMask[dirIdx];
+            neighborsCanReceiveCount += neighborReceiverMasks[dirIdx];
         }
 
         // outflowPerNeighbor = 1
-        constexpr int outflowPerNeighbor = 1;
+        // desiredOutflow = neighborsCanReceiveCount * 1
+        // We skip the explicit desiredOutflow matrix and use neighborsCanReceiveCount directly because outflowPerNeighbor == 1.
+
+        // sender_mask is identical to receiverMask in this logic
         
-        // desiredOutflow = neighborsCanReceiveCount * outflowPerNeighbor
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> desiredOutflow = 
-            neighborsCanReceiveCount * outflowPerNeighbor;
-
-        // sender_mask based on receiver_mask (hasResources check is implicit in final multiplication)
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> senderMask = receiverMask;
-
         // availableOutflow = resources * sender_mask
-        // If resources[i][j] == 0, result is 0 regardless of senderMask
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> availableOutflow =
-            (resources.array() * senderMask.array()).matrix();
+        availableOutflow = (resources.array() * receiverMask.array()).matrix();
 
         // totalOutgoing = min(availableOutflow, desiredOutflow)
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalOutgoing =
-            availableOutflow.cwiseMin(desiredOutflow);
+        totalOutgoing = availableOutflow.cwiseMin(neighborsCanReceiveCount);
 
-        // flowPerNeighbor = totalOutgoing / neighborsCanReceiveCount (where neighborsCanReceiveCount != 0, otherwise 0)
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor(storageHeight, storageWidth);
-        flowPerNeighbor =
-            (neighborsCanReceiveCount.array() != 0)
-                .select(
-                    totalOutgoing.array() / neighborsCanReceiveCount.array(),
-                    0
-                )
-                .matrix();
+        // flowPerNeighbor = totalOutgoing / neighborsCanReceiveCount
+        flowPerNeighbor = (neighborsCanReceiveCount.array() != 0)
+                .select(totalOutgoing.array() / neighborsCanReceiveCount.array(), 0);
 
         // totalIncoming = sum of shifted (flowPerNeighbor * neighbor_is_receiver)
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming(storageHeight, storageWidth);
         totalIncoming.setZero();
-        
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> shiftedFlow(storageHeight, storageWidth);
         
         for (size_t dirIdx = 0; dirIdx < topology.neighborOffsets.size(); dirIdx++) {
             const auto& offset = topology.neighborOffsets[dirIdx];
@@ -211,11 +217,9 @@ private:
             const int dr = offset.r;
 
             // flowInDirection = flowPerNeighbor * neighbor_is_receiver
-            Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowInDirection =
-                (flowPerNeighbor.array() * neighborReceiverMask[dirIdx].array()).matrix();
+            flowInDirection = (flowPerNeighbor.array() * neighborReceiverMasks[dirIdx].array()).matrix();
 
             // Shift flowInDirection by (+direction) to move the flow to the neighbor position
-            shiftedFlow.setZero();
             shiftMatrix(flowInDirection.data(), shiftedFlow.data(),
                         dr, dq, storageWidth, storageHeight);
 
@@ -223,8 +227,7 @@ private:
         }
 
         // newResources = resources - totalOutgoing + totalIncoming
-        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> newResources =
-            resources - totalOutgoing + totalIncoming;
+        newResources = resources - totalOutgoing + totalIncoming;
 
         // Copy result to state
         std::memcpy(state.resources.data(), newResources.data(), 

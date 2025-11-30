@@ -28,3 +28,8 @@ Eigen:
 Simulation completed in 4292 ms
 Steps/second: 465.983
 Map checksum: 0x71e893f46ffae581
+
+Eigen with pre-allocated buffers:
+Simulation completed in 1297 ms
+Steps/second: 1542.02
+Map checksum: 0x71e893f46ffae581
