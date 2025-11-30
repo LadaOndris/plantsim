@@ -138,39 +138,96 @@ private:
         const StorageCoord storageDims = topology.getStorageDimension();
         const int storageWidth = storageDims.x;
         const int storageHeight = storageDims.y;
-        const int totalCells = storageWidth * storageHeight;
 
-        const int* srcResources = state.resources.data();
-        const int* srcCellTypes = state.cellTypes.data();
-        
-        // isValidCell - precomputed as a matrix
-        // cellTypes - stored as a matrix from external data
+        // Map state vectors to Eigen matrices
+        Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
+            resources(state.resources.data(), storageHeight, storageWidth);
+        Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
+            cellTypes(state.cellTypes.data(), storageHeight, storageWidth);
 
         // receiver_mask = isValidCell & (cellTypes == CellType::Cell)
-        // neighborsCanReceiveCount = np.zeros_like(isValidCell, type=int)
-        // for i, direction in enumerate(neighbor_directions):
-        //    neighbor_receiver_mask[i] = shiftMatrix(receiver_mask, -direction) // Move the neighbor on top of current cell
-        //    neighborsCanReceiveCount += neighbor_receiver_mask[i]
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> receiverMask =
+            (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<int>()).matrix();
+
+        // neighborsCanReceiveCount = sum of shifted receiver masks
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount(storageHeight, storageWidth);
+        neighborsCanReceiveCount.setZero();
+        
+        std::vector<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> neighborReceiverMask(topology.neighborOffsets.size());
+        
+        for (size_t dirIdx = 0; dirIdx < topology.neighborOffsets.size(); dirIdx++) {
+            const auto& offset = topology.neighborOffsets[dirIdx];
+            const int dq = offset.q;
+            const int dr = offset.r;
+
+            neighborReceiverMask[dirIdx].resize(storageHeight, storageWidth);
+            neighborReceiverMask[dirIdx].setZero();
+
+            // Shift receiver_mask by (-direction) to move the neighbor on top of current cell
+            shiftMatrix(receiverMask.data(), neighborReceiverMask[dirIdx].data(),
+                        -dr, -dq, storageWidth, storageHeight);
+
+            neighborsCanReceiveCount += neighborReceiverMask[dirIdx];
+        }
 
         // outflowPerNeighbor = 1
+        constexpr int outflowPerNeighbor = 1;
+        
         // desiredOutflow = neighborsCanReceiveCount * outflowPerNeighbor
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> desiredOutflow = 
+            neighborsCanReceiveCount * outflowPerNeighbor;
 
-        // hasResources - computed here as resources > 0
-        // sender_mask = receiver_mask * hasResources
+        // sender_mask based on receiver_mask (hasResources check is implicit in final multiplication)
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> senderMask = receiverMask;
+
         // availableOutflow = resources * sender_mask
+        // If resources[i][j] == 0, result is 0 regardless of senderMask
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> availableOutflow =
+            (resources.array() * senderMask.array()).matrix();
+
         // totalOutgoing = min(availableOutflow, desiredOutflow)
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalOutgoing =
+            availableOutflow.cwiseMin(desiredOutflow);
 
         // flowPerNeighbor = totalOutgoing / neighborsCanReceiveCount (where neighborsCanReceiveCount != 0, otherwise 0)
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor(storageHeight, storageWidth);
+        flowPerNeighbor =
+            (neighborsCanReceiveCount.array() != 0)
+                .select(
+                    totalOutgoing.array() / neighborsCanReceiveCount.array(),
+                    0
+                )
+                .matrix();
 
-        // for i, direction in enumerate(neighbor_directions):
-        //    neighbor_is_receiver = neighbor_receiver_mask[i]
-        //    flowInDirection = flowPerNeighbor * neighbor_is_receiver
-        //    totalIncoming += shiftMatrix(flowInDirection, direction) // Move the flow to the neighbor position
+        // totalIncoming = sum of shifted (flowPerNeighbor * neighbor_is_receiver)
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming(storageHeight, storageWidth);
+        totalIncoming.setZero();
+        
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> shiftedFlow(storageHeight, storageWidth);
+        
+        for (size_t dirIdx = 0; dirIdx < topology.neighborOffsets.size(); dirIdx++) {
+            const auto& offset = topology.neighborOffsets[dirIdx];
+            const int dq = offset.q;
+            const int dr = offset.r;
+
+            // flowInDirection = flowPerNeighbor * neighbor_is_receiver
+            Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowInDirection =
+                (flowPerNeighbor.array() * neighborReceiverMask[dirIdx].array()).matrix();
+
+            // Shift flowInDirection by (+direction) to move the flow to the neighbor position
+            shiftedFlow.setZero();
+            shiftMatrix(flowInDirection.data(), shiftedFlow.data(),
+                        dr, dq, storageWidth, storageHeight);
+
+            totalIncoming += shiftedFlow;
+        }
 
         // newResources = resources - totalOutgoing + totalIncoming
-
+        Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> newResources =
+            resources - totalOutgoing + totalIncoming;
 
         // Copy result to state
-        //std::memcpy(state.resources.data(), newResources.data(), totalCells * sizeof(float));
+        std::memcpy(state.resources.data(), newResources.data(), 
+                    storageWidth * storageHeight * sizeof(int));
     }
 };

@@ -23,4 +23,8 @@ Simulation completed in 3358 ms
 Steps/second: 595.593
 Map checksum: 0x71e893f46ffae581
 
-Without branching with openmp:
+
+Eigen:
+Simulation completed in 4292 ms
+Steps/second: 465.983
+Map checksum: 0x71e893f46ffae581
