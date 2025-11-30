@@ -9,6 +9,15 @@
 #include <algorithm>
 #include <cstring>
 
+struct ShiftInfo {
+    int dstRow;
+    int dstCol;
+    int srcRow;
+    int srcCol;
+    int copyH;
+    int copyW;
+};
+
 /**
  * @brief CPU-based simulator implementation using matrix operations.
  * 
@@ -40,6 +49,8 @@ private:
     State state;
     State backBuffer;
     GridTopology topology;
+    std::vector<ShiftInfo> outgoingShifts;
+    std::vector<ShiftInfo> incomingShifts;
     
     Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> validityMask;
 
@@ -74,31 +85,49 @@ private:
                 validityMask(y, x) = topology.isValid(StorageCoord{x, y}) ? 1 : 0;
             }
         }
+
+        const size_t N = topology.neighborOffsets.size();
+        outgoingShifts.resize(N);
+        incomingShifts.resize(N);
+
+        for (size_t i = 0; i < N; ++i) {
+            const auto& off = topology.neighborOffsets[i];
+
+            // OUTGOING uses -offset
+            outgoingShifts[i] = computeShiftInfo(-off.r, -off.q, storageHeight, storageWidth);
+
+            // INCOMING uses +offset
+            incomingShifts[i] = computeShiftInfo(+off.r, +off.q, storageHeight, storageWidth);
+        }
+    }
+
+    inline ShiftInfo computeShiftInfo(int dy, int dx, int H, int W)
+    {
+        ShiftInfo info;
+
+        info.dstRow = (dy >= 0 ? dy : 0);
+        info.dstCol = (dx >= 0 ? dx : 0);
+
+        info.srcRow = (dy >= 0 ? 0 : -dy);
+        info.srcCol = (dx >= 0 ? 0 : -dx);
+
+        info.copyH = H - std::abs(dy);
+        info.copyW = W - std::abs(dx);
+
+        bool isValid = (info.copyH > 0 && info.copyW > 0);
+        if (!isValid) {
+            throw std::runtime_error("Invalid shift computed in precomputeTopology: zero-sized block.");
+        }
+
+        return info;
     }
 
     template <typename Deriveddst, typename Derivedsrc>
     void accumulateShifted(Eigen::MatrixBase<Deriveddst>& dst,
                         const Eigen::MatrixBase<Derivedsrc>& src,
-                        int dy, int dx) {
-        const int h = dst.rows();
-        const int w = dst.cols();
-
-        // Calculate the intersection (the valid block to copy)
-        // Positive dy means we shift "Down", so we write to dst starting at dy
-        const int dstRow = std::max(0, dy);
-        const int dstCol = std::max(0, dx);
-        const int srcRow = std::max(0, -dy);
-        const int srcCol = std::max(0, -dx);
-
-        const int copyH = h - std::abs(dy);
-        const int copyW = w - std::abs(dx);
-
-        if (copyH > 0 && copyW > 0) {
-            // DIRECT VIEW OPERATION: No malloc, no memcpy. 
-            // Just adding one sub-block to another.
-            dst.block(dstRow, dstCol, copyH, copyW) += 
-                src.block(srcRow, srcCol, copyH, copyW);
-        }
+                        const ShiftInfo& s) {
+        dst.block(s.dstRow, s.dstCol, s.copyH, s.copyW).noalias() +=
+            src.block(s.srcRow, s.srcCol, s.copyH, s.copyW);
     }
 
     /**
@@ -124,8 +153,8 @@ private:
         receiverMask = (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<int>()).matrix();
 
         neighborsCanReceiveCount.setZero();
-        for (const auto& offset : topology.neighborOffsets) {
-            accumulateShifted(neighborsCanReceiveCount, receiverMask, -offset.r, -offset.q);
+        for (const auto& shift : outgoingShifts) {
+            accumulateShifted(neighborsCanReceiveCount, receiverMask, shift);
         }
 
         auto availableOutflow = (resources.array() * receiverMask.array()).matrix();
@@ -135,8 +164,8 @@ private:
 
         totalIncoming.setZero();
 
-        for (const auto& offset : topology.neighborOffsets) {
-            accumulateShifted(totalIncoming, flowPerNeighbor, offset.r, offset.q);
+        for (const auto& shift : incomingShifts) {
+            accumulateShifted(totalIncoming, flowPerNeighbor, shift);
         }
         totalIncoming = (totalIncoming.array() * receiverMask.array()).matrix();
 
