@@ -231,15 +231,16 @@ inline AxialCoord oddrToAxial(const OffsetCoord& hex) {
     return AxialCoord{q, r};
 }
 
-inline std::vector<int> store(std::vector<int> data, int width, int height, int defaultFillValue = -1) {
-    std::vector<int> storage;
+template <typename T>
+inline std::vector<T> store(std::vector<T> data, int width, int height, T defaultFillValue = -1) {
+    std::vector<T> storage;
     GridTopology topology(width, height);
     StorageCoord dim = topology.getStorageDimension();
     storage.resize(dim.x * dim.y, defaultFillValue);
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            int value = data[y * width + x];
+            T value = data[y * width + x];
             AxialCoord axial = oddrToAxial({x, y});
             StorageCoord storageCoord = topology.axialToStorageCoord(axial);
             storage[storageCoord.y * dim.x + storageCoord.x] = value;

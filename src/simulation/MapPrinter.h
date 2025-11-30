@@ -76,8 +76,8 @@ public:
    * @brief Prints State resources as hex map.
    */
   static std::string printHexMapResources(const GridTopology& topology, const State& state) {
-    return printHexMap<int>(topology, state.resources,
-                            [](int v) -> char {
+    return printHexMap<float>(topology, state.resources,
+                            [](float v) -> char {
                               if (v == 0)
                                 return '.';
                               if (v <= 9)
@@ -107,7 +107,7 @@ public:
    * @brief Prints State resources as raw storage.
    */
   static std::string printStorageResources(const GridTopology& topology, const State& state) {
-    return printStorage<int>(topology, state.resources,
+    return printStorage<float>(topology, state.resources,
                              [](int v) -> char {
                                if (v == 0)
                                  return '.';

@@ -27,14 +27,21 @@ State createInitialState(const GridTopology &topology) {
     const int height = topology.height;
     const size_t totalCells = width * height;
 
-    std::vector<int> resources(totalCells, 0);
+    std::vector<float> resources(totalCells, 0);
     std::vector<int> cellTypes(totalCells, 0); // Air
 
     // Set up source cell with resources
     const AxialCoord cell{.q=1, .r=1};
     const int sourceIdx = cell.asFlat(topology.getDimension());
-    resources[sourceIdx] = 1;
+    resources[sourceIdx] = 1000;
     cellTypes[sourceIdx] = 1; // Cell type
+
+    for (size_t i = 0; i < totalCells; i++) {
+        cellTypes[i] = 1;
+    }
+    // for (int i = 2; i < 10; i++) {
+    //     cellTypes[AxialCoord{.q=1, .r=i}.asFlat(topology.getDimension())] = 1;
+    // }
 
     // Set up neighboring cell (right neighbor)
     const AxialCoord neighbor{.q=2, .r=1};
@@ -42,8 +49,8 @@ State createInitialState(const GridTopology &topology) {
     cellTypes[neighborIdx] = 1; // Cell type
 
     // State should contain the storage data.
-    auto storedResources = store(resources, width, height, -1);
-    auto storedCellTypes = store(cellTypes, width, height, -1);
+    auto storedResources = store<float>(resources, width, height, -1);
+    auto storedCellTypes = store<int>(cellTypes, width, height, -1);
 
     return State(width, height, storedResources, storedCellTypes);
 }
@@ -93,6 +100,7 @@ int main(int argc, char* argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
     std::cout << MapPrinter::printHexMapResources(topology, finalState) << std::endl;
+    std::cout << MapPrinter::printHexMapCellTypes(topology, finalState) << std::endl;
 
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
     std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;

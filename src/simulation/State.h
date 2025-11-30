@@ -18,7 +18,7 @@ public:
     int height = 0;
     
     /// Resources for each cell (size = width * height)
-    std::vector<int> resources;
+    std::vector<float> resources;
     
     /// Cell types for each cell (size = width * height), values from CellState::Type
     std::vector<int> cellTypes;
@@ -26,7 +26,7 @@ public:
     State() = default;
 
     State(int width, int height, 
-          std::vector<int> resources, 
+          std::vector<float> resources, 
           std::vector<int> cellTypes)
         : width(width)
         , height(height)

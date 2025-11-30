@@ -52,13 +52,13 @@ private:
     std::vector<ShiftInfo> outgoingShifts;
     std::vector<ShiftInfo> incomingShifts;
     
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> validityMask;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> validityMask;
 
     // Pre-allocated buffers to avoid memory allocation in the simulation loop
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> receiverMask;
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount;
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor;
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> receiverMask;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming;
 
     /**
      * @brief Precomputes topology information since grid structure is static.
@@ -143,14 +143,14 @@ private:
         const int storageWidth = storageDims.x;
         const int storageHeight = storageDims.y;
 
-        Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
+        Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
             resources(state.resources.data(), storageHeight, storageWidth);
-        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
+        Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
             nextResources(backBuffer.resources.data(), storageHeight, storageWidth);
         Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
             cellTypes(state.cellTypes.data(), storageHeight, storageWidth);
 
-        receiverMask = (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<int>()).matrix();
+        receiverMask = (validityMask.array() * (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>()).matrix();
 
         neighborsCanReceiveCount.setZero();
         for (const auto& shift : outgoingShifts) {
