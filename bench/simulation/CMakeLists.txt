@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 
 find_package(IntelSYCL REQUIRED)
+find_package (Eigen3 REQUIRED NO_MODULE)
 
 # Manual OpenMP configuration for Intel SYCL compiler
 # Uses Intel's libiomp5 implementation
@@ -28,12 +29,17 @@ file(GLOB_RECURSE SIMULATION_SOURCES
 
 add_executable(${BENCH_SIMULATION_BINARY} run.cpp ${SIMULATION_SOURCES})
 
-target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE sycl ${OpenMP_libiomp5_LIBRARY})
+target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE 
+    sycl 
+    ${OpenMP_libiomp5_LIBRARY}
+    Eigen3::Eigen
+)
 
 target_include_directories(${BENCH_SIMULATION_BINARY} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../include
     "${SYCL_INCLUDE_DIR}"
+    "${EIGEN3_INCLUDE_DIR}"
 )
 
 set_target_properties(${BENCH_SIMULATION_BINARY} PROPERTIES
