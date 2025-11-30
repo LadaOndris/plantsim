@@ -59,7 +59,6 @@ private:
     Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighborsCanReceiveCount;
     Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> flowPerNeighbor;
     Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> totalIncoming;
-    Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> newResources;
 
     /**
      * @brief Precomputes topology information since grid structure is static.
@@ -77,7 +76,6 @@ private:
         neighborsCanReceiveCount.resize(storageHeight, storageWidth);
         flowPerNeighbor.resize(storageHeight, storageWidth);
         totalIncoming.resize(storageHeight, storageWidth);
-        newResources.resize(storageHeight, storageWidth);
 
         // Build validity mask
         for (int y = 0; y < storageHeight; y++) {
@@ -147,6 +145,8 @@ private:
 
         Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
             resources(state.resources.data(), storageHeight, storageWidth);
+        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>
+            nextResources(backBuffer.resources.data(), storageHeight, storageWidth);
         Eigen::Map<const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
             cellTypes(state.cellTypes.data(), storageHeight, storageWidth);
 
@@ -169,9 +169,8 @@ private:
         }
         totalIncoming = (totalIncoming.array() * receiverMask.array()).matrix();
 
-        newResources.noalias() = resources - totalOutgoing + totalIncoming;
+        nextResources.noalias() = resources - totalOutgoing + totalIncoming;
 
-        std::memcpy(state.resources.data(), newResources.data(), 
-                    storageWidth * storageHeight * sizeof(int));
+        std::swap(state.resources, backBuffer.resources);
     }
 };
