@@ -50,3 +50,9 @@ Check gpu visibility with: `sycl-ls`
 ```bash
 cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=OFF   -DBUILD_MAIN=OFF -DBUILD_TEST=ON
 ```
+
+
+## Notes on vectorization
+
+https://indico.cern.ch/event/771113/contributions/3203712/attachments/1746730/3022094/PracticalVectorization.pres.pdf
+

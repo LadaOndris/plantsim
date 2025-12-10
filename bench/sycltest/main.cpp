@@ -5,19 +5,19 @@
 class hello_world_kernel; 
 
 int main() {
+    for (auto platform : sycl::platform::get_platforms())
+    {
+        std::cout << "Platform: "
+                  << platform.get_info<sycl::info::platform::name>()
+                  << std::endl;
 
-  sycl::queue q;
-  std::cout << "Running on "
-            << q.get_device().get_info<sycl::info::device::name>()
-            << "\n";
-  q.submit([&](sycl::handler& cg) {
-             auto os = sycl::stream{1024, 1024, cg};
-             cg.parallel_for(10, [=](sycl::id<1> myid)
-                 {
-                   os << "Hello World! My ID is " << myid << "\n";
-                 });
-
-         });
+        for (auto device : platform.get_devices())
+        {
+            std::cout << "\tDevice: "
+                      << device.get_info<sycl::info::device::name>()
+                      << std::endl;
+        }
+    }
 
     return 0;
 }
