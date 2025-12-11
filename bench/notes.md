@@ -38,3 +38,23 @@ Eigen optimized, floats:
 Simulation completed in 607 ms
 Steps/second: 3294.89
 Map checksum: 0xa8cbbbd03ca37680
+
+- the previous, with Intel Core i5-14600KF:
+Simulation completed in 242 ms
+Steps/second: 8264.46
+Map checksum: 0xa8cbbbd03ca37680
+
+GPU backend (NVIDIA GeForce GTX 1660 SUPER):
+Simulation completed in 49 ms
+Steps/second: 40816.3
+Map checksum: 0xa8cbbbd03ca37680
+
+GPU - 100000 steps, 200 grid
+Simulation completed in 1961 ms
+Steps/second: 50994.4
+Map checksum: 0xa8cbbbd03ca37680
+
+CPU - 100000 steps, 200 grid
+Simulation completed in 13872 ms
+Steps/second: 7208.77
+Map checksum: 0xa8cbbbd03ca37680

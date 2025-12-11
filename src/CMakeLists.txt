@@ -1,4 +1,6 @@
 
+enable_language(CUDA)
+
 set(BINARY ${CMAKE_PROJECT_NAME})
 
 find_package(OpenGL REQUIRED)

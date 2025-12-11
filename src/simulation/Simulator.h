@@ -2,7 +2,6 @@
 #pragma once
 
 #include "simulation/Options.h"
-#include "simulation/GpuContext.h"
 #include "plants/WorldState.h"
 #include <memory>
 

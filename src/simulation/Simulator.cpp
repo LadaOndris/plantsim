@@ -4,7 +4,6 @@
 
 #include "Simulator.h"
 #include "simulation/CellState.h"
-#include "simulation/GpuContext.h"
 #include "sycl/sycl.hpp"
 #include <vector>
 #include <memory>

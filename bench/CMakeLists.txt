@@ -8,4 +8,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_subdirectory(simulation)
-add_subdirectory(sycltest)
+
+if(TARGET_BACKEND STREQUAL "SYCL")
+    add_subdirectory(sycltest)
+endif()

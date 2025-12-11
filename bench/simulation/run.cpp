@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include "simulation/cpu/CpuSimulator.h"
+#include "simulation/cuda/CudaSimulator.h"
 #include "simulation/Options.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"

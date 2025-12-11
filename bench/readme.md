@@ -1,28 +1,72 @@
 
 # How to run bench apps
 
-```bash
-cmake -DBUILD_MAIN=OFF -DBUILD_BENCH=ON -DCMAKE_BUILD_TYPE=Release ..
-cmake --build .
-```
+The benchmark supports three backends: **CPU**, **SYCL**, and **CUDA**.
 
-
-For SYCL:
-
-This shouldn't load any packages that it doesn't need.
+## Quick Start
 
 ```bash
-cmake -S ~/plantsim/ -B ~/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=OFF   -DBUILD_MAIN=OFF -DBUILD_TEST=ON
+# Configure with your desired backend
+cmake -DBUILD_MAIN=OFF -DBUILD_BENCH=ON -DCMAKE_BUILD_TYPE=Release -DTARGET_BACKEND=<BACKEND> ..
+
+# Build
+cmake --build . --target bench_simulation
+
+# Run
+./bench/simulation/bench_simulation [steps] [gridSize]
 ```
+
+## Backend Configuration
+
+### CPU Backend (default)
+
+Uses Eigen with OpenMP for CPU-based simulation.
+
+```bash
+cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DBUILD_BENCH=ON \
+  -DBUILD_MAIN=OFF \
+  -DTARGET_BACKEND=CPU
+```
+
+### CUDA Backend
+
+Uses CUDA for NVIDIA GPU acceleration.
+
+```bash
+cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=g++ \
+  -DCMAKE_CUDA_COMPILER=nvcc \
+  -DBUILD_BENCH=ON \
+  -DBUILD_MAIN=OFF \
+  -DBUILD_TEST=ON \
+  -DTARGET_BACKEND=CUDA
+```
+
+### SYCL Backend
+
+Uses Intel SYCL (DPC++) for heterogeneous computing.
+
+```bash
+cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=dpcpp \
+  -DBUILD_BENCH=ON \
+  -DBUILD_MAIN=OFF \
+  -DBUILD_TEST=ON \
+  -DTARGET_BACKEND=SYCL
+```
+
+## Build and Run
 
 ```bash
 cmake --build . --target bench_simulation
-```
-
-```bash
 ./bench/simulation/bench_simulation
 ```
 
+### Example Output
 
 ```txt
 $ ./bench/sycltest/sycl_test 
