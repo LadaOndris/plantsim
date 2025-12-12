@@ -36,10 +36,8 @@ private:
     
     // Pre-allocated device buffers for computation
     float* d_receiverMask = nullptr;
-    float* d_neighborsCount = nullptr;
     float* d_totalOutgoing = nullptr;
     float* d_flowPerNeighbor = nullptr;
-    float* d_totalIncoming = nullptr;
     
     void allocateDeviceMemory();
     void freeDeviceMemory();

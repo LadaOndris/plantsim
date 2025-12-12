@@ -20,43 +20,24 @@ __global__ void computeReceiverMaskKernel(
 }
 
 /**
- * @brief Kernel to count how many valid neighbors can receive from each cell.
- */
-__global__ void countNeighborsCanReceiveKernel(
-    const float* __restrict__ receiverMask,
-    float* __restrict__ neighborsCount,
-    int width, int height,
-    int storageWidth, int storageHeight
-) {
-    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
-    
-    float count = 0.0f;
-    
-    // For each neighbor direction, check if the neighbor can receive
-    FOR_EACH_NEIGHBOR(x, y, storageWidth, storageHeight, nidx, {
-        count += receiverMask[nidx];
-    });
-    
-    neighborsCount[idx] = count;
-}
-
-/**
- * @brief Kernel to compute outgoing flow and flow per neighbor.
+ * @brief Fused kernel: count neighbors + compute outgoing flow.
+ * Eliminates d_neighborsCount intermediate buffer.
  */
 __global__ void computeOutgoingFlowKernel(
     const float* __restrict__ resources,
     const float* __restrict__ receiverMask,
-    const float* __restrict__ neighborsCount,
     float* __restrict__ totalOutgoing,
     float* __restrict__ flowPerNeighbor,
     int storageWidth, int storageHeight
 ) {
     KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
-    float availableOutflow = resources[idx] * receiverMask[idx];
-    float neighborCount = neighborsCount[idx];
+    float neighborCount = 0.0f;
+    FOR_EACH_NEIGHBOR(x, y, storageWidth, storageHeight, nidx, {
+        neighborCount += receiverMask[nidx];
+    });
     
-    // Total outgoing is minimum of available and neighbor count
+    float availableOutflow = resources[idx] * receiverMask[idx];
     float outgoing = fminf(availableOutflow, neighborCount);
     totalOutgoing[idx] = outgoing;
     
@@ -83,13 +64,15 @@ __device__ __forceinline__ int getOppositeNeighborIndex(
 }
 
 /**
- * @brief Kernel to compute total incoming flow for each cell.
+ * @brief Fused kernel: compute incoming flow + update resources.
+ * Eliminates d_totalIncoming intermediate buffer.
  */
-__global__ void computeIncomingFlowKernel(
+__global__ void updateResourcesKernel(
+    const float* __restrict__ resources,
     const float* __restrict__ flowPerNeighbor,
     const float* __restrict__ receiverMask,
-    float* __restrict__ totalIncoming,
-    int width, int height,
+    const float* __restrict__ totalOutgoing,
+    float* __restrict__ nextResources,
     int storageWidth, int storageHeight
 ) {
     KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
@@ -104,24 +87,9 @@ __global__ void computeIncomingFlowKernel(
             incoming += flowPerNeighbor[nidx];
         }
     }
+    incoming *= receiverMask[idx];  // Only cells that can receive get incoming
     
-    // Only cells that can receive will get incoming flow
-    totalIncoming[idx] = incoming * receiverMask[idx];
-}
-
-/**
- * @brief Kernel to update resources: new = old - outgoing + incoming.
- */
-__global__ void updateResourcesKernel(
-    const float* __restrict__ resources,
-    const float* __restrict__ totalOutgoing,
-    const float* __restrict__ totalIncoming,
-    float* __restrict__ nextResources,
-    int storageWidth, int storageHeight
-) {
-    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
-    
-    nextResources[idx] = resources[idx] - totalOutgoing[idx] + totalIncoming[idx];
+    nextResources[idx] = resources[idx] - totalOutgoing[idx] + incoming;
 }
 
 CudaSimulator::CudaSimulator(State initialState)
@@ -150,20 +118,16 @@ CudaSimulator::CudaSimulator(CudaSimulator&& other) noexcept
     , d_nextResources(other.d_nextResources)
     , d_cellTypes(other.d_cellTypes)
     , d_receiverMask(other.d_receiverMask)
-    , d_neighborsCount(other.d_neighborsCount)
     , d_totalOutgoing(other.d_totalOutgoing)
     , d_flowPerNeighbor(other.d_flowPerNeighbor)
-    , d_totalIncoming(other.d_totalIncoming)
 {
     // Null out the other's pointers to prevent double-free
     other.d_resources = nullptr;
     other.d_nextResources = nullptr;
     other.d_cellTypes = nullptr;
     other.d_receiverMask = nullptr;
-    other.d_neighborsCount = nullptr;
     other.d_totalOutgoing = nullptr;
     other.d_flowPerNeighbor = nullptr;
-    other.d_totalIncoming = nullptr;
     other.totalStorageCells = 0;
 }
 
@@ -179,20 +143,16 @@ CudaSimulator& CudaSimulator::operator=(CudaSimulator&& other) noexcept {
         d_nextResources = other.d_nextResources;
         d_cellTypes = other.d_cellTypes;
         d_receiverMask = other.d_receiverMask;
-        d_neighborsCount = other.d_neighborsCount;
         d_totalOutgoing = other.d_totalOutgoing;
         d_flowPerNeighbor = other.d_flowPerNeighbor;
-        d_totalIncoming = other.d_totalIncoming;
         
         // Null out the other's pointers
         other.d_resources = nullptr;
         other.d_nextResources = nullptr;
         other.d_cellTypes = nullptr;
         other.d_receiverMask = nullptr;
-        other.d_neighborsCount = nullptr;
         other.d_totalOutgoing = nullptr;
         other.d_flowPerNeighbor = nullptr;
-        other.d_totalIncoming = nullptr;
         other.totalStorageCells = 0;
     }
     return *this;
@@ -207,10 +167,8 @@ void CudaSimulator::allocateDeviceMemory() {
     CUDA_CHECK(cudaMalloc(&d_nextResources, floatSize));
     CUDA_CHECK(cudaMalloc(&d_cellTypes, intSize));
     CUDA_CHECK(cudaMalloc(&d_receiverMask, floatSize));
-    CUDA_CHECK(cudaMalloc(&d_neighborsCount, floatSize));
     CUDA_CHECK(cudaMalloc(&d_totalOutgoing, floatSize));
     CUDA_CHECK(cudaMalloc(&d_flowPerNeighbor, floatSize));
-    CUDA_CHECK(cudaMalloc(&d_totalIncoming, floatSize));
 }
 
 void CudaSimulator::freeDeviceMemory() {
@@ -218,10 +176,8 @@ void CudaSimulator::freeDeviceMemory() {
     if (d_nextResources) cudaFree(d_nextResources);
     if (d_cellTypes) cudaFree(d_cellTypes);
     if (d_receiverMask) cudaFree(d_receiverMask);
-    if (d_neighborsCount) cudaFree(d_neighborsCount);
     if (d_totalOutgoing) cudaFree(d_totalOutgoing);
     if (d_flowPerNeighbor) cudaFree(d_flowPerNeighbor);
-    if (d_totalIncoming) cudaFree(d_totalIncoming);
 }
 
 void CudaSimulator::copyStateToDevice() {
@@ -260,30 +216,17 @@ void CudaSimulator::transferResources() {
         storageWidth, storageHeight
     );
     
-    // Step 2: Count neighbors that can receive
-    countNeighborsCanReceiveKernel<<<config.gridSize, config.blockSize>>>(
-        d_receiverMask, d_neighborsCount,
-        state.width, state.height,
-        storageWidth, storageHeight
-    );
-    
-    // Step 3: Compute outgoing flow and flow per neighbor
+    // Step 2: Count neighbors + compute outgoing flow (fused K2+K3)
     computeOutgoingFlowKernel<<<config.gridSize, config.blockSize>>>(
-        d_resources, d_receiverMask, d_neighborsCount,
+        d_resources, d_receiverMask,
         d_totalOutgoing, d_flowPerNeighbor,
         storageWidth, storageHeight
     );
     
-    // Step 4: Compute incoming flow
-    computeIncomingFlowKernel<<<config.gridSize, config.blockSize>>>(
-        d_flowPerNeighbor, d_receiverMask, d_totalIncoming,
-        state.width, state.height,
-        storageWidth, storageHeight
-    );
-    
-    // Step 5: Update resources
+    // Step 3: Compute incoming flow + update resources (fused K4+K5)
     updateResourcesKernel<<<config.gridSize, config.blockSize>>>(
-        d_resources, d_totalOutgoing, d_totalIncoming, d_nextResources,
+        d_resources, d_flowPerNeighbor, d_receiverMask, d_totalOutgoing,
+        d_nextResources,
         storageWidth, storageHeight
     );
     
