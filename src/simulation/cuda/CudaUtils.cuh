@@ -21,9 +21,11 @@
 constexpr int HEX_NEIGHBOR_COUNT = 6;
 
 /**
- * @brief Default block size for 2D kernels.
+ * @brief Default block size for 2D kernels (X and Y dimensions).
+ * 32x8 is often optimal for memory coalescing on wide grids.
  */
-constexpr int DEFAULT_BLOCK_SIZE = 16;
+constexpr int DEFAULT_BLOCK_SIZE_X = 32;
+constexpr int DEFAULT_BLOCK_SIZE_Y = 8;
 
 /**
  * @brief Compute linear index from 2D coordinates.
@@ -226,14 +228,16 @@ __device__ __forceinline__ int getNeighborIndex(
  * @brief Compute optimal grid dimensions for a 2D kernel.
  * @param width Grid width
  * @param height Grid height
- * @param blockSize Block size (default 16x16)
+ * @param blockSizeX Block size in X dimension
+ * @param blockSizeY Block size in Y dimension
  * @return Pair of (gridSize, blockSize) dim3 values
  */
 inline std::pair<dim3, dim3> computeGridDimensions(
     int width, int height,
-    int blockSize = DEFAULT_BLOCK_SIZE
+    int blockSizeX = DEFAULT_BLOCK_SIZE_X,
+    int blockSizeY = DEFAULT_BLOCK_SIZE_Y
 ) {
-    dim3 block(blockSize, blockSize);
+    dim3 block(blockSizeX, blockSizeY);
     dim3 grid(
         (width + block.x - 1) / block.x,
         (height + block.y - 1) / block.y
@@ -248,8 +252,10 @@ struct KernelConfig {
     dim3 gridSize;
     dim3 blockSize;
     
-    KernelConfig(int width, int height, int blockDim = DEFAULT_BLOCK_SIZE) {
-        auto [grid, block] = computeGridDimensions(width, height, blockDim);
+    KernelConfig(int width, int height, 
+                 int blockDimX = DEFAULT_BLOCK_SIZE_X, 
+                 int blockDimY = DEFAULT_BLOCK_SIZE_Y) {
+        auto [grid, block] = computeGridDimensions(width, height, blockDimX, blockDimY);
         gridSize = grid;
         blockSize = block;
     }
@@ -288,8 +294,8 @@ constexpr int TILE_HALO = 1;
 /**
  * @brief Tile dimensions including halo for shared memory.
  */
-constexpr int TILE_WIDTH = DEFAULT_BLOCK_SIZE + 2 * TILE_HALO;   // 18
-constexpr int TILE_HEIGHT = DEFAULT_BLOCK_SIZE + 2 * TILE_HALO;  // 18
+constexpr int TILE_WIDTH = DEFAULT_BLOCK_SIZE_X + 2 * TILE_HALO;   // 34
+constexpr int TILE_HEIGHT = DEFAULT_BLOCK_SIZE_Y + 2 * TILE_HALO;  // 10
 
 /**
  * @brief Load a tile with halo into shared memory.
