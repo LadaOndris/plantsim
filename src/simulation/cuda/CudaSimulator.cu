@@ -1,43 +1,6 @@
 #include "CudaSimulator.h"
-#include <cuda_runtime.h>
-#include <stdexcept>
+#include "CudaUtils.cuh"
 #include <cstring>
-
-// Error checking macro
-#define CUDA_CHECK(call) \
-    do { \
-        cudaError_t err = call; \
-        if (err != cudaSuccess) { \
-            throw std::runtime_error(std::string("CUDA error: ") + cudaGetErrorString(err)); \
-        } \
-    } while (0)
-
-// Device constant for neighbor offsets (q, r pairs)
-// Right, TopRight, TopLeft, Left, BottomLeft, BottomRight
-__constant__ int d_neighborOffsets[12] = {
-    +1, 0,   // Right
-    +1, -1,  // TopRight
-    0, -1,   // TopLeft
-    -1, 0,   // Left
-    -1, +1,  // BottomLeft
-    0, +1    // BottomRight
-};
-
-/**
- * @brief Checks if storage coordinates represent a valid hex cell.
- */
-__device__ bool isValidStorageCoord(int x, int y, int width, int height, int storageWidth, int storageHeight) {
-    if (x < 0 || x >= storageWidth || y < 0 || y >= storageHeight) {
-        return false;
-    }
-    
-    int offset = (height - 1) / 2;
-    int parity = y & 1;
-    int minStorageX = offset - ((y - parity) / 2);
-    int maxStorageX = minStorageX + width - 1;
-    
-    return x >= minStorageX && x <= maxStorageX;
-}
 
 /**
  * @brief Kernel to compute the receiver mask (valid cells that can receive resources).
@@ -48,13 +11,9 @@ __global__ void computeReceiverMaskKernel(
     int width, int height,
     int storageWidth, int storageHeight
 ) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
-    if (x >= storageWidth || y >= storageHeight) return;
-    
-    int idx = y * storageWidth + x;
-    bool isValid = isValidStorageCoord(x, y, width, height, storageWidth, storageHeight);
+    bool isValid = isValidHexCell(x, y, width, height, storageWidth, storageHeight);
     bool isCell = (cellTypes[idx] == 1);  // CellState::Type::Cell
     
     receiverMask[idx] = (isValid && isCell) ? 1.0f : 0.0f;
@@ -69,28 +28,14 @@ __global__ void countNeighborsCanReceiveKernel(
     int width, int height,
     int storageWidth, int storageHeight
 ) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
-    if (x >= storageWidth || y >= storageHeight) return;
-    
-    int idx = y * storageWidth + x;
     float count = 0.0f;
     
     // For each neighbor direction, check if the neighbor can receive
-    for (int i = 0; i < 6; i++) {
-        int dq = d_neighborOffsets[i * 2];
-        int dr = d_neighborOffsets[i * 2 + 1];
-        
-        // In storage coordinates, the offset is applied directly
-        int nx = x + dq;
-        int ny = y + dr;
-        
-        if (nx >= 0 && nx < storageWidth && ny >= 0 && ny < storageHeight) {
-            int nidx = ny * storageWidth + nx;
-            count += receiverMask[nidx];
-        }
-    }
+    FOR_EACH_NEIGHBOR(x, y, storageWidth, storageHeight, nidx, {
+        count += receiverMask[nidx];
+    });
     
     neighborsCount[idx] = count;
 }
@@ -106,12 +51,7 @@ __global__ void computeOutgoingFlowKernel(
     float* __restrict__ flowPerNeighbor,
     int storageWidth, int storageHeight
 ) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    
-    if (x >= storageWidth || y >= storageHeight) return;
-    
-    int idx = y * storageWidth + x;
+    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
     float availableOutflow = resources[idx] * receiverMask[idx];
     float neighborCount = neighborsCount[idx];
@@ -125,6 +65,24 @@ __global__ void computeOutgoingFlowKernel(
 }
 
 /**
+ * @brief Compute neighbor index in opposite direction (for incoming flow).
+ */
+__device__ __forceinline__ int getOppositeNeighborIndex(
+    int x, int y, int direction,
+    int storageWidth, int storageHeight
+) {
+    int dq, dr;
+    getNeighborOffset(direction, dq, dr);
+    int nx = x - dq;  // Opposite direction
+    int ny = y - dr;
+    
+    if (isInBounds(nx, ny, storageWidth, storageHeight)) {
+        return toLinearIndex(nx, ny, storageWidth);
+    }
+    return -1;
+}
+
+/**
  * @brief Kernel to compute total incoming flow for each cell.
  */
 __global__ void computeIncomingFlowKernel(
@@ -134,26 +92,15 @@ __global__ void computeIncomingFlowKernel(
     int width, int height,
     int storageWidth, int storageHeight
 ) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
-    if (x >= storageWidth || y >= storageHeight) return;
-    
-    int idx = y * storageWidth + x;
     float incoming = 0.0f;
     
     // Sum incoming flow from all neighbors
-    // Incoming flow comes from neighbors that are sending to us
-    for (int i = 0; i < 6; i++) {
-        int dq = d_neighborOffsets[i * 2];
-        int dr = d_neighborOffsets[i * 2 + 1];
-        
-        // The neighbor that would send to us is in the opposite direction
-        int nx = x - dq;
-        int ny = y - dr;
-        
-        if (nx >= 0 && nx < storageWidth && ny >= 0 && ny < storageHeight) {
-            int nidx = ny * storageWidth + nx;
+    // Incoming flow comes from neighbors that are sending to us (opposite direction)
+    for (int dir = 0; dir < HEX_NEIGHBOR_COUNT; dir++) {
+        int nidx = getOppositeNeighborIndex(x, y, dir, storageWidth, storageHeight);
+        if (nidx >= 0) {
             incoming += flowPerNeighbor[nidx];
         }
     }
@@ -172,18 +119,10 @@ __global__ void updateResourcesKernel(
     float* __restrict__ nextResources,
     int storageWidth, int storageHeight
 ) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    KERNEL_2D_SETUP(x, y, idx, storageWidth, storageHeight);
     
-    if (x >= storageWidth || y >= storageHeight) return;
-    
-    int idx = y * storageWidth + x;
     nextResources[idx] = resources[idx] - totalOutgoing[idx] + totalIncoming[idx];
 }
-
-// =============================================================================
-// CudaSimulator Implementation
-// =============================================================================
 
 CudaSimulator::CudaSimulator(State initialState)
     : state(std::move(initialState))
@@ -312,42 +251,38 @@ void CudaSimulator::step(const Options& options) {
 
 void CudaSimulator::transferResources() {
     // Configure grid and block dimensions
-    dim3 blockSize(16, 16);
-    dim3 gridSize(
-        (storageWidth + blockSize.x - 1) / blockSize.x,
-        (storageHeight + blockSize.y - 1) / blockSize.y
-    );
+    KernelConfig config(storageWidth, storageHeight);
     
     // Step 1: Compute receiver mask
-    computeReceiverMaskKernel<<<gridSize, blockSize>>>(
+    computeReceiverMaskKernel<<<config.gridSize, config.blockSize>>>(
         d_cellTypes, d_receiverMask,
         state.width, state.height,
         storageWidth, storageHeight
     );
     
     // Step 2: Count neighbors that can receive
-    countNeighborsCanReceiveKernel<<<gridSize, blockSize>>>(
+    countNeighborsCanReceiveKernel<<<config.gridSize, config.blockSize>>>(
         d_receiverMask, d_neighborsCount,
         state.width, state.height,
         storageWidth, storageHeight
     );
     
     // Step 3: Compute outgoing flow and flow per neighbor
-    computeOutgoingFlowKernel<<<gridSize, blockSize>>>(
+    computeOutgoingFlowKernel<<<config.gridSize, config.blockSize>>>(
         d_resources, d_receiverMask, d_neighborsCount,
         d_totalOutgoing, d_flowPerNeighbor,
         storageWidth, storageHeight
     );
     
     // Step 4: Compute incoming flow
-    computeIncomingFlowKernel<<<gridSize, blockSize>>>(
+    computeIncomingFlowKernel<<<config.gridSize, config.blockSize>>>(
         d_flowPerNeighbor, d_receiverMask, d_totalIncoming,
         state.width, state.height,
         storageWidth, storageHeight
     );
     
     // Step 5: Update resources
-    updateResourcesKernel<<<gridSize, blockSize>>>(
+    updateResourcesKernel<<<config.gridSize, config.blockSize>>>(
         d_resources, d_totalOutgoing, d_totalIncoming, d_nextResources,
         storageWidth, storageHeight
     );
