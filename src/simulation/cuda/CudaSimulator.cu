@@ -289,7 +289,4 @@ void CudaSimulator::transferResources() {
     
     // Swap buffers
     std::swap(d_resources, d_nextResources);
-    
-    // Synchronize to ensure all operations complete
-    CUDA_CHECK(cudaDeviceSynchronize());
 }
