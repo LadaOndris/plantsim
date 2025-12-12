@@ -3,13 +3,24 @@
 #include <chrono>
 #include <iomanip>
 #include <cstdlib>
+#include <string_view>
+#include <memory>
 
-#include "simulation/cpu/CpuSimulator.h"
-#include "simulation/cuda/CudaSimulator.h"
+#include "simulation/ISimulator.h"
 #include "simulation/Options.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/MapPrinter.h"
+
+#if defined(BACKEND_CPU)
+    #include "simulation/cpu/CpuSimulator.h"
+#elif defined(BACKEND_CUDA)
+    #include "simulation/cuda/CudaSimulator.h"
+#elif defined(BACKEND_SYCL)
+    #include "simulation/sycl/SyclSimulator.h"
+#else
+    #error "No backend defined. Define BACKEND_CPU, BACKEND_CUDA, or BACKEND_SYCL"
+#endif
 
 template <typename T>
 uint64_t computeChecksum(const std::vector<T> &cells, StorageCoord storageDims) {
@@ -56,6 +67,16 @@ State createInitialState(const GridTopology &topology) {
     return State(width, height, storedResources, storedCellTypes);
 }
 
+std::unique_ptr<ISimulator> createSimulator(State initialState) {
+#if defined(BACKEND_CPU)
+    return std::make_unique<CpuSimulator>(std::move(initialState));
+#elif defined(BACKEND_CUDA)
+    return std::make_unique<CudaSimulator>(std::move(initialState));
+#elif defined(BACKEND_SYCL)
+    return std::make_unique<SyclSimulator>(std::move(initialState));
+#endif
+}
+
 int main(int argc, char* argv[]) {
     int simSteps = 1;
     int gridSize = 20;
@@ -84,7 +105,9 @@ int main(int argc, char* argv[]) {
     State initialState = createInitialState(topology);
     std::cout << MapPrinter::printHexMapResources(topology, initialState) << std::endl;
 
-    CpuSimulator simulator{std::move(initialState)};
+    // Backend is set at compile time via -DTARGET_BACKEND=<backend>
+    std::cout << "Using backend: " << TARGET_BACKEND << std::endl;
+    std::unique_ptr<ISimulator> simulatorPtr = createSimulator(std::move(initialState));
 
     Options simOptions{
         .enableResourceTransfer = true
@@ -93,9 +116,9 @@ int main(int argc, char* argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < simSteps; i++) {
-        simulator.step(simOptions);
+        simulatorPtr->step(simOptions);
     }
-    const State &finalState = simulator.getState();
+    const State &finalState = simulatorPtr->getState();
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);

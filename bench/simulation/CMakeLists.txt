@@ -1,125 +1,105 @@
 cmake_minimum_required(VERSION 3.27)
 
-set(TARGET_BACKEND "CPU" CACHE STRING "Choose backend: CPU, SYCL, or CUDA")
-set_property(CACHE TARGET_BACKEND PROPERTY STRINGS CPU SYCL CUDA)
-
-message(STATUS "Building with backend: ${TARGET_BACKEND}")
+# BACKEND_LIST is set in top-level CMakeLists.txt
+message(STATUS "Building simulation benchmarks with backends: ${BACKEND_LIST}")
 
 # =============================================================================
-# Common dependencies
+# Source files (defined once, not in function)
 # =============================================================================
-find_package(Eigen3 REQUIRED NO_MODULE)
-
-set(BENCH_SIMULATION_BINARY bench_simulation)
+set(PLANTSIM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+set(PLANTSIM_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 
 file(GLOB_RECURSE SIMULATION_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/simulation/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/plants/*.cpp"
+    "${PLANTSIM_SRC_DIR}/simulation/*.cpp"
+    "${PLANTSIM_SRC_DIR}/plants/*.cpp"
 )
-# Remove Simulator.cpp: it is obsolete
-list(REMOVE_ITEM SIMULATION_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../src/simulation/Simulator.cpp"
-)
+list(FILTER SIMULATION_SOURCES EXCLUDE REGEX ".*Simulator\.cpp$")
+
+file(GLOB_RECURSE CUDA_SOURCES "${PLANTSIM_SRC_DIR}/simulation/cuda/*.cu")
 
 # =============================================================================
-# Backend-specific configuration
+# Find packages once (not inside function)
 # =============================================================================
+find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(OpenMP REQUIRED)
 
-if(TARGET_BACKEND STREQUAL "CUDA")
-    # CUDA Backend
-    # Set CUDA architectures before enabling the language
-    # Force set to avoid issues with empty cached values
-    if(NOT CMAKE_CUDA_ARCHITECTURES OR CMAKE_CUDA_ARCHITECTURES STREQUAL "")
-        set(CMAKE_CUDA_ARCHITECTURES "61;86" CACHE STRING "CUDA architectures" FORCE)
-    endif()
-    
-    enable_language(CUDA)
-    set(CMAKE_CUDA_STANDARD 17)
-    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-    
+list(FIND BACKEND_LIST "CUDA" _has_cuda)
+if(NOT _has_cuda EQUAL -1)
     find_package(CUDAToolkit REQUIRED)
-    find_package(OpenMP REQUIRED)
-    
-    file(GLOB_RECURSE CUDA_SOURCES
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../src/simulation/cuda/*.cu"
-    )
-    
-    add_executable(${BENCH_SIMULATION_BINARY} run.cpp ${SIMULATION_SOURCES} ${CUDA_SOURCES})
-    
-    target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE
-        CUDA::cudart
-        OpenMP::OpenMP_CXX
-        Eigen3::Eigen
-    )
-    
-    target_include_directories(${BENCH_SIMULATION_BINARY} PRIVATE
-        ${CUDAToolkit_INCLUDE_DIRS}
-    )
+endif()
 
-    target_compile_definitions(${BENCH_SIMULATION_BINARY} PRIVATE USE_CUDA_BACKEND)
-    
-    set_target_properties(${BENCH_SIMULATION_BINARY} PROPERTIES
-        CUDA_SEPARABLE_COMPILATION ON
-    )
-
-elseif(TARGET_BACKEND STREQUAL "SYCL")
-
-    # SYCL Backend
+list(FIND BACKEND_LIST "SYCL" _has_sycl)
+if(NOT _has_sycl EQUAL -1)
     find_package(IntelSYCL REQUIRED)
-    
-    # Manual OpenMP configuration for Intel SYCL compiler
-    # Uses Intel's libiomp5 implementation
-    set(OpenMP_CXX_FLAGS "-qopenmp")
-    set(OpenMP_CXX_LIB_NAMES "libiomp5")
+    # Intel SYCL uses libiomp5 for OpenMP
     find_library(OpenMP_libiomp5_LIBRARY
         NAMES iomp5
         HINTS ENV INTEL_ONEAPI_ROOT
         PATH_SUFFIXES compiler/latest/lib
                       compiler/latest/linux/compiler/lib/intel64_lin
-                      lib
     )
-    
-    if(NOT OpenMP_libiomp5_LIBRARY)
-        message(WARNING "libiomp5 not found, OpenMP SIMD may not work. Set OpenMP_libiomp5_LIBRARY manually.")
-    endif()
-    
-    add_executable(${BENCH_SIMULATION_BINARY} run.cpp ${SIMULATION_SOURCES})
-    
-    target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE
-        sycl
-        ${OpenMP_libiomp5_LIBRARY}
-        Eigen3::Eigen
-    )
-    
-    target_compile_definitions(${BENCH_SIMULATION_BINARY} PRIVATE USE_SYCL_BACKEND)
-    target_compile_options(${BENCH_SIMULATION_BINARY} PRIVATE -fsycl ${OpenMP_CXX_FLAGS})
-
-else()
-    # CPU Backend (default)
-    find_package(OpenMP REQUIRED)
-    
-    add_executable(${BENCH_SIMULATION_BINARY} run.cpp ${SIMULATION_SOURCES})
-    
-    target_link_libraries(${BENCH_SIMULATION_BINARY} PRIVATE
-        OpenMP::OpenMP_CXX
-        Eigen3::Eigen
-    )
-    
-    target_compile_definitions(${BENCH_SIMULATION_BINARY} PRIVATE USE_CPU_BACKEND)
-    
 endif()
 
 # =============================================================================
-# Common target properties
+# Create targets for each backend
 # =============================================================================
-target_include_directories(${BENCH_SIMULATION_BINARY} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../include
-    "${EIGEN3_INCLUDE_DIR}"
-)
+set(ALL_BENCH_TARGETS "")
 
-set_target_properties(${BENCH_SIMULATION_BINARY} PROPERTIES
-    CXX_STANDARD 23
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+foreach(BACKEND ${BACKEND_LIST})
+    string(TOUPPER "${BACKEND}" BACKEND_UPPER)
+    string(TOLOWER "${BACKEND}" BACKEND_LOWER)
+    set(TARGET_NAME "bench_sim_${BACKEND_LOWER}")
+    
+    message(STATUS "Configuring target: ${TARGET_NAME}")
+
+    # --- CUDA Backend ---
+    if(BACKEND_UPPER STREQUAL "CUDA")
+        add_executable(${TARGET_NAME} run.cpp ${SIMULATION_SOURCES} ${CUDA_SOURCES})
+        target_link_libraries(${TARGET_NAME} PRIVATE
+            CUDA::cudart
+            OpenMP::OpenMP_CXX
+            Eigen3::Eigen
+        )
+        target_include_directories(${TARGET_NAME} PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+        set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+    # --- SYCL Backend ---
+    elseif(BACKEND_UPPER STREQUAL "SYCL")
+        add_executable(${TARGET_NAME} run.cpp ${SIMULATION_SOURCES})
+        target_link_libraries(${TARGET_NAME} PRIVATE
+            sycl
+            ${OpenMP_libiomp5_LIBRARY}
+            Eigen3::Eigen
+        )
+        target_compile_options(${TARGET_NAME} PRIVATE -fsycl -qopenmp)
+
+    # --- CPU Backend ---
+    else()
+        add_executable(${TARGET_NAME} run.cpp ${SIMULATION_SOURCES})
+        target_link_libraries(${TARGET_NAME} PRIVATE
+            OpenMP::OpenMP_CXX
+            Eigen3::Eigen
+        )
+    endif()
+
+    # Common properties for all backends
+    target_include_directories(${TARGET_NAME} PRIVATE
+        ${PLANTSIM_SRC_DIR}
+        ${PLANTSIM_INCLUDE_DIR}
+    )
+    target_compile_definitions(${TARGET_NAME} PRIVATE
+        TARGET_BACKEND="${BACKEND_LOWER}"
+        BACKEND_${BACKEND_UPPER}=1
+    )
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+    )
+
+    list(APPEND ALL_BENCH_TARGETS ${TARGET_NAME})
+endforeach()
+
+# Convenience target to build all backends
+add_custom_target(bench_sim DEPENDS ${ALL_BENCH_TARGETS})
+
+
