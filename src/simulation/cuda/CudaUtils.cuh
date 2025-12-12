@@ -275,3 +275,96 @@ struct KernelConfig {
 #define KERNEL_2D_SETUP(xVar, yVar, idxVar, width, height) \
     KERNEL_2D_GUARD(xVar, yVar, width, height); \
     int idxVar = toLinearIndex(xVar, yVar, width)
+
+// =============================================================================
+// Shared Memory Tile Utilities
+// =============================================================================
+
+/**
+ * @brief Halo size for hex neighbor access (max offset is 1 in any direction).
+ */
+constexpr int TILE_HALO = 1;
+
+/**
+ * @brief Tile dimensions including halo for shared memory.
+ */
+constexpr int TILE_WIDTH = DEFAULT_BLOCK_SIZE + 2 * TILE_HALO;   // 18
+constexpr int TILE_HEIGHT = DEFAULT_BLOCK_SIZE + 2 * TILE_HALO;  // 18
+
+/**
+ * @brief Load a tile with halo into shared memory.
+ * 
+ * Each thread loads its own cell, plus some threads load halo cells.
+ * This handles boundary conditions by loading 0.0f for out-of-bounds cells.
+ * 
+ * @param globalData Source data in global memory
+ * @param tile Destination shared memory tile [TILE_HEIGHT][TILE_WIDTH]
+ * @param tileStartX Global X coordinate of tile's top-left corner (excluding halo)
+ * @param tileStartY Global Y coordinate of tile's top-left corner (excluding halo)
+ * @param storageWidth Width of global storage
+ * @param storageHeight Height of global storage
+ */
+__device__ __forceinline__ void loadTileWithHalo(
+    const float* __restrict__ globalData,
+    float tile[TILE_HEIGHT][TILE_WIDTH],
+    int tileStartX, int tileStartY,
+    int storageWidth, int storageHeight
+) {
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    
+    // Each thread loads multiple cells to cover the tile + halo
+    // Tile covers [tileStartX - HALO, tileStartX + BLOCK_SIZE + HALO) in X
+    // and similar in Y.
+    for (int localY = ty; localY < TILE_HEIGHT; localY += blockDim.y) {
+        for (int localX = tx; localX < TILE_WIDTH; localX += blockDim.x) {
+            int globalX = tileStartX + localX - TILE_HALO;
+            int globalY = tileStartY + localY - TILE_HALO;
+            
+            float value = 0.0f;
+            if (isInBounds(globalX, globalY, storageWidth, storageHeight)) {
+                value = globalData[toLinearIndex(globalX, globalY, storageWidth)];
+            }
+            tile[localY][localX] = value;
+        }
+    }
+}
+
+/**
+ * @brief Get value from shared memory tile for a neighbor.
+ * 
+ * @param tile Shared memory tile
+ * @param localX Thread's local X in tile (threadIdx.x + TILE_HALO)
+ * @param localY Thread's local Y in tile (threadIdx.y + TILE_HALO)
+ * @param direction Hex neighbor direction (0-5)
+ * @return Neighbor's value from tile
+ */
+__device__ __forceinline__ float getTileNeighbor(
+    const float tile[TILE_HEIGHT][TILE_WIDTH],
+    int localX, int localY, int direction
+) {
+    int dq, dr;
+    getNeighborOffset(direction, dq, dr);
+    return tile[localY + dr][localX + dq];
+}
+
+/**
+ * @brief Get value from shared memory tile for an opposite-direction neighbor.
+ * 
+ * Used for incoming flow where we look at neighbors in the opposite direction.
+ * 
+ * @param tile Shared memory tile
+ * @param localX Thread's local X in tile (threadIdx.x + TILE_HALO)
+ * @param localY Thread's local Y in tile (threadIdx.y + TILE_HALO)
+ * @param direction Hex neighbor direction (0-5), will access opposite
+ * @return Opposite neighbor's value from tile
+ */
+__device__ __forceinline__ float getTileOppositeNeighbor(
+    const float tile[TILE_HEIGHT][TILE_WIDTH],
+    int localX, int localY, int direction
+) {
+    int dq, dr;
+    getNeighborOffset(direction, dq, dr);
+    // Opposite direction: subtract instead of add
+    return tile[localY - dr][localX - dq];
+}
