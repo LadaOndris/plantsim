@@ -35,7 +35,6 @@ private:
     int* d_cellTypes = nullptr;
     
     // Pre-allocated device buffers for computation
-    float* d_receiverMask = nullptr;
     float* d_totalOutgoing = nullptr;
     float* d_flowPerNeighbor = nullptr;
     
