@@ -18,9 +18,9 @@
 class RandomNeighborReproduction {
 public:
     struct Config {
-        float reproductionThreshold = 10.0f;
-        float reproductionCost = 5.0f;
-        float childInitialResources = 3.0f;
+        float reproductionThreshold = 1.0f;
+        float reproductionCost = 1.0f;
+        float childInitialResources = 0.0f;
     };
 
     explicit RandomNeighborReproduction(const GridShiftHelper& grid, 

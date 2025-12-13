@@ -276,8 +276,8 @@ std::cout << "[INFO] Using SYCL backend" << std::endl;
         OffsetCoord center{gridSize / 2, gridSize / 2};
         StateInitializer initializer{
             // Set all cells to Cell type
-            //PolicyApplication{CircleRegion{center, 70}, SetCellType{CellState::Cell}},
-            PolicyApplication{GridRegion{10, 70, center.col - 5, center.row - 35}, SetCellType{CellState::Cell}},
+            PolicyApplication{CircleRegion{center, 1}, SetCellType{CellState::Cell}},
+            //PolicyApplication{GridRegion{10, 70, center.col - 5, center.row - 35}, SetCellType{CellState::Cell}},
             // Set resources at center cell
             PolicyApplication{
                 SingleCell{center},
