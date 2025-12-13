@@ -27,7 +27,7 @@ elseif(BACKEND_UPPER STREQUAL "SYCL")
     )
 endif()
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES false *.h *.cpp *.c)
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES false *.h *.cpp *.c *.cu)
 set(TEST_SOURCES ${SOURCES})
 list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
 

@@ -40,7 +40,6 @@ void WorldStateRenderer::setupVertexArrays() {
     glNamedBufferData(VBO, meshData.vertices.size() * sizeof(GLVertex),
                       &meshData.vertices.front(), GL_DYNAMIC_DRAW);
 
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glNamedBufferData(EBO, meshData.indices.size() * sizeof(unsigned int),
                       &meshData.indices.front(), GL_STATIC_DRAW);

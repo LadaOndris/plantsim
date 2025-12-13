@@ -69,9 +69,12 @@ namespace {
             std::cout << "[INFO] GLFW initialized" << std::endl;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifndef NDEBUG
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
         // Multi-sampling
         glfwWindowHint(GLFW_SAMPLES, 4);
 
@@ -145,7 +148,7 @@ namespace {
         };
 
         while (!glfwWindowShouldClose(window)) {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 500; i++) {
                 simulator.step(simOptions);
             }
 
@@ -256,9 +259,9 @@ namespace {
         std::vector<int> cellTypes(totalCells, 0); // Air
 
         // Set up source cell with resources
-        const AxialCoord cell{.q=1, .r=1};
+        const AxialCoord cell{.q=width/2, .r=height/2};
         const int sourceIdx = cell.asFlat(topology.getDimension());
-        resources[sourceIdx] = 1000;
+        resources[sourceIdx] = 10000;
         cellTypes[sourceIdx] = 1; // Cell type
 
         for (size_t i = 0; i < totalCells; i++) {
@@ -279,16 +282,19 @@ namespace {
 
     std::unique_ptr<ISimulator> createSimulator(State initialState) {
 #if defined(BACKEND_CPU)
+std::cout << "[INFO] Using CPU backend" << std::endl;
         return std::make_unique<CpuSimulator>(std::move(initialState));
 #elif defined(BACKEND_CUDA)
+std::cout << "[INFO] Using CUDA backend" << std::endl;
         return std::make_unique<CudaSimulator>(std::move(initialState));
 #elif defined(BACKEND_SYCL)
+std::cout << "[INFO] Using SYCL backend" << std::endl;
         return std::make_unique<SyclSimulator>(std::move(initialState));
 #endif
     }
 
     int runApplication() {
-        constexpr int gridSize = 80;
+        constexpr int gridSize = 200;
         GridTopology topology{gridSize, gridSize};
         State initialState = createInitialState(topology);
         std::unique_ptr<ISimulator> simulator = createSimulator(std::move(initialState));
@@ -297,10 +303,10 @@ namespace {
 
         ShaderProgram worldStateRendererProgram;
         worldStateRendererProgram.addShader(
-                std::make_unique<Shader>("../shaders/map/shader.vert", ShaderType::Vertex)
+                std::make_unique<Shader>("./shaders/map/shader.vert", ShaderType::Vertex)
         );
         worldStateRendererProgram.addShader(
-                std::make_unique<Shader>("../shaders/map/shader.frag", ShaderType::Fragment)
+                std::make_unique<Shader>("./shaders/map/shader.frag", ShaderType::Fragment)
         );
 
         AxialRectangularMapToMeshConverter mapConverter{};
@@ -329,7 +335,12 @@ int main() {
     if (!initializeGlfw() || !initializeGlad() || !initializeImgui()) {
         return EXIT_FAILURE;
     }
-    glDebugMessageCallback(processErrorMessageCallback, nullptr);
+
+    if (glDebugMessageCallback) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(processErrorMessageCallback, nullptr);
+        std::cout << "[INFO] OpenGL debug output enabled" << std::endl;
+    }
 
     int returnCode = runApplication();
 

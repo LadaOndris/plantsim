@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 enum ShaderType {
     Vertex,
@@ -58,7 +59,7 @@ public:
             shaderCode = vShaderStream.str();
         }
         catch (std::ifstream::failure &e) {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+            std::cout << "Error: Failed to read shader file: " << std::filesystem::absolute(std::filesystem::path(sourcePath).lexically_normal()) << std::endl;
             return false;
         }
         const char *shaderSource = shaderCode.c_str();
