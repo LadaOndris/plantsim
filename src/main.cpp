@@ -11,6 +11,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "simulation/initializers/regions/CircleRegion.h"
+#include "simulation/initializers/regions/GridRegion.h"
 #include "visualisation/WindowDefinition.h"
 #include "visualisation/rendering/Renderer.h"
 #include "visualisation/rendering/RenderingOptionsProvider.h"
@@ -22,6 +24,7 @@
 #include "simulation/Options.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
+#include "simulation/initializers/Initializers.h"
 
 #if defined(BACKEND_CPU)
     #include "simulation/cpu/CpuSimulator.h"
@@ -251,36 +254,6 @@ namespace {
         fprintf(stderr, format, str_source, str_type, id, message);
     }
 
-    State createInitialState(const GridTopology &topology) {
-        const int width = topology.width;
-        const int height = topology.height;
-        const size_t totalCells = width * height;
-
-        std::vector<float> resources(totalCells, 0);
-        std::vector<int> cellTypes(totalCells, 0); // Air
-
-        // Set up source cell with resources
-        const AxialCoord cell{.q=width/2, .r=height/2};
-        const int sourceIdx = cell.asFlat(topology.getDimension());
-        resources[sourceIdx] = 10000;
-        cellTypes[sourceIdx] = 1; // Cell type
-
-        for (size_t i = 0; i < totalCells; i++) {
-            cellTypes[i] = 1;
-        }
-
-        // Set up neighboring cell (right neighbor)
-        const AxialCoord neighbor{.q=2, .r=1};
-        const int neighborIdx = neighbor.asFlat(topology.getDimension());
-        cellTypes[neighborIdx] = 1; // Cell type
-
-        // State should contain the storage data.
-        auto storedResources = store<float>(resources, width, height, -1);
-        auto storedCellTypes = store<int>(cellTypes, width, height, -1);
-
-        return State(width, height, storedResources, storedCellTypes);
-    }
-
     std::unique_ptr<ISimulator> createSimulator(State initialState) {
 #if defined(BACKEND_CPU)
 std::cout << "[INFO] Using CPU backend" << std::endl;
@@ -295,9 +268,24 @@ std::cout << "[INFO] Using SYCL backend" << std::endl;
     }
 
     int runApplication() {
+        using namespace initializers;
+
         constexpr int gridSize = 200;
         GridTopology topology{gridSize, gridSize};
-        State initialState = createInitialState(topology);
+
+        OffsetCoord center{gridSize / 2, gridSize / 2};
+        StateInitializer initializer{
+            // Set all cells to Cell type
+            //PolicyApplication{CircleRegion{center, 70}, SetCellType{CellState::Cell}},
+            PolicyApplication{GridRegion{10, 70, center.col - 5, center.row - 35}, SetCellType{CellState::Cell}},
+            // Set resources at center cell
+            PolicyApplication{
+                SingleCell{center},
+                SetResource{FixedAmount{10000.0f}}
+            }
+        };
+        State initialState = initializer.initialize(topology);
+
         std::unique_ptr<ISimulator> simulator = createSimulator(std::move(initialState));
 
         std::vector<std::shared_ptr<Renderer>> renderers;

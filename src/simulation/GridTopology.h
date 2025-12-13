@@ -18,10 +18,6 @@ struct AxialCoord {
     int q; 
     int r; 
 
-    constexpr int asFlat(const AxialCoord& dim) const {
-        return r * dim.q + q;
-    }
-    
     constexpr bool operator==(const AxialCoord& other) const {
         return q == other.q && r == other.r;
     }
