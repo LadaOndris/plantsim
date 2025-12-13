@@ -116,10 +116,10 @@ void WorldStateRenderer::updateVisualizationInternalState() {
 
             glm::vec3 pointColor = convertPointToColour(pointResources, pointType);
 
-            auto verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
+            auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
 
             for (auto &index: verticesIndices) {
-                auto colorVector = this->meshData.vertices[index].color;
+                auto& colorVector = this->meshData.vertices[index].color;
                 colorVector[0] = pointColor[0];
                 colorVector[1] = pointColor[1];
                 colorVector[2] = pointColor[2];
@@ -129,7 +129,10 @@ void WorldStateRenderer::updateVisualizationInternalState() {
 }
 
 glm::vec3 WorldStateRenderer::convertPointToColour(float resources, CellState::Type type) const {
-    double resource_factor = fmin(resources / 4.0, 1.0f);
+    double resource_factor = 0.0;
+    if (resources > 0.0f) {
+        resource_factor = fmin(resources / 1.f, 1.f);
+    }
     double G = 0.2f * (type == CellState::Type::Cell);
     double B = 0.2f * (type == CellState::Type::Cell);
 
