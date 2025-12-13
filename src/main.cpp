@@ -144,11 +144,12 @@ namespace {
         glEnable(GL_MULTISAMPLE);
 
         Options simOptions{
-            .enableResourceTransfer = true
+            .enableResourceTransfer = true,
+            .enableCellMultiplication = true
         };
 
         while (!glfwWindowShouldClose(window)) {
-            for (int i = 0; i < 500; i++) {
+            for (int i = 0; i < 100; i++) {
                 simulator.step(simOptions);
             }
 
