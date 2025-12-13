@@ -1,9 +1,4 @@
-//`1
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_CHROMOSOME_H
-#define PLANTSIM_CHROMOSOME_H
+#pragma once
 
 #include "Gene.h"
 #include <vector>
@@ -68,4 +63,3 @@ int Chromosome<TGene>::getLength() const {
 }
 
 
-#endif //PLANTSIM_CHROMOSOME_H

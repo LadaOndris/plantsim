@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/27/22.
-//
-
-#ifndef PLANTSIM_TESTINDIVIDUAL_H
-#define PLANTSIM_TESTINDIVIDUAL_H
+#pragma once
 
 #include "genetics/SumFitness.h"
 #include "genetics/Population.h"
@@ -54,4 +49,3 @@ public:
 };
 
 
-#endif //PLANTSIM_TESTINDIVIDUAL_H

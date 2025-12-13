@@ -1,9 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_WORLDSTATE_H
-#define PLANTSIM_WORLDSTATE_H
+#pragma once
 
 #include <memory>
 #include <array>
@@ -57,4 +52,3 @@ private:
 };
 
 
-#endif //PLANTSIM_WORLDSTATE_H

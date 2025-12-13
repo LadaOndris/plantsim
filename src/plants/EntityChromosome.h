@@ -1,9 +1,4 @@
-//
-// Created by lada on 8/6/22.
-//
-
-#ifndef PLANTSIM_ENTITYCHROMOSOME_H
-#define PLANTSIM_ENTITYCHROMOSOME_H
+#pragma once
 
 #include <vector>
 #include "HormoneOption.h"
@@ -35,4 +30,3 @@ private:
 };
 
 
-#endif //PLANTSIM_ENTITYCHROMOSOME_H

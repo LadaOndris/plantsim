@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_SOIL_H
-#define PLANTSIM_SOIL_H
-
+#pragma once
 
 #include "Point.h"
 
@@ -17,4 +11,3 @@ private:
 };
 
 
-#endif //PLANTSIM_SOIL_H

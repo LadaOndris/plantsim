@@ -1,9 +1,4 @@
-//
-// Created by lada on 8/25/21.
-//
-
-#ifndef PLANTSIM_ENVIRONMENT_H
-#define PLANTSIM_ENVIRONMENT_H
+#pragma once
 
 #include <vector>
 #include "WorldState.h"
@@ -24,4 +19,3 @@ private:
 };
 
 
-#endif //PLANTSIM_ENVIRONMENT_H

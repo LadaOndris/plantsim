@@ -1,10 +1,4 @@
-//
-// Created by lada on 4/14/24.
-//
-
-#ifndef PLANTSIM_AXIALRECTANGULARMAPITERATOR_H
-#define PLANTSIM_AXIALRECTANGULARMAPITERATOR_H
-
+#pragma once
 
 
 #include "Iterator.h"
@@ -33,4 +27,3 @@ private:
 };
 
 
-#endif //PLANTSIM_AXIALRECTANGULARMAPITERATOR_H

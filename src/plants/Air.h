@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_AIR_H
-#define PLANTSIM_AIR_H
-
+#pragma once
 
 #include "Point.h"
 
@@ -16,4 +10,3 @@ private:
 };
 
 
-#endif //PLANTSIM_AIR_H

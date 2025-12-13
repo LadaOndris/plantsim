@@ -1,7 +1,4 @@
-
-#ifndef PLANTSIM_RENDERER_H
-#define PLANTSIM_RENDERER_H
-
+#pragma once
 
 #include "../WindowDefinition.h"
 #include "RenderingOptions.h"
@@ -16,6 +13,3 @@ public:
 
     virtual ~Renderer() = default;
 };
-
-
-#endif

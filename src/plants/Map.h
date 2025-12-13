@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/31/22.
-//
-
-#ifndef PLANTSIM_MAP_H
-#define PLANTSIM_MAP_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -32,4 +27,3 @@ public:
 };
 
 
-#endif //PLANTSIM_MAP_H

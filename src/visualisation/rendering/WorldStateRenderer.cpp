@@ -1,6 +1,3 @@
-//
-// Created by lada on 4/13/24.
-//
 
 #include <algorithm>
 #include "WorldStateRenderer.h"

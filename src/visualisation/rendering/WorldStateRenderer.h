@@ -1,10 +1,4 @@
-//
-// Created by lada on 4/13/24.
-//
-
-#ifndef PLANTSIM_WORLDSTATERENDERER_H
-#define PLANTSIM_WORLDSTATERENDERER_H
-
+#pragma once
 
 #include "Renderer.h"
 #include "GLVertex.h"
@@ -48,4 +42,3 @@ private:
 };
 
 
-#endif //PLANTSIM_WORLDSTATERENDERER_H

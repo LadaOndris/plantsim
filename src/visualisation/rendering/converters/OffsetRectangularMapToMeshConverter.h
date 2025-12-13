@@ -1,9 +1,4 @@
-//
-// Created by lada on 4/14/24.
-//
-
-#ifndef PLANTSIM_OFFSETRECTANGULARMAPTOMESHCONVERTER_H
-#define PLANTSIM_OFFSETRECTANGULARMAPTOMESHCONVERTER_H
+#pragma once
 
 #include "MapConverter.h"
 
@@ -15,4 +10,3 @@ public:
 };
 
 
-#endif //PLANTSIM_OFFSETRECTANGULARMAPTOMESHCONVERTER_H

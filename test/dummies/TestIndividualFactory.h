@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/29/22.
-//
-
-#ifndef PLANTSIM_TESTINDIVIDUALFACTORY_H
-#define PLANTSIM_TESTINDIVIDUALFACTORY_H
+#pragma once
 
 #include "genetics/IndividualFactory.h"
 #include "TestIndividual.h"
@@ -20,4 +15,3 @@ public:
 };
 
 
-#endif //PLANTSIM_TESTINDIVIDUALFACTORY_H

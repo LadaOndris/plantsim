@@ -1,6 +1,4 @@
-
-#ifndef PLANTSIM_WINDOWDEFINITION_H
-#define PLANTSIM_WINDOWDEFINITION_H
+#pragma once
 
 #include <string>
 
@@ -10,6 +8,3 @@ struct WindowDefinition {
     int height{480};
     std::string name{"Plantsim"};
 };
-
-
-#endif

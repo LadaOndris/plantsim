@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_CONSTRAINT_H
-#define PLANTSIM_CONSTRAINT_H
-
+#pragma once
 
 #include "WorldState.h"
 
@@ -18,4 +12,3 @@ private:
 };
 
 
-#endif //PLANTSIM_CONSTRAINT_H

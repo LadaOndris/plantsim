@@ -1,9 +1,4 @@
-//
-// Created by lada on 4/14/24.
-//
-
-#ifndef PLANTSIM_ITERATOR_H
-#define PLANTSIM_ITERATOR_H
+#pragma once
 
 #include <memory>
 #include "plants/Point.h"
@@ -17,4 +12,3 @@ public:
 };
 
 
-#endif //PLANTSIM_ITERATOR_H

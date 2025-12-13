@@ -1,6 +1,3 @@
-//
-// Created by lada on 8/25/21.
-//
 
 #include "Environment.h"
 

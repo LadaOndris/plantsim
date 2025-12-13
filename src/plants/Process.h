@@ -1,9 +1,4 @@
-//
-// Created by lada on 8/27/21.
-//
-
-#ifndef PLANTSIM_PROCESS_H
-#define PLANTSIM_PROCESS_H
+#pragma once
 
 #include "Entity.h"
 #include "Cell.h"
@@ -23,4 +18,3 @@ private:
 };
 
 
-#endif //PLANTSIM_PROCESS_H

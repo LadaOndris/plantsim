@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/6/22.
-//
-
-#ifndef PLANTSIM_HORMONEOPTION_H
-#define PLANTSIM_HORMONEOPTION_H
-
+#pragma once
 
 struct HormoneOption {
     unsigned amount;
@@ -13,4 +7,3 @@ struct HormoneOption {
 };
 
 
-#endif //PLANTSIM_HORMONEOPTION_H

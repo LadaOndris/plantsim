@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_CELL_H
-#define PLANTSIM_CELL_H
-
+#pragma once
 
 #include <memory>
 #include "genetics/Chromosome.h"
@@ -29,4 +23,3 @@ private:
 };
 
 
-#endif //PLANTSIM_CELL_H

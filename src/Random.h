@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/29/22.
-//
-
-#ifndef PLANTSIM_RANDOM_H
-#define PLANTSIM_RANDOM_H
+#pragma once
 
 #include <random>
 
@@ -17,4 +12,3 @@ public:
 };
 
 
-#endif //PLANTSIM_RANDOM_H

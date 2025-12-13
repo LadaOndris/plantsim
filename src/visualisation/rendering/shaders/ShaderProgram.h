@@ -1,10 +1,4 @@
-//
-// Created by lada on 4/13/24.
-//
-
-#ifndef PLANTSIM_SHADERPROGRAM_H
-#define PLANTSIM_SHADERPROGRAM_H
-
+#pragma once
 
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 
@@ -122,4 +116,3 @@ public:
 };
 
 
-#endif //PLANTSIM_SHADERPROGRAM_H

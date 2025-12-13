@@ -1,10 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_GENE_H
-#define PLANTSIM_GENE_H
-
+#pragma once
 
 template<typename T>
 class Gene {
@@ -49,4 +43,3 @@ void Gene<T>::setValue(T other) {
 }
 
 
-#endif //PLANTSIM_GENE_H

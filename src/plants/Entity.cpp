@@ -1,6 +1,3 @@
-//
-// Created by lada on 8/27/21.
-//
 
 #include <utility>
 #include "Entity.h"

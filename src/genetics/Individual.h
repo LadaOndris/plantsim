@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/27/22.
-//
-
-#ifndef PLANTSIM_INDIVIDUAL_H
-#define PLANTSIM_INDIVIDUAL_H
+#pragma once
 
 #include "genetics/Chromosome.h"
 #include <limits>
@@ -63,4 +58,3 @@ bool operator<(const Individual<TGene> &lhs, const Individual<TGene> &rhs) {
 }
 
 
-#endif //PLANTSIM_INDIVIDUAL_H

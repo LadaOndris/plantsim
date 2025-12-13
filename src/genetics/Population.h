@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/27/22.
-//
-
-#ifndef PLANTSIM_POPULATION_H
-#define PLANTSIM_POPULATION_H
+#pragma once
 
 #include <memory>
 #include <utility>
@@ -127,4 +122,3 @@ void Population<TGene>::mutate() {
 }
 
 
-#endif //PLANTSIM_POPULATION_H

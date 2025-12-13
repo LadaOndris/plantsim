@@ -1,9 +1,4 @@
-//
-// Created by lada on 9/5/21.
-//
-
-#ifndef PLANTSIM_EMPTYPROCESS_H
-#define PLANTSIM_EMPTYPROCESS_H
+#pragma once
 
 #include <iostream>
 #include "plants/Process.h"
@@ -20,4 +15,3 @@ private:
     }
 };
 
-#endif //PLANTSIM_EMPTYPROCESS_H

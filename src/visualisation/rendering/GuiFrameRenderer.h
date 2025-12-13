@@ -1,7 +1,4 @@
-
-#ifndef PLANTSIM_GUIFRAMERENDERER_H
-#define PLANTSIM_GUIFRAMERENDERER_H
-
+#pragma once
 
 #include "Renderer.h"
 #include "RenderingOptionsProvider.h"
@@ -18,6 +15,3 @@ public:
 
     RenderingOptions getRenderingOptions() const override;
 };
-
-
-#endif

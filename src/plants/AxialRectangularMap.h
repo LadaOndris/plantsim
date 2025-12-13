@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/31/22.
-//
-
-#ifndef PLANTSIM_AXIALRECTANGULARMAP_H
-#define PLANTSIM_AXIALRECTANGULARMAP_H
+#pragma once
 
 #include <vector>
 #include <array>
@@ -203,4 +198,3 @@ private:
 // Include template implementation
 #include "AxialRectangularMap.tpp"
 
-#endif //PLANTSIM_AXIALRECTANGULARMAP_H

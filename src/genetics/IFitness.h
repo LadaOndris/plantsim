@@ -1,9 +1,4 @@
-//
-// Created by lada on 1/27/22.
-//
-
-#ifndef PLANTSIM_IFITNESS_H
-#define PLANTSIM_IFITNESS_H
+#pragma once
 
 #include "genetics/Individual.h"
 
@@ -15,4 +10,3 @@ public:
 };
 
 
-#endif //PLANTSIM_IFITNESS_H

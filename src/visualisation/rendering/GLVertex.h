@@ -1,10 +1,4 @@
-//
-// Created by lada on 4/13/24.
-//
-
-#ifndef PLANTSIM_GLVERTEX_H
-#define PLANTSIM_GLVERTEX_H
-
+#pragma once
 
 struct GLVertex {
     float position[3];
@@ -13,4 +7,3 @@ struct GLVertex {
 
 
 
-#endif //PLANTSIM_GLVERTEX_H

@@ -124,11 +124,9 @@ TEST_F(AxialRectangularMapAccessTest, AccessAllPointsWithinOffsetCoordsRegion) {
 //    int r = 2;
 //    auto point = map.getPoint(q, r);
 //    auto neighbors = map.getNeighbors(point);
-//
 //    // Each hexagon has 6 neighbors
 //    int neighborsCount = 6;
 //    ASSERT_EQ(neighborsCount, neighbors.size());
-//
 //    int pointNeighbors[6][2] = {{6, 2},
 //                                {5, 3},
 //                                {4, 3},
@@ -138,22 +136,18 @@ TEST_F(AxialRectangularMapAccessTest, AccessAllPointsWithinOffsetCoordsRegion) {
 //    for (int i = 0; i < neighborsCount; i++) {
 //        auto pointQ = neighbors[i]->getX();
 //        auto pointR = neighbors[i]->getY();
-//
 //        ASSERT_EQ(pointNeighbors[i][0], pointQ);
 //        ASSERT_EQ(pointNeighbors[i][1], pointR);
 //    }
 //}
-//
 //TEST_F(AxialRectangularMapTest, NeighboursOnBorder) {
 //    int q = 5;
 //    int r = 0;
 //    auto point = map.getPoint(q, r);
 //    auto neighbors = map.getNeighbors(point);
-//
 //    // Each hexagon on a border has 4 neighbors (not at the corners)
 //    int neighborsCount = 4;
 //    ASSERT_EQ(neighborsCount, neighbors.size());
-//
 //    int pointNeighbors[4][2] = {{6, 0},
 //                                {5, 1},
 //                                {4, 1},
@@ -161,7 +155,6 @@ TEST_F(AxialRectangularMapAccessTest, AccessAllPointsWithinOffsetCoordsRegion) {
 //    for (int i = 0; i < neighborsCount; i++) {
 //        auto pointQ = neighbors[i]->getX();
 //        auto pointR = neighbors[i]->getY();
-//
 //        ASSERT_EQ(pointNeighbors[i][0], pointQ);
 //        ASSERT_EQ(pointNeighbors[i][1], pointR);
 //    }

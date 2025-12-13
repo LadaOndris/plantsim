@@ -1,9 +1,4 @@
-//
-// Created by lada on 4/14/24.
-//
-
-#ifndef PLANTSIM_MESHDATA_H
-#define PLANTSIM_MESHDATA_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -25,4 +20,3 @@ struct MeshData {
     std::unordered_map<std::pair<int, int>, std::vector<size_t>, PairHash> cellVerticesMap{};
 };
 
-#endif //PLANTSIM_MESHDATA_H

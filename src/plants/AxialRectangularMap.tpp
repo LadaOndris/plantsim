@@ -1,7 +1,5 @@
-//
 // Template implementation for AxialRectangularMap
 // This file is included by AxialRectangularMap.h
-//
 
 #include <stdexcept>
 #include "../NotImplementedException.h"

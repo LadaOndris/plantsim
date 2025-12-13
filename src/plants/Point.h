@@ -1,9 +1,4 @@
-//
-// Created by lada on 8/26/21.
-//
-
-#ifndef PLANTSIM_POINT_H
-#define PLANTSIM_POINT_H
+#pragma once
 
 #include <utility>
 
@@ -31,4 +26,3 @@ struct Point {
 };
 
 
-#endif //PLANTSIM_POINT_H

@@ -1,9 +1,4 @@
-//
-// Created by lada on 4/14/24.
-//
-
-#ifndef PLANTSIM_MAPCONVERTER_H
-#define PLANTSIM_MAPCONVERTER_H
+#pragma once
 
 #include "MeshData.h"
 #include "simulation/GridTopology.h"
@@ -16,4 +11,3 @@ public:
 };
 
 
-#endif //PLANTSIM_MAPCONVERTER_H
