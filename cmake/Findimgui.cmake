@@ -40,8 +40,13 @@ if(imgui_INCLUDE_DIR)
         ${imgui_INCLUDE_DIR}/backends/imgui_impl_opengl3.cpp
     )
     
+    # Add misc/cpp sources (imgui_stdlib for std::string support)
+    set(IMGUI_MISC_SOURCES
+        ${imgui_INCLUDE_DIR}/misc/cpp/imgui_stdlib.cpp
+    )
+    
     # Check if all source files exist
-    foreach(src ${IMGUI_SOURCES} ${IMGUI_BACKEND_SOURCES})
+    foreach(src ${IMGUI_SOURCES} ${IMGUI_BACKEND_SOURCES} ${IMGUI_MISC_SOURCES})
         if(NOT EXISTS ${src})
             message(WARNING "imgui source file not found: ${src}")
             set(imgui_FOUND FALSE)
@@ -54,11 +59,13 @@ if(imgui_INCLUDE_DIR)
             add_library(imgui STATIC
                 ${IMGUI_SOURCES}
                 ${IMGUI_BACKEND_SOURCES}
+                ${IMGUI_MISC_SOURCES}
             )
             
             target_include_directories(imgui PUBLIC
                 ${imgui_INCLUDE_DIR}
                 ${imgui_INCLUDE_DIR}/backends
+                ${imgui_INCLUDE_DIR}/misc/cpp
             )
             
             # imgui backends need GLFW and OpenGL

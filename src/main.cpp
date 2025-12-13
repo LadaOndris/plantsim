@@ -15,12 +15,23 @@
 #include "visualisation/rendering/Renderer.h"
 #include "visualisation/rendering/RenderingOptionsProvider.h"
 #include "visualisation/rendering/GuiFrameRenderer.h"
-#include "simulation/Simulator.h"
-#include "simulation/SimulatorOptionsProvider.h"
 #include "visualisation/rendering/WorldStateRenderer.h"
-#include "plants/WorldState.h"
-#include "plants/AxialRectangularMap.h"
 #include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
+
+#include "simulation/ISimulator.h"
+#include "simulation/Options.h"
+#include "simulation/GridTopology.h"
+#include "simulation/State.h"
+
+#if defined(BACKEND_CPU)
+    #include "simulation/cpu/CpuSimulator.h"
+#elif defined(BACKEND_CUDA)
+    #include "simulation/cuda/CudaSimulator.h"
+#elif defined(BACKEND_SYCL)
+    #include "simulation/sycl/SyclSimulator.h"
+#else
+    #error "No backend defined. Define BACKEND_CPU, BACKEND_CUDA, or BACKEND_SYCL"
+#endif
 
 namespace {
     GLFWwindow *window{};
@@ -124,14 +135,16 @@ namespace {
 
     void startRendering(const std::vector<std::shared_ptr<Renderer>> &renderers,
                         const RenderingOptionsProvider &renderingOptionsProvider,
-                        const SimulatorOptionsProvider &simulatorOptionsProvider,
-                        Simulator &simulator) {
+                        ISimulator &simulator) {
         glViewport(0, 0, windowDefinition.width, windowDefinition.height);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
 
+        Options simOptions{
+            .enableResourceTransfer = true
+        };
+
         while (!glfwWindowShouldClose(window)) {
-            Options simOptions{simulatorOptionsProvider.getSimulatorOptions()};
             for (int i = 0; i < 100; i++) {
                 simulator.step(simOptions);
             }
@@ -234,17 +247,51 @@ namespace {
         fprintf(stderr, format, str_source, str_type, id, message);
     }
 
-    std::unique_ptr<WorldState> initializeWorld() {
-        std::vector<std::shared_ptr<Process>> processes{};
-        auto map = std::make_shared<AxialRectangularMap>(80, 80);
+    State createInitialState(const GridTopology &topology) {
+        const int width = topology.width;
+        const int height = topology.height;
+        const size_t totalCells = width * height;
 
-        auto worldState{std::make_unique<WorldState>(map, processes)};
-        return worldState;
+        std::vector<float> resources(totalCells, 0);
+        std::vector<int> cellTypes(totalCells, 0); // Air
+
+        // Set up source cell with resources
+        const AxialCoord cell{.q=1, .r=1};
+        const int sourceIdx = cell.asFlat(topology.getDimension());
+        resources[sourceIdx] = 1000;
+        cellTypes[sourceIdx] = 1; // Cell type
+
+        for (size_t i = 0; i < totalCells; i++) {
+            cellTypes[i] = 1;
+        }
+
+        // Set up neighboring cell (right neighbor)
+        const AxialCoord neighbor{.q=2, .r=1};
+        const int neighborIdx = neighbor.asFlat(topology.getDimension());
+        cellTypes[neighborIdx] = 1; // Cell type
+
+        // State should contain the storage data.
+        auto storedResources = store<float>(resources, width, height, -1);
+        auto storedCellTypes = store<int>(cellTypes, width, height, -1);
+
+        return State(width, height, storedResources, storedCellTypes);
+    }
+
+    std::unique_ptr<ISimulator> createSimulator(State initialState) {
+#if defined(BACKEND_CPU)
+        return std::make_unique<CpuSimulator>(std::move(initialState));
+#elif defined(BACKEND_CUDA)
+        return std::make_unique<CudaSimulator>(std::move(initialState));
+#elif defined(BACKEND_SYCL)
+        return std::make_unique<SyclSimulator>(std::move(initialState));
+#endif
     }
 
     int runApplication() {
-        auto worldState = initializeWorld();
-        Simulator simulator(*worldState);
+        constexpr int gridSize = 80;
+        GridTopology topology{gridSize, gridSize};
+        State initialState = createInitialState(topology);
+        std::unique_ptr<ISimulator> simulator = createSimulator(std::move(initialState));
 
         std::vector<std::shared_ptr<Renderer>> renderers;
 
@@ -258,7 +305,7 @@ namespace {
 
         AxialRectangularMapToMeshConverter mapConverter{};
         auto worldStateRenderer{
-                std::make_shared<WorldStateRenderer>(*worldState, mapConverter, worldStateRendererProgram)};
+                std::make_shared<WorldStateRenderer>(topology, *simulator, mapConverter, worldStateRendererProgram)};
         renderers.push_back(worldStateRenderer);
 
         auto guiFrameRenderer{std::make_shared<GuiFrameRenderer>()};
@@ -270,7 +317,7 @@ namespace {
             return EXIT_FAILURE;
         }
 
-        startRendering(renderers, *guiFrameRenderer, *guiFrameRenderer, simulator);
+        startRendering(renderers, *guiFrameRenderer, *simulator);
 
         destroyRenderers(renderers);
         return EXIT_SUCCESS;

@@ -6,13 +6,12 @@
 #define PLANTSIM_MAPCONVERTER_H
 
 #include "MeshData.h"
-#include "plants/AxialRectangularMap.h"
-#include "simulation/CellState.h"
+#include "simulation/GridTopology.h"
 
 class MapConverter {
 
 public:
-    virtual MeshData convert(AxialRectangularMap<CellState> &map) const = 0;
+    virtual MeshData convert(const GridTopology &topology) const = 0;
 
 };
 

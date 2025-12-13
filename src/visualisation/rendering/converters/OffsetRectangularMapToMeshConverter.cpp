@@ -8,12 +8,11 @@
 #include <cassert>
 #include <glm/vec3.hpp>
 #include "OffsetRectangularMapToMeshConverter.h"
-#include "simulation/CellState.h"
 
-MeshData OffsetRectangularMapToMeshConverter::convert(AxialRectangularMap<CellState> &map) const {
+MeshData OffsetRectangularMapToMeshConverter::convert(const GridTopology &topology) const {
     // Todo: Remove duplicate code between converters
-    auto width = map.getWidth();
-    auto height = map.getHeight();
+    auto width = topology.width;
+    auto height = topology.height;
     std::cout << "[Map] Width: " << width << ", height: " << height << std::endl;
     assert (width == height);
 

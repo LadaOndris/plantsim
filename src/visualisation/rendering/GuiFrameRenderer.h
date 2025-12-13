@@ -5,9 +5,8 @@
 
 #include "Renderer.h"
 #include "RenderingOptionsProvider.h"
-#include "simulation/SimulatorOptionsProvider.h"
 
-class GuiFrameRenderer : public Renderer, public RenderingOptionsProvider, public SimulatorOptionsProvider {
+class GuiFrameRenderer : public Renderer, public RenderingOptionsProvider {
 public:
     GuiFrameRenderer();
 
@@ -18,8 +17,6 @@ public:
     void render(const WindowDefinition &window, const RenderingOptions &options) override;
 
     RenderingOptions getRenderingOptions() const override;
-
-    Options getSimulatorOptions() const override;
 };
 
 

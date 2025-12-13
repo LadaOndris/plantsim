@@ -7,16 +7,18 @@
 
 
 #include "Renderer.h"
-#include "plants/WorldState.h"
 #include "GLVertex.h"
 #include "visualisation/rendering/shaders/ShaderProgram.h"
 #include "visualisation/rendering/converters/MapConverter.h"
 #include "simulation/CellState.h"
+#include "simulation/GridTopology.h"
+#include "simulation/ISimulator.h"
 
 
 class WorldStateRenderer : public Renderer {
 public:
-    WorldStateRenderer(WorldState &worldState, const MapConverter &mapConverter, ShaderProgram &program);
+    WorldStateRenderer(const GridTopology &topology, ISimulator &simulator, 
+                       const MapConverter &mapConverter, ShaderProgram &program);
 
     bool initialize() override;
 
@@ -25,7 +27,8 @@ public:
     void render(const WindowDefinition &window, const RenderingOptions &options) override;
 
 private:
-    WorldState &worldState;
+    const GridTopology &topology;
+    ISimulator &simulator;
     const MapConverter &mapConverter;
     ShaderProgram &shaderProgram;
 
@@ -41,7 +44,7 @@ private:
 
     void updateVisualizationInternalState();
 
-    glm::vec3 convertPointToColour(int resources, CellState::Type type) const;
+    glm::vec3 convertPointToColour(float resources, CellState::Type type) const;
 };
 
 

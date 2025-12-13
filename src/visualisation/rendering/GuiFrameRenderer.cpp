@@ -17,7 +17,3 @@ void GuiFrameRenderer::render(const WindowDefinition &window, const RenderingOpt
 RenderingOptions GuiFrameRenderer::getRenderingOptions() const {
     return RenderingOptions{};
 }
-
-Options GuiFrameRenderer::getSimulatorOptions() const {
-    return Options{};
-}

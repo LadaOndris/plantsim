@@ -6,12 +6,11 @@
 #define PLANTSIM_OFFSETRECTANGULARMAPTOMESHCONVERTER_H
 
 #include "MapConverter.h"
-#include "simulation/CellState.h"
 
 class OffsetRectangularMapToMeshConverter : public MapConverter {
 
 public:
-    MeshData convert(AxialRectangularMap<CellState> &map) const override;
+    MeshData convert(const GridTopology &topology) const override;
 
 };
 

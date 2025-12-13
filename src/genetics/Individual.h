@@ -12,7 +12,7 @@
 template<typename TGene>
 class Individual {
 public:
-    Individual<TGene>();
+    Individual();
 
     explicit Individual(int chromosomeLength);
 
