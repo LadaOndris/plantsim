@@ -48,9 +48,14 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
     Eigen::Map<const MatrixXf> resources(state.resources.data(), h, w);
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
 
-    // Identify empty cells
-    emptyMask = (validity.array() * 
-                 (cellTypes.array() == static_cast<int>(CellState::Type::Air)).cast<float>()).matrix();
+    auto valid = validity.array();
+    auto isAir  = (cellTypes.array() == static_cast<int>(CellState::Type::Air)).cast<float>();
+    auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
+    auto hasResources = (resources.array() >= config.reproductionThreshold).cast<float>();
+    auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
+    
+    emptyMask = (valid * isAir).matrix();
+    eligibleMask = (valid * isCell * hasResources * hasEmptyNeighbor).matrix();
 
     // For each direction, check if neighbor in that direction is empty
     emptyNeighborCount.setZero();
@@ -58,13 +63,6 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
         grid.shiftMatrix(emptyMask, directionAvailable[d], grid.getOutgoingShift(d));
         emptyNeighborCount += directionAvailable[d];
     }
-
-    // Eligible = valid Cell with enough resources and at least one empty neighbor
-    auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
-    auto hasResources = (resources.array() >= config.reproductionThreshold).cast<float>();
-    auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
-    
-    eligibleMask = (validity.array() * isCell * hasResources * hasEmptyNeighbor).matrix();
 
     // Generate random values in [0, 1)
     std::uniform_real_distribution<float> dist(0.0f, std::nextafter(1.0f, 0.0f));
