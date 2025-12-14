@@ -94,8 +94,6 @@ void RandomNeighborReproduction::resolutionPhase() {
     childMask.setZero();
     parentCost.setZero();
     
-    MatrixXf winningParents(h, w);
-    
     for (int d = 0; d < NUM_DIRECTIONS; ++d) {
         // Shift parent intentions to target cells
         grid.shiftMatrix(directionChosen[d], tempBuffer, grid.getIncomingShift(d));
@@ -107,10 +105,7 @@ void RandomNeighborReproduction::resolutionPhase() {
         childMask.array() += tempBuffer.array();
         
         // Shift back to identify winning parents
-        grid.shiftMatrix(tempBuffer, winningParents, grid.getOutgoingShift(d));
-        
-        // Only parents who chose this direction pay
-        parentCost.array() += winningParents.array() * directionChosen[d].array();
+        grid.accumulateShifted(parentCost, tempBuffer, grid.getOutgoingShift(d));
     }
 }
 
