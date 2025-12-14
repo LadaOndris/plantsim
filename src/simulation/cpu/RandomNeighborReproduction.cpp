@@ -72,18 +72,21 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
                   [&]() { return dist(rng); });
 
     // Select one direction per eligible cell using cumulative probability
-    auto invCount = (emptyNeighborCount.array() > 0).select(1.0f / emptyNeighborCount.array(), 0.0f);
+    // Materialize invCount once since it's reused 6 times
+    tempBuffer = (emptyNeighborCount.array() > 0).select(1.0f / emptyNeighborCount.array(), 0.0f);
     
     cumulativeProb.setZero();
     for (int d = 0; d < NUM_DIRECTIONS; ++d) {
-        tempBuffer = cumulativeProb;  // prevCumulative
-        cumulativeProb.array() += directionAvailable[d].array() * invCount;
+        // Use expression templates: increment computed on-the-fly, no matrix copy
+        auto increment = directionAvailable[d].array() * tempBuffer.array();
         
-        // Chosen if: eligible AND available AND prev <= random < curr
+        // Evaluate before updating cumulativeProb - avoids tempBuffer copy
         directionChosen[d] = (eligibleMask.array() > 0.5f &&
                               directionAvailable[d].array() > 0.5f &&
-                              randomValues.array() >= tempBuffer.array() &&
-                              randomValues.array() < cumulativeProb.array()).cast<float>();
+                              randomValues.array() >= cumulativeProb.array() &&
+                              randomValues.array() < (cumulativeProb.array() + increment)).cast<float>();
+        
+        cumulativeProb.array() += increment;
     }
 }
 

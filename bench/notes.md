@@ -58,3 +58,37 @@ CPU - 100000 steps, 200 grid
 Simulation completed in 13872 ms
 Steps/second: 7208.77
 Map checksum: 0xa8cbbbd03ca37680
+
+
+## Different map (maybe)
+
+- only resource transfer
+
+$ ./build/bin/bench_sim_cuda 2000 200
+Simulation completed in 20 ms
+Steps/second: 100000
+Map checksum: 0xa8cbbbd03ca37680
+
+$ ./build/bin/bench_sim_cuda 100000 200
+Simulation completed in 732 ms
+Steps/second: 136612
+Map checksum: 0xa8cbbbd03ca37680
+
+## Benchmark: resource transfer + cell replication
+
+### CPU
+
+$ ./build/bin/bench_sim_cpu 2000 200
+Simulation completed in 1978 ms
+Steps/second: 1011.12
+Map checksum: 0xa228610c3da694b5
+
+After using expression templates and materializing sooner to avoid repeated calculations:
+
+$ ./build/bin/bench_sim_cpu 2000 200
+Simulation completed in 1668 ms
+Steps/second: 1199.04
+Map checksum: 0xa228610c3da694b5
+
+### GPU
+

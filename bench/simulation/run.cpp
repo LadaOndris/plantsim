@@ -3,7 +3,6 @@
 #include <chrono>
 #include <iomanip>
 #include <cstdlib>
-#include <string_view>
 #include <memory>
 
 #include "simulation/ISimulator.h"
@@ -11,16 +10,9 @@
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/MapPrinter.h"
-
-#if defined(BACKEND_CPU)
-    #include "simulation/cpu/CpuSimulator.h"
-#elif defined(BACKEND_CUDA)
-    #include "simulation/cuda/CudaSimulator.h"
-#elif defined(BACKEND_SYCL)
-    #include "simulation/sycl/SyclSimulator.h"
-#else
-    #error "No backend defined. Define BACKEND_CPU, BACKEND_CUDA, or BACKEND_SYCL"
-#endif
+#include "simulation/SimulatorFactory.h"
+#include "simulation/initializers/Initializers.h"
+#include "simulation/initializers/PolicyApplication.h"
 
 template <typename T>
 uint64_t computeChecksum(const std::vector<T> &cells, StorageCoord storageDims) {
@@ -35,46 +27,22 @@ uint64_t computeChecksum(const std::vector<T> &cells, StorageCoord storageDims) 
 }
 
 State createInitialState(const GridTopology &topology) {
-    const int width = topology.width;
-    const int height = topology.height;
-    const size_t totalCells = width * height;
+    using namespace initializers;
 
-    std::vector<float> resources(totalCells, 0);
-    std::vector<int> cellTypes(totalCells, 0); // Air
+    OffsetCoord center{topology.width / 2, topology.height / 2};
 
-    // Set up source cell with resources
-    const AxialCoord cell{.q=1, .r=1};
-    const int sourceIdx = cell.asFlat(topology.getDimension());
-    resources[sourceIdx] = 1000;
-    cellTypes[sourceIdx] = 1; // Cell type
+    StateInitializer initializer{
+        // Set all cells to Cell type
+        //PolicyApplication{FullGrid{}, SetCellType{CellState::Cell}},
+        PolicyApplication{CircleRegion{center, 1}, SetCellType{CellState::Cell}},     
+        // Set resources at source cell
+        PolicyApplication{
+            SingleCell{center},
+            SetResource{FixedAmount{1000.0f}}
+        }
+    };
 
-    for (size_t i = 0; i < totalCells; i++) {
-        cellTypes[i] = 1;
-    }
-    // for (int i = 2; i < 10; i++) {
-    //     cellTypes[AxialCoord{.q=1, .r=i}.asFlat(topology.getDimension())] = 1;
-    // }
-
-    // Set up neighboring cell (right neighbor)
-    const AxialCoord neighbor{.q=2, .r=1};
-    const int neighborIdx = neighbor.asFlat(topology.getDimension());
-    cellTypes[neighborIdx] = 1; // Cell type
-
-    // State should contain the storage data.
-    auto storedResources = store<float>(resources, width, height, -1);
-    auto storedCellTypes = store<int>(cellTypes, width, height, -1);
-
-    return State(width, height, storedResources, storedCellTypes);
-}
-
-std::unique_ptr<ISimulator> createSimulator(State initialState) {
-#if defined(BACKEND_CPU)
-    return std::make_unique<CpuSimulator>(std::move(initialState));
-#elif defined(BACKEND_CUDA)
-    return std::make_unique<CudaSimulator>(std::move(initialState));
-#elif defined(BACKEND_SYCL)
-    return std::make_unique<SyclSimulator>(std::move(initialState));
-#endif
+    return initializer.initialize(topology);
 }
 
 int main(int argc, char* argv[]) {
@@ -106,11 +74,12 @@ int main(int argc, char* argv[]) {
     std::cout << MapPrinter::printHexMapResources(topology, initialState) << std::endl;
 
     // Backend is set at compile time via -DTARGET_BACKEND=<backend>
-    std::cout << "Using backend: " << TARGET_BACKEND << std::endl;
-    std::unique_ptr<ISimulator> simulatorPtr = createSimulator(std::move(initialState));
+    std::cout << "Using backend: " << SimulatorFactory::getBackendName() << std::endl;
+    std::unique_ptr<ISimulator> simulatorPtr = SimulatorFactory::create(std::move(initialState));
 
     Options simOptions{
-        .enableResourceTransfer = true
+        .enableResourceTransfer = true,
+        .enableCellMultiplication = true
     };
 
     auto start = std::chrono::high_resolution_clock::now();
