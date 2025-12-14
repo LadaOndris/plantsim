@@ -18,8 +18,10 @@ void RandomNeighborReproduction::initBuffers() {
     eligibleMask.resize(h, w);
     emptyNeighborCount.resize(h, w);
     randomValues.resize(h, w);
-    cumulativeProb.resize(h, w);
+    randomIndex.resize(h, w);
+    cumulativeCount.resize(h, w);
     tempBuffer.resize(h, w);
+    eligibleInt.resize(h, w);
     
     for (int d = 0; d < NUM_DIRECTIONS; ++d) {
         directionAvailable[d].resize(h, w);
@@ -64,27 +66,27 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
         emptyNeighborCount += directionAvailable[d];
     }
 
-    // Generate random values in [0, 1)
     std::uniform_real_distribution<float> dist(0.0f, std::nextafter(1.0f, 0.0f));
-    std::generate(randomValues.data(), randomValues.data() + grid.size(),
+    std::generate(randomIndex.data(), randomIndex.data() + grid.size(),
                   [&]() { return dist(rng); });
+    randomIndex = (randomValues.array() * emptyNeighborCount.array()).floor().cast<int>();
 
-    // Select one direction per eligible cell using cumulative probability
-    // Materialize invCount once since it's reused 6 times
-    tempBuffer = (emptyNeighborCount.array() > 0).select(1.0f / emptyNeighborCount.array(), 0.0f);
-    
-    cumulativeProb.setZero();
+    eligibleInt = (eligibleMask.array() > 0.5f).cast<int>();
+    cumulativeCount.setZero();
+
     for (int d = 0; d < NUM_DIRECTIONS; ++d) {
-        // Use expression templates: increment computed on-the-fly, no matrix copy
-        auto increment = directionAvailable[d].array() * tempBuffer.array();
-        
-        // Evaluate before updating cumulativeProb - avoids tempBuffer copy
-        directionChosen[d] = (eligibleMask.array() > 0.5f &&
-                              directionAvailable[d].array() > 0.5f &&
-                              randomValues.array() >= cumulativeProb.array() &&
-                              randomValues.array() < (cumulativeProb.array() + increment)).cast<float>();
-        
-        cumulativeProb.array() += increment;
+        using ArrayXXiRowMajor = Eigen::Array<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+        ArrayXXiRowMajor dirAvailInt = (directionAvailable[d].array() > 0.5f).cast<int>();
+
+        auto chosen =
+            eligibleInt.array()
+            * dirAvailInt
+            * (cumulativeCount.array() == randomIndex.array()).cast<int>();
+
+        directionChosen[d].array() = chosen.cast<float>();
+
+        // Integer increment for cumulative count
+        cumulativeCount.array() += dirAvailInt;
     }
 }
 

@@ -15,6 +15,22 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# =============================================================================
+# Profiling support
+# =============================================================================
+option(ENABLE_PROFILING "Enable profiling flags for gprof/perf" OFF)
+
+if(ENABLE_PROFILING)
+    message(STATUS "Profiling enabled - adding profiling flags")
+    # -pg: Generate gprof profiling information
+    # -g: Include debug symbols for meaningful profiling output
+    # -fno-omit-frame-pointer: Preserve frame pointers for accurate call stacks
+    set(PROFILING_FLAGS "-pg -g -fno-omit-frame-pointer")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PROFILING_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PROFILING_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+endif()
+
 # Output directory for all binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 

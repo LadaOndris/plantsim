@@ -40,6 +40,7 @@ private:
     Config config;
     std::mt19937 rng;
 
+
     // Core masks
     MatrixXf emptyMask;
     MatrixXf eligibleMask;
@@ -49,8 +50,10 @@ private:
     std::array<MatrixXf, NUM_DIRECTIONS> directionAvailable;
     std::array<MatrixXf, NUM_DIRECTIONS> directionChosen;
     MatrixXf randomValues;
-    MatrixXf cumulativeProb;
+    MatrixXi randomIndex;
+    MatrixXi cumulativeCount;  // Integer counter for vectorization
     MatrixXf tempBuffer;
+    MatrixXi eligibleInt;      // Pre-computed eligible mask as int
 
     // Results
     MatrixXf parentCost;
