@@ -5,16 +5,16 @@
 #include <GLFW/glfw3.h>
 
 WorldStateRenderer::WorldStateRenderer(const GridTopology &topology, ISimulator &simulator,
-                                       const MapConverter &mapConverter, ShaderProgram &program)
+                                       const MapConverter &mapConverter, std::shared_ptr<ShaderProgram> program)
         : topology{topology},
           simulator{simulator},
           mapConverter(mapConverter),
-          shaderProgram{program} {
+          shaderProgram{std::move(program)} {
 }
 
 
 bool WorldStateRenderer::initialize() {
-    bool isShaderProgramBuilt = shaderProgram.build();
+    bool isShaderProgramBuilt = shaderProgram->build();
     if (!isShaderProgramBuilt) {
         return false;
     }
@@ -66,7 +66,7 @@ void WorldStateRenderer::destroy() {
 void WorldStateRenderer::render(const WindowDefinition &window, const RenderingOptions &options) {
     updateVisualizationInternalState();
 
-    shaderProgram.use();
+    shaderProgram->use();
 
     glNamedBufferSubData(VBO, 0, meshData.vertices.size() * sizeof(GLVertex),
                          &meshData.vertices.front());
@@ -80,8 +80,8 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
 
     glm::mat4 projectionMat = glm::ortho(left, right, bottom, top, nearVal, farVal);
 
-    shaderProgram.setMat4("model", glm::mat4{1.f});
-    shaderProgram.setMat4("projection", projectionMat);
+    shaderProgram->setMat4("model", glm::mat4{1.f});
+    shaderProgram->setMat4("projection", projectionMat);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, meshData.indices.size(), GL_UNSIGNED_INT, nullptr);

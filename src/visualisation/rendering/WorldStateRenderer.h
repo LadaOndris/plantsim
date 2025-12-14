@@ -7,12 +7,13 @@
 #include "simulation/CellState.h"
 #include "simulation/GridTopology.h"
 #include "simulation/ISimulator.h"
+#include <memory>
 
 
 class WorldStateRenderer : public Renderer {
 public:
     WorldStateRenderer(const GridTopology &topology, ISimulator &simulator, 
-                       const MapConverter &mapConverter, ShaderProgram &program);
+                       const MapConverter &mapConverter, std::shared_ptr<ShaderProgram> program);
 
     bool initialize() override;
 
@@ -24,7 +25,7 @@ private:
     const GridTopology &topology;
     ISimulator &simulator;
     const MapConverter &mapConverter;
-    ShaderProgram &shaderProgram;
+    std::shared_ptr<ShaderProgram> shaderProgram;
 
     unsigned int VAO;
     unsigned int VBO;
