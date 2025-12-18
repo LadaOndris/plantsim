@@ -12,7 +12,7 @@
  * 
  * Algorithm:
  * 1. **Intention**: Each eligible cell randomly picks one empty neighbor direction
- * 2. **Resolution**: Conflicts resolved by direction priority (lowest index wins)
+ * 2. **Resolution**: Conflicts resolved
  * 3. **Application**: Winners pay cost, children are created
  */
 class RandomNeighborReproduction {

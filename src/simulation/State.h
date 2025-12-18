@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <utility>
+#include <memory>
 
 /**
  * @brief Represents the state of the simulation at a given time step.
@@ -41,3 +42,5 @@ public:
         return static_cast<size_t>(width) * height;
     }
 };
+
+using StatePtr = std::shared_ptr<State>;
