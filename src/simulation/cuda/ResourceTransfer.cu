@@ -121,12 +121,6 @@ __global__ void updateResourcesKernel(
 ResourceTransfer::ResourceTransfer(CudaStatePtr ptrInitialState)
     : ptrCudaState(ptrInitialState)
 {
-    const int height = ptrCudaState->storageHeight;
-    int additionalWidth = (height - 1) / 2;
-    storageWidth = ptrCudaState->storageWidth + additionalWidth;
-    storageHeight = height;
-    totalStorageCells = static_cast<size_t>(storageWidth) * storageHeight;
-    
     allocateDeviceMemory();
 }
 
@@ -135,7 +129,7 @@ ResourceTransfer::~ResourceTransfer() {
 }
 
 void ResourceTransfer::allocateDeviceMemory() {
-    size_t floatSize = totalStorageCells * sizeof(float);
+    size_t floatSize = ptrCudaState->totalStorageCells * sizeof(float);
     
     CUDA_CHECK(cudaMalloc(&d_nextResources, floatSize));
     CUDA_CHECK(cudaMalloc(&d_totalOutgoing, floatSize));
@@ -156,14 +150,14 @@ void ResourceTransfer::step(const Options& options) {
 
 void ResourceTransfer::transferResources() {
     // Configure grid and block dimensions
-    KernelConfig config(storageWidth, storageHeight);
+    KernelConfig config(ptrCudaState->storageWidth, ptrCudaState->storageHeight);
     
     // Step 1: Count neighbors + compute outgoing flow
     computeOutgoingFlowKernel<<<config.gridSize, config.blockSize>>>(
         ptrCudaState->d_resources, ptrCudaState->d_cellTypes,
         d_totalOutgoing, d_flowPerNeighbor,
         ptrCudaState->width, ptrCudaState->height,
-        storageWidth, storageHeight
+        ptrCudaState->storageWidth, ptrCudaState->storageHeight
     );
     
     // Step 2: Compute incoming flow + update resources
@@ -171,7 +165,7 @@ void ResourceTransfer::transferResources() {
         ptrCudaState->d_resources, d_flowPerNeighbor, ptrCudaState->d_cellTypes, d_totalOutgoing,
         d_nextResources,
         ptrCudaState->width, ptrCudaState->height,
-        storageWidth, storageHeight
+        ptrCudaState->storageWidth, ptrCudaState->storageHeight
     );
     
     // Swap buffers

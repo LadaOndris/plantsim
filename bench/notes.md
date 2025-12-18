@@ -90,5 +90,21 @@ Simulation completed in 1668 ms
 Steps/second: 1199.04
 Map checksum: 0xa228610c3da694b5
 
+$ ./build/bin/bench_sim_cpu 100000 200
+Simulation completed in 80473 ms
+Steps/second: 1242.65
+Map checksum: 0xa228610c3da694b5
+
 ### GPU
 
+First non-optimized implementation of cell replication (Random Neighbor Reproduction):
+
+$ ./build/bin/bench_sim_cuda 2000 200
+Simulation completed in 64 ms
+Steps/second: 31250
+Map checksum: 0xa228610c3da694b5
+
+$ ./build/bin/bench_sim_cuda 100000 200
+Simulation completed in 2546 ms
+Steps/second: 39277.3
+Map checksum: 0xa228610c3da694b5

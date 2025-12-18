@@ -30,7 +30,7 @@ State createInitialState(const ApplicationConfig& config) {
         // Set resources at center cell
         PolicyApplication{
             SingleCell{center},
-            SetResource{FixedAmount{10000.0f}}
+            SetResource{FixedAmount{1000000.0f}}
         }
     };
 

@@ -25,7 +25,7 @@ struct ApplicationConfig {
     };
 
     /// Number of simulation steps per render frame
-    int stepsPerFrame{100};
+    int stepsPerFrame{1000};
 
     /// Shader paths
     std::string vertexShaderPath{"./shaders/map/shader.vert"};

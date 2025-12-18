@@ -3,13 +3,17 @@
 CudaSimulator::CudaSimulator(State ptrInitialState)
     : state(std::make_shared<State>(ptrInitialState)),
       cudaState(std::make_shared<CudaState>(state)),
-      resourceTransfer(cudaState)
+      resourceTransfer(cudaState),
+      reproduction(cudaState)
 {
 }
 
 void CudaSimulator::step(const Options& options) {
     if (options.enableResourceTransfer) {
         resourceTransfer.step(options);
+    }
+    if (options.enableCellMultiplication) {
+        reproduction.step(options);
     }
 }
 

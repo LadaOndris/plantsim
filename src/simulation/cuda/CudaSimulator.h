@@ -5,6 +5,7 @@
 #include "simulation/ISimulator.h"
 #include "simulation/cuda/CudaState.h"
 #include "simulation/cuda/ResourceTransfer.h"
+#include "simulation/cuda/RandomNeighborReproduction.h"
 
 /**
  * @brief CUDA-based GPU simulator implementation.
@@ -22,4 +23,5 @@ private:
     CudaStatePtr cudaState;
 
     ResourceTransfer resourceTransfer;
+    RandomNeighborReproduction reproduction;
 };

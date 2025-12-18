@@ -22,10 +22,6 @@ public:
 private:
     CudaStatePtr ptrCudaState;
     
-    int storageWidth = 0;
-    int storageHeight = 0;
-    size_t totalStorageCells = 0;
-    
     // Device memory pointers
     float* d_nextResources = nullptr;
     
