@@ -7,11 +7,11 @@ struct RenderingOptions {
     // Layer visibility toggles
     bool showResources = true;
     bool showCellTypes = true;
-    bool showNutrients = false;
+    bool showNutrients = true;
     
     // Layer opacity (0.0 = transparent, 1.0 = opaque)
     float resourcesOpacity = 1.0f;
     float cellTypesOpacity = 0.5f;
-    float nutrientsOpacity = 0.7f;
+    float nutrientsOpacity = 0.8f;
 };
 

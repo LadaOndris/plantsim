@@ -57,8 +57,7 @@ void NutrientDiffusion::step(State& state, State& backBuffer, const Options& opt
     }
     
     // Laplacian = sum(neighbors) - 6*center
-    // We multiply by validity to zero out padding cells
-    laplacian = (neighborSum - 6.0f * nutrients).cwiseProduct(validity);
+    laplacian = (neighborSum - 6.0f * nutrients).cwiseProduct(soilMask);
     
     // Apply diffusion: nutrients += diffusionRate * laplacian
     nextNutrients.noalias() = nutrients + options.nutrientDiffusionRate * laplacian;

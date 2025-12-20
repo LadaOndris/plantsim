@@ -22,7 +22,7 @@ State createInitialState(const ApplicationConfig& config) {
     using namespace initializers;
 
     GridTopology topology{config.gridWidth, config.gridHeight};
-    OffsetCoord center{config.gridWidth / 2, config.gridHeight / 2};
+    OffsetCoord center{config.gridWidth / 2, 20};
 
     StateInitializer initializer{
         // Set center cells to Cell type
