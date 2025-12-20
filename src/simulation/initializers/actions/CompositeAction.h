@@ -21,16 +21,18 @@ public:
         : actions(std::move(actions)...) {}
 
     void apply(AxialCoord coord, const GridTopology& topology,
-               std::vector<float>& resources, std::vector<int>& cellTypes) const {
-        applyImpl(coord, topology, resources, cellTypes, std::index_sequence_for<Actions...>{});
+               std::vector<float>& resources, std::vector<int>& cellTypes,
+               std::vector<float>& nutrients) const {
+        applyImpl(coord, topology, resources, cellTypes, nutrients, std::index_sequence_for<Actions...>{});
     }
 
 private:
     template<std::size_t... Is>
     void applyImpl(AxialCoord coord, const GridTopology& topology,
                    std::vector<float>& resources, std::vector<int>& cellTypes,
+                   std::vector<float>& nutrients,
                    std::index_sequence<Is...>) const {
-        (std::get<Is>(actions).apply(coord, topology, resources, cellTypes), ...);
+        (std::get<Is>(actions).apply(coord, topology, resources, cellTypes, nutrients), ...);
     }
 };
 

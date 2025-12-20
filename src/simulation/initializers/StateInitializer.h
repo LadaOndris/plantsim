@@ -45,17 +45,20 @@ public:
         // Initialize with default values
         std::vector<float> resources(totalCells, 0.0f);
         std::vector<int> cellTypes(totalCells, static_cast<int>(CellState::Air));
+        std::vector<float> nutrients(totalCells, 0.0f);
 
         // Apply all policies in order
-        applyPolicies(topology, resources, cellTypes, std::index_sequence_for<Policies...>{});
+        applyPolicies(topology, resources, cellTypes, nutrients, std::index_sequence_for<Policies...>{});
 
         // Convert to storage layout
         auto storedResources = store<float>(resources, topology.width, topology.height, -1.0f);
         auto storedCellTypes = store<int>(cellTypes, topology.width, topology.height, -1);
+        auto storedNutrients = store<float>(nutrients, topology.width, topology.height, 0.0f);
 
         return State(topology.width, topology.height, 
                      std::move(storedResources), 
-                     std::move(storedCellTypes));
+                     std::move(storedCellTypes),
+                     std::move(storedNutrients));
     }
 
 private:
@@ -65,8 +68,9 @@ private:
     void applyPolicies(const GridTopology& topology,
                        std::vector<float>& resources,
                        std::vector<int>& cellTypes,
+                       std::vector<float>& nutrients,
                        std::index_sequence<Is...>) const {
-        (std::get<Is>(policies).apply(topology, resources, cellTypes), ...);
+        (std::get<Is>(policies).apply(topology, resources, cellTypes, nutrients), ...);
     }
 };
 

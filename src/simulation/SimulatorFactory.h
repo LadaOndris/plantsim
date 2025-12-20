@@ -27,11 +27,11 @@ public:
      * @param initialState The initial simulation state
      * @return Unique pointer to the created simulator
      */
-    static std::unique_ptr<ISimulator> create(State initialState) {
+    static std::unique_ptr<ISimulator> create(State initialState, const Options& options) {
         std::cout << "[INFO] Using " << getBackendName() << " backend" << std::endl;
 
 #if defined(BACKEND_CPU)
-        return std::make_unique<CpuSimulator>(std::move(initialState));
+        return std::make_unique<CpuSimulator>(std::move(initialState), options);
 #elif defined(BACKEND_CUDA)
         return std::make_unique<CudaSimulator>(std::move(initialState));
 #elif defined(BACKEND_SYCL)

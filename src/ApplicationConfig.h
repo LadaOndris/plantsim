@@ -21,11 +21,12 @@ struct ApplicationConfig {
     /// Simulation options passed to simulator each step
     Options simulationOptions{
         .enableResourceTransfer = true,
-        .enableCellMultiplication = true
+        .enableCellMultiplication = true,
+        .enableNutrients = true
     };
 
     /// Number of simulation steps per render frame
-    int stepsPerFrame{1000};
+    int stepsPerFrame{50};
 
     /// Shader paths
     std::string vertexShaderPath{"./shaders/map/shader.vert"};

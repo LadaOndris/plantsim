@@ -16,7 +16,8 @@ public:
     explicit SetResource(AmountPolicy amount) : amountPolicy(std::move(amount)) {}
 
     void apply(AxialCoord coord, const GridTopology& topology,
-               std::vector<float>& resources, std::vector<int>& cellTypes) const {
+               std::vector<float>& resources, std::vector<int>& cellTypes,
+               std::vector<float>& nutrients) const {
         // Convert axial to offset coordinates for flat indexing
         OffsetCoord offset = axialToOddr(coord);
         int index = offset.row * topology.width + offset.col;

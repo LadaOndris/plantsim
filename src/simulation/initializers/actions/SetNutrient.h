@@ -1,17 +1,19 @@
 #pragma once
 
 #include "simulation/GridTopology.h"
-#include "simulation/CellState.h"
 #include <vector>
 
 namespace initializers {
 
 /**
- * @brief Action policy that sets the cell type for cells.
+ * @brief Action policy that sets nutrient values for cells.
+ * 
+ * @tparam AmountPolicy A policy type that provides float compute(AxialCoord, GridTopology&)
  */
-class SetCellType {
+template<typename AmountPolicy>
+class SetNutrient {
 public:
-    explicit constexpr SetCellType(CellState::Type type) : cellType(type) {}
+    explicit SetNutrient(AmountPolicy amount) : amountPolicy(std::move(amount)) {}
 
     void apply(AxialCoord coord, const GridTopology& topology,
                std::vector<float>& resources, std::vector<int>& cellTypes,
@@ -19,10 +21,14 @@ public:
         // Convert axial to offset coordinates for flat indexing
         OffsetCoord offset = axialToOddr(coord);
         int index = offset.row * topology.width + offset.col;
-        cellTypes[index] = static_cast<int>(cellType);
+        nutrients[index] = amountPolicy.compute(coord, topology);
     }
+    
 private:
-    CellState::Type cellType;
+    AmountPolicy amountPolicy;
 };
+
+template<typename AmountPolicy>
+SetNutrient(AmountPolicy) -> SetNutrient<AmountPolicy>;
 
 } // namespace initializers

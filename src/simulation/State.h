@@ -24,6 +24,9 @@ public:
     /// Cell types for each cell (size = width * height), values from CellState::Type
     std::vector<int> cellTypes;
     
+    /// Nutrient concentration for each cell (size = width * height)
+    std::vector<float> nutrients;
+    
     State() = default;
 
     State(int width, int height, 
@@ -32,7 +35,19 @@ public:
         : width(width)
         , height(height)
         , resources(std::move(resources))
-        , cellTypes(std::move(cellTypes)) 
+        , cellTypes(std::move(cellTypes))
+        , nutrients(resources.size(), 0.0f)
+    {}
+    
+    State(int width, int height, 
+          std::vector<float> resources, 
+          std::vector<int> cellTypes,
+          std::vector<float> nutrients)
+        : width(width)
+        , height(height)
+        , resources(std::move(resources))
+        , cellTypes(std::move(cellTypes))
+        , nutrients(std::move(nutrients))
     {}
 
     /**

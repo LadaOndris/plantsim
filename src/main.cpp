@@ -30,7 +30,12 @@ State createInitialState(const ApplicationConfig& config) {
         // Set resources at center cell
         PolicyApplication{
             SingleCell{center},
-            SetResource{FixedAmount{1000000.0f}}
+            SetResource{FixedAmount{0.0f}}
+        },
+        // Initialize soil layer (bottom 5 rows) with nutrients
+        PolicyApplication{
+            BottomRowsRegion{5},
+            SetNutrient{FixedAmount{100.0f}}
         }
     };
 
@@ -80,7 +85,7 @@ int main() {
 
     GridTopology topology{config.gridWidth, config.gridHeight};
     State initialState = createInitialState(config);
-    auto simulator = SimulatorFactory::create(std::move(initialState));
+    auto simulator = SimulatorFactory::create(std::move(initialState), config.simulationOptions);
 
     RendererRegistry registry;
     registerRenderers(registry, topology, *simulator, config);
