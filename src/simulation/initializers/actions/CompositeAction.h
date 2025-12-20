@@ -1,9 +1,9 @@
 #pragma once
 
 #include "simulation/GridTopology.h"
+#include "simulation/State.h"
 #include <tuple>
 #include <utility>
-#include <vector>
 
 namespace initializers {
 
@@ -20,19 +20,16 @@ public:
     explicit CompositeAction(Actions... actions)
         : actions(std::move(actions)...) {}
 
-    void apply(AxialCoord coord, const GridTopology& topology,
-               std::vector<float>& resources, std::vector<int>& cellTypes,
-               std::vector<float>& soilWater, std::vector<float>& soilMineral) const {
-        applyImpl(coord, topology, resources, cellTypes, soilWater, soilMineral, std::index_sequence_for<Actions...>{});
+    void apply(AxialCoord coord, const GridTopology& topology, State& state) const {
+        applyImpl(coord, topology, state, std::index_sequence_for<Actions...>{});
     }
 
 private:
     template<std::size_t... Is>
     void applyImpl(AxialCoord coord, const GridTopology& topology,
-                   std::vector<float>& resources, std::vector<int>& cellTypes,
-                   std::vector<float>& soilWater, std::vector<float>& soilMineral,
+                   State& state,
                    std::index_sequence<Is...>) const {
-        (std::get<Is>(actions).apply(coord, topology, resources, cellTypes, soilWater, soilMineral), ...);
+        (std::get<Is>(actions).apply(coord, topology, state), ...);
     }
 };
 

@@ -1,10 +1,9 @@
 #pragma once
 
 #include "simulation/GridTopology.h"
-#include "simulation/cpu/GridShiftHelper.h"
+#include "simulation/State.h"
 #include <Eigen/Dense>
 #include <utility>
-#include <vector>
 
 namespace initializers {
 
@@ -21,7 +20,7 @@ namespace initializers {
 template<typename RegionPolicy, typename ActionPolicy>
 class PolicyApplication {
 public:
-    using MatrixXf = GridShiftHelper::MatrixXf;
+    using MatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     RegionPolicy region;
     ActionPolicy action;
@@ -30,26 +29,19 @@ public:
         : region(std::move(region)), action(std::move(action)) {}
 
     /**
-     * @brief Apply the action to all cells in the region (State vectors version).
+     * @brief Apply the action to all cells in the region.
      * 
      * @param topology The grid topology
-     * @param resources Resource vector (size = topology.totalCells())
-     * @param cellTypes Cell type vector (size = topology.totalCells())
-     * @param soilWater Soil water vector (size = topology.totalCells())
-     * @param soilMineral Soil mineral vector (size = topology.totalCells())
+     * @param state The state object containing all fields (flat/logical layout)
      */
-    void apply(const GridTopology& topology,
-               std::vector<float>& resources,
-               std::vector<int>& cellTypes,
-               std::vector<float>& soilWater,
-               std::vector<float>& soilMineral) const {
+    void apply(const GridTopology& topology, State& state) const {
         // Iterate over all logical cells using offset coordinates
         for (int row = 0; row < topology.height; ++row) {
             for (int col = 0; col < topology.width; ++col) {
                 AxialCoord axial = oddrToAxial({col, row});
                 
                 if (region.contains(axial, topology)) {
-                    action.apply(axial, topology, resources, cellTypes, soilWater, soilMineral);
+                    action.apply(axial, topology, state);
                 }
             }
         }

@@ -17,7 +17,7 @@ namespace initializers {
 template<typename AmountPolicy>
 class SetValue {
 public:
-    using MatrixXf = GridShiftHelper::MatrixXf;
+    using MatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     explicit SetValue(AmountPolicy amount) : amountPolicy(std::move(amount)) {}
 

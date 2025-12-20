@@ -42,20 +42,22 @@ public:
     [[nodiscard]] State initialize(const GridTopology& topology) const {
         const size_t totalCells = topology.totalCells();
 
-        // Initialize with default values
-        std::vector<float> resources(totalCells, 0.0f);
-        std::vector<int> cellTypes(totalCells, static_cast<int>(CellState::Air));
-        std::vector<float> soilWater(totalCells, 0.0f);
-        std::vector<float> soilMineral(totalCells, 0.0f);
+        // Create a temporary state with flat (logical) layout for initialization
+        State flatState;
+        flatState.width = topology.width;
+        flatState.height = topology.height;
+        flatState.resources.resize(totalCells, 0.0f);
+        flatState.cellTypes.resize(totalCells, static_cast<int>(CellState::Air));
+        flatState.soilWater.resize(totalCells, 0.0f);
+        flatState.soilMineral.resize(totalCells, 0.0f);
 
-        // Apply all policies in order
-        applyPolicies(topology, resources, cellTypes, soilWater, soilMineral, std::index_sequence_for<Policies...>{});
+        applyPolicies(topology, flatState, std::index_sequence_for<Policies...>{});
 
         // Convert to storage layout
-        auto storedResources = store<float>(resources, topology.width, topology.height, -1.0f);
-        auto storedCellTypes = store<int>(cellTypes, topology.width, topology.height, -1);
-        auto storedSoilWater = store<float>(soilWater, topology.width, topology.height, 0.0f);
-        auto storedSoilMineral = store<float>(soilMineral, topology.width, topology.height, 0.0f);
+        auto storedResources = store<float>(flatState.resources, topology.width, topology.height, -1.0f);
+        auto storedCellTypes = store<int>(flatState.cellTypes, topology.width, topology.height, -1);
+        auto storedSoilWater = store<float>(flatState.soilWater, topology.width, topology.height, 0.0f);
+        auto storedSoilMineral = store<float>(flatState.soilMineral, topology.width, topology.height, 0.0f);
 
         return State(topology.width, topology.height, 
                      std::move(storedResources), 
@@ -69,12 +71,9 @@ private:
 
     template<std::size_t... Is>
     void applyPolicies(const GridTopology& topology,
-                       std::vector<float>& resources,
-                       std::vector<int>& cellTypes,
-                       std::vector<float>& soilWater,
-                       std::vector<float>& soilMineral,
+                       State& state,
                        std::index_sequence<Is...>) const {
-        (std::get<Is>(policies).apply(topology, resources, cellTypes, soilWater, soilMineral), ...);
+        (std::get<Is>(policies).apply(topology, state), ...);
     }
 };
 

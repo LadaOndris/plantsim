@@ -58,7 +58,7 @@ private:
      * @param regenRate The regeneration rate
      * @param dt Time step
      */
-    void applyRegeneration(MatrixXf& field, float target, float regenRate, float dt);
+    void applyRegeneration(Eigen::Ref<MatrixXf> field, float target, float regenRate, float dt);
     
     /**
      * @brief Apply diffusion to a resource field between soil tiles.
@@ -70,5 +70,5 @@ private:
      * @param diffusivity The diffusion rate
      * @param dt Time step
      */
-    void applyDiffusion(MatrixXf& field, float diffusivity, float dt);
+    void applyDiffusion(Eigen::Ref<MatrixXf> field, float diffusivity, float dt);
 };

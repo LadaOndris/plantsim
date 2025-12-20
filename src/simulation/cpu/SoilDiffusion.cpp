@@ -72,7 +72,7 @@ void SoilDiffusion::step(State& state, State& backBuffer, const Options& options
     std::swap(state.soilMineral, backBuffer.soilMineral);
 }
 
-void SoilDiffusion::applyRegeneration(MatrixXf& field, float target, float regenRate, float dt) {
+void SoilDiffusion::applyRegeneration(Eigen::Ref<MatrixXf> field, float target, float regenRate, float dt) {
     // Regeneration formula: field += dt * regenRate * (target - field) * soilMask
     // This pulls field values toward target in soil regions only
     field += soilMask.cwiseProduct(
@@ -80,7 +80,7 @@ void SoilDiffusion::applyRegeneration(MatrixXf& field, float target, float regen
     );
 }
 
-void SoilDiffusion::applyDiffusion(MatrixXf& field, float diffusivity, float dt) {
+void SoilDiffusion::applyDiffusion(Eigen::Ref<MatrixXf> field, float diffusivity, float dt) {
     // Compute average of soil neighbors for hex grid diffusion
     // Only soil tiles contribute to and receive diffusion
     

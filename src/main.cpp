@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "ApplicationConfig.h"
+#include "simulation/initializers/actions/SetStateField.h"
 #include "visualisation/GraphicsContext.h"
 #include "visualisation/RenderLoop.h"
 #include "visualisation/rendering/RendererRegistry.h"
@@ -28,16 +29,16 @@ State createInitialState(const ApplicationConfig& config) {
         // Set center cells to Cell type
         PolicyApplication{CircleRegion{center, 1}, SetCellType{CellState::Cell}},
         // Set resources at center cell
-        PolicyApplication{
-            SingleCell{center},
-            SetResource{FixedAmount{0.0f}}
-        },
+        // PolicyApplication{
+        //     SingleCell{center},
+        //     SetSoilMineral(FixedAmount{0.0f})
+        // },
         // Initialize soil layer with water and minerals
         PolicyApplication{
             BottomRowsRegion{config.simulationOptions.soilLayerHeight},
             CompositeAction{
-                SetSoilWater{FixedAmount{config.simulationOptions.soilWaterTarget}},
-                SetSoilMineral{FixedAmount{config.simulationOptions.soilMineralTarget}}
+                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget}),
+                SetSoilMineral(FixedAmount{config.simulationOptions.soilMineralTarget})
             }
         }
     };
