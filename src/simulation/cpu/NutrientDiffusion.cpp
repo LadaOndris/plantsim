@@ -1,4 +1,6 @@
 #include "simulation/cpu/NutrientDiffusion.h"
+#include "simulation/initializers/Initializers.h"
+#include "simulation/initializers/amounts/FixedAmount.h"
 #include <Eigen/Dense>
 
 NutrientDiffusion::NutrientDiffusion(const GridShiftHelper& grid, const Options& options)
@@ -17,16 +19,18 @@ NutrientDiffusion::NutrientDiffusion(const GridShiftHelper& grid, const Options&
 }
 
 void NutrientDiffusion::precomputeSoilMask(int soilLayerHeight) {
+    using namespace initializers;
+    
     const int h = grid.height();
+    const int w = grid.width();
     const auto& validity = grid.getValidityMask();
     
+    GridTopology topology{w, h};
+    
     soilMask.setZero();
-    for (int y = 0; y < h; ++y) {
-        // In storage coordinates, higher y values are at the bottom
-        if (h - y <= soilLayerHeight) {
-            soilMask.row(y) = validity.row(y);
-        }
-    }
+    
+    PolicyApplication soilPolicy{BottomRowsRegion{soilLayerHeight}, SetValue{FixedAmount{1.0f}}};
+    soilPolicy.apply(topology, soilMask);
 }
 
 void NutrientDiffusion::step(State& state, State& backBuffer, const Options& options) {

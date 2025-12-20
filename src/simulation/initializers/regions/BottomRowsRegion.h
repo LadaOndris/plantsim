@@ -30,11 +30,9 @@ public:
             return false;
         }
 
-        // Convert axial to offset coordinates
         OffsetCoord offset = axialToOddr(coord);
-        
-        // Bottom rows have row indices >= (height - rowCount)
-        return offset.row >= topology.height - rowCount;
+
+        return offset.row < rowCount;
     }
 };
 
