@@ -4,10 +4,12 @@
 #include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
 #include <GLFW/glfw3.h>
 
-WorldStateRenderer::WorldStateRenderer(const GridTopology &topology, ISimulator &simulator,
-                                       const MapConverter &mapConverter, std::shared_ptr<ShaderProgram> program)
+WorldStateRenderer::WorldStateRenderer(const GridTopology &topology, 
+                                       std::unique_ptr<ISimulator>& simulatorPtr,
+                                       const MapConverter &mapConverter, 
+                                       std::shared_ptr<ShaderProgram> program)
         : topology{topology},
-          simulator{simulator},
+          simulatorPtr{simulatorPtr},
           mapConverter(mapConverter),
           shaderProgram{std::move(program)} {
 }
@@ -64,7 +66,7 @@ void WorldStateRenderer::destroy() {
 }
 
 void WorldStateRenderer::render(const WindowDefinition &window, const RenderingOptions &options) {
-    updateVisualizationInternalState();
+    updateVisualizationInternalState(options);
 
     shaderProgram->use();
 
@@ -95,8 +97,8 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
 /**
  * Updates the visualization based on the current simulation state.
  */
-void WorldStateRenderer::updateVisualizationInternalState() {
-    const State &state = simulator.getState();
+void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions& options) {
+    const State &state = simulatorPtr->getState();
     StorageCoord storageDims = topology.getStorageDimension();
 
     for (int r = 0; r < topology.height; r++) {
@@ -112,9 +114,10 @@ void WorldStateRenderer::updateVisualizationInternalState() {
             int idx = storageCoord.asFlat(storageDims);
             
             float pointResources = state.resources[idx];
+            float pointNutrients = state.nutrients[idx];
             auto pointType = static_cast<CellState::Type>(state.cellTypes[idx]);
 
-            glm::vec3 pointColor = convertPointToColour(pointResources, pointType);
+            glm::vec3 pointColor = computeCellColor(pointResources, pointNutrients, pointType, options);
 
             auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
 
@@ -128,14 +131,50 @@ void WorldStateRenderer::updateVisualizationInternalState() {
     }
 }
 
-glm::vec3 WorldStateRenderer::convertPointToColour(float resources, CellState::Type type) const {
-    double resource_factor = 0.0;
-    if (resources > 0.0f) {
-        resource_factor = fmin(resources / 1.f, 1.f);
+glm::vec3 WorldStateRenderer::computeCellColor(float resources, float nutrients, 
+                                                CellState::Type type, 
+                                                const RenderingOptions& options) const {
+    glm::vec3 color{0.0f};
+    float totalOpacity = 0.0f;
+
+    constexpr glm::vec3 CELL_COLOR{0.1f, 0.6f, 0.2f};
+    constexpr glm::vec3 AIR_COLOR{0.05f, 0.05f, 0.05f};
+    constexpr glm::vec3 RESOURCE_BASE_COLOR{1.0f, 0.0f, 0.0f};  // Red
+    constexpr glm::vec3 NUTRIENT_BASE_COLOR{0.0f, 0.3f, 1.0f};  // Blue with slight cyan
+    constexpr float RESOURCE_MAX = 10.0f;
+    constexpr float NUTRIENT_MAX = 100.0f;
+
+    auto blendLayer = [&](bool enabled, const glm::vec3& layerColor, float layerOpacity) {
+        if (enabled && layerOpacity > 0.0f) {
+            color += layerColor * layerOpacity;
+            totalOpacity += layerOpacity;
+        }
+    };
+
+    // Layer 1: Cell Types
+    if (options.showCellTypes) {
+        glm::vec3 cellTypeColor = (type == CellState::Type::Cell) ? CELL_COLOR : AIR_COLOR;
+        blendLayer(true, cellTypeColor, options.cellTypesOpacity);
     }
-    double G = 0.2f * (type == CellState::Type::Cell);
-    double B = 0.2f * (type == CellState::Type::Cell);
 
+    // Layer 2: Resources (Red gradient)
+    if (options.showResources && resources > 0.0f) {
+        float intensity = std::min(resources / RESOURCE_MAX, 1.0f);
+        glm::vec3 resourceColor = RESOURCE_BASE_COLOR * intensity;
+        blendLayer(true, resourceColor, options.resourcesOpacity * intensity);
+    }
 
-    return {resource_factor, G, B};
+    // Layer 3: Nutrients (Blue gradient)
+    if (options.showNutrients && nutrients > 0.0f) {
+        float intensity = std::min(nutrients / NUTRIENT_MAX, 1.0f);
+        glm::vec3 nutrientColor = NUTRIENT_BASE_COLOR * intensity;
+        blendLayer(true, nutrientColor, options.nutrientsOpacity * intensity);
+    }
+
+    // Normalize if total opacity exceeds 1
+    if (totalOpacity > 1.0f) {
+        color /= totalOpacity;
+    }
+
+    return glm::clamp(color, 0.0f, 1.0f);
 }

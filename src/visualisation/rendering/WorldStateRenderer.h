@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 #include "GLVertex.h"
+#include "RenderingOptions.h"
 #include "visualisation/rendering/shaders/ShaderProgram.h"
 #include "visualisation/rendering/converters/MapConverter.h"
 #include "simulation/CellState.h"
@@ -12,8 +13,10 @@
 
 class WorldStateRenderer : public Renderer {
 public:
-    WorldStateRenderer(const GridTopology &topology, ISimulator &simulator, 
-                       const MapConverter &mapConverter, std::shared_ptr<ShaderProgram> program);
+    WorldStateRenderer(const GridTopology &topology, 
+                       std::unique_ptr<ISimulator>& simulatorPtr, 
+                       const MapConverter &mapConverter, 
+                       std::shared_ptr<ShaderProgram> program);
 
     bool initialize() override;
 
@@ -23,7 +26,7 @@ public:
 
 private:
     const GridTopology &topology;
-    ISimulator &simulator;
+    std::unique_ptr<ISimulator>& simulatorPtr;
     const MapConverter &mapConverter;
     std::shared_ptr<ShaderProgram> shaderProgram;
 
@@ -37,9 +40,8 @@ private:
 
     void setupVertexArrays();
 
-    void updateVisualizationInternalState();
+    void updateVisualizationInternalState(const RenderingOptions& options);
 
-    glm::vec3 convertPointToColour(float resources, CellState::Type type) const;
+    glm::vec3 computeCellColor(float resources, float nutrients, CellState::Type type, 
+                               const RenderingOptions& options) const;
 };
-
-

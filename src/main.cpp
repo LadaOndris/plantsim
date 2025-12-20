@@ -48,7 +48,7 @@ State createInitialState(const ApplicationConfig& config) {
 void registerRenderers(
     RendererRegistry& registry,
     const GridTopology& topology,
-    ISimulator& simulator,
+    std::unique_ptr<ISimulator>& simulatorPtr,
     const ApplicationConfig& config
 ) {
     // World state renderer (simulation visualization)
@@ -62,12 +62,13 @@ void registerRenderers(
 
     AxialRectangularMapToMeshConverter mapConverter{};
     auto worldStateRenderer = std::make_shared<WorldStateRenderer>(
-        topology, simulator, mapConverter, worldStateProgram
+        topology, simulatorPtr, mapConverter, worldStateProgram
     );
     registry.add(worldStateRenderer);
 
     // GUI renderer (ImGui overlay)
     auto guiRenderer = std::make_shared<GuiFrameRenderer>();
+    guiRenderer->initializeWithOptions(config.simulationOptions, config.stepsPerFrame);
     registry.add(guiRenderer);
 }
 
@@ -85,10 +86,10 @@ int main() {
 
     GridTopology topology{config.gridWidth, config.gridHeight};
     State initialState = createInitialState(config);
-    auto simulator = SimulatorFactory::create(std::move(initialState), config.simulationOptions);
+    std::unique_ptr<ISimulator> simulator = SimulatorFactory::create(std::move(initialState), config.simulationOptions);
 
     RendererRegistry registry;
-    registerRenderers(registry, topology, *simulator, config);
+    registerRenderers(registry, topology, simulator, config);
 
     if (!registry.initializeAll()) {
         registry.destroyAll();
@@ -98,14 +99,20 @@ int main() {
     // Get the GUI renderer as the options provider
     auto guiRenderer = registry.get<GuiFrameRenderer>();
     if (!guiRenderer) {
-        std::cerr << "[ERROR] GuiFrameRenderer not found in registry" << std::endl;
+        std::cerr << "[ERROR] GuiFrameRenderer not created" << std::endl;
         registry.destroyAll();
         return EXIT_FAILURE;
     }
 
-    RenderLoop::run(context, registry, *guiRenderer, *simulator, config);
+    // Create state creator lambda for reset functionality
+    auto stateCreator = [&config]() -> State {
+        return createInitialState(config);
+    };
+
+    RenderLoop::run(context, registry, *guiRenderer, simulator, config, stateCreator);
 
     registry.destroyAll();
 
     return EXIT_SUCCESS;
 }
+
