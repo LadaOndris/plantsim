@@ -13,7 +13,7 @@
 /**
  * @brief Factory function type for creating simulators.
  */
-using SimulatorFactory = std::function<std::unique_ptr<ISimulator>(State)>;
+using SimulatorFactory = std::function<std::unique_ptr<ISimulator>(State, const Options&)>;
 
 /**
  * @brief Class that holds simulator factory for parametric tests.
@@ -26,8 +26,8 @@ public:
     ResourceTransferParams(std::string name, SimulatorFactory factory)
         : name(std::move(name)), factory(std::move(factory)) {}
 
-    std::unique_ptr<ISimulator> createSimulator(State initialState) const {
-        return factory(std::move(initialState));
+    std::unique_ptr<ISimulator> createSimulator(State initialState, const Options& options) const {
+        return factory(std::move(initialState), options);
     }
 };
 
@@ -61,7 +61,9 @@ protected:
         auto storedResources = store(resources, width, height, 0);
         auto storedCellTypes = store(cellTypes, width, height, -1);
 
-        return State(width, height, storedResources, storedCellTypes);
+        return State(width, height, 
+                     std::vector<float>(storedResources.begin(), storedResources.end()), 
+                     storedCellTypes);
     }
 };
 
@@ -77,7 +79,7 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     std::cout << MapPrinter::printHexMapCellTypes(topology, initialState) << std::endl;
     std::cout << MapPrinter::printHexMapResources(topology, initialState) << std::endl;
 
-    auto simulator = param.createSimulator(initialState);
+    auto simulator = param.createSimulator(std::move(initialState), options);
 
     simulator->step(options);
     const State &finalState = simulator->getState();
@@ -109,11 +111,11 @@ INSTANTIATE_TEST_SUITE_P(
     ResourceTransferTests, 
     ResourceTransferFixture,
     ::testing::Values(
-        ResourceTransferParams{"CpuSimulator", [](State s) { 
-            return std::make_unique<CpuSimulator>(std::move(s)); 
+        ResourceTransferParams{"CpuSimulator", [](State s, const Options& opts) { 
+            return std::make_unique<CpuSimulator>(std::move(s), opts); 
         }},
-        ResourceTransferParams{"SyclSimulator", [](State s) { 
-            return std::make_unique<SyclSimulator>(std::move(s)); 
+        ResourceTransferParams{"SyclSimulator", [](State s, const Options& opts) { 
+            return std::make_unique<SyclSimulator>(std::move(s), opts); 
         }}
     ),
     [](const ::testing::TestParamInfo<ResourceTransferParams>& info) {

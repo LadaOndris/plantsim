@@ -9,7 +9,8 @@
  */
 class SyclSimulator : public ISimulator {
 public:
-    explicit SyclSimulator(State initialState) : state(std::move(initialState)) {}
+    explicit SyclSimulator(State initialState, const Options& options = Options{}) 
+        : state(std::move(initialState)) {}
 
     const State &getState() const override {
         return state;

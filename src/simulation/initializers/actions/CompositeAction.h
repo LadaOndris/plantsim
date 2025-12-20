@@ -22,17 +22,17 @@ public:
 
     void apply(AxialCoord coord, const GridTopology& topology,
                std::vector<float>& resources, std::vector<int>& cellTypes,
-               std::vector<float>& nutrients) const {
-        applyImpl(coord, topology, resources, cellTypes, nutrients, std::index_sequence_for<Actions...>{});
+               std::vector<float>& soilWater, std::vector<float>& soilMineral) const {
+        applyImpl(coord, topology, resources, cellTypes, soilWater, soilMineral, std::index_sequence_for<Actions...>{});
     }
 
 private:
     template<std::size_t... Is>
     void applyImpl(AxialCoord coord, const GridTopology& topology,
                    std::vector<float>& resources, std::vector<int>& cellTypes,
-                   std::vector<float>& nutrients,
+                   std::vector<float>& soilWater, std::vector<float>& soilMineral,
                    std::index_sequence<Is...>) const {
-        (std::get<Is>(actions).apply(coord, topology, resources, cellTypes, nutrients), ...);
+        (std::get<Is>(actions).apply(coord, topology, resources, cellTypes, soilWater, soilMineral), ...);
     }
 };
 

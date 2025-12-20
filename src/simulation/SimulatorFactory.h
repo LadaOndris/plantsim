@@ -33,9 +33,9 @@ public:
 #if defined(BACKEND_CPU)
         return std::make_unique<CpuSimulator>(std::move(initialState), options);
 #elif defined(BACKEND_CUDA)
-        return std::make_unique<CudaSimulator>(std::move(initialState));
+        return std::make_unique<CudaSimulator>(std::move(initialState), options);
 #elif defined(BACKEND_SYCL)
-        return std::make_unique<SyclSimulator>(std::move(initialState));
+        return std::make_unique<SyclSimulator>(std::move(initialState), options);
 #else
         #error "No backend defined. Define BACKEND_CPU, BACKEND_CUDA, or BACKEND_SYCL"
 #endif

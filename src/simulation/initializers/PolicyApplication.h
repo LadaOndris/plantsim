@@ -35,19 +35,21 @@ public:
      * @param topology The grid topology
      * @param resources Resource vector (size = topology.totalCells())
      * @param cellTypes Cell type vector (size = topology.totalCells())
-     * @param nutrients Nutrient vector (size = topology.totalCells())
+     * @param soilWater Soil water vector (size = topology.totalCells())
+     * @param soilMineral Soil mineral vector (size = topology.totalCells())
      */
     void apply(const GridTopology& topology,
                std::vector<float>& resources,
                std::vector<int>& cellTypes,
-               std::vector<float>& nutrients) const {
+               std::vector<float>& soilWater,
+               std::vector<float>& soilMineral) const {
         // Iterate over all logical cells using offset coordinates
         for (int row = 0; row < topology.height; ++row) {
             for (int col = 0; col < topology.width; ++col) {
                 AxialCoord axial = oddrToAxial({col, row});
                 
                 if (region.contains(axial, topology)) {
-                    action.apply(axial, topology, resources, cellTypes, nutrients);
+                    action.apply(axial, topology, resources, cellTypes, soilWater, soilMineral);
                 }
             }
         }

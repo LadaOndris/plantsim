@@ -3,7 +3,7 @@
 #include "simulation/cpu/GridShiftHelper.h"
 #include "simulation/cpu/ResourceTransfer.h"
 #include "simulation/cpu/RandomNeighborReproduction.h"
-#include "simulation/cpu/NutrientDiffusion.h"
+#include "simulation/cpu/SoilDiffusion.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/Options.h"
@@ -21,10 +21,10 @@ public:
         , grid(topology)
         , resourceTransfer(grid)
         , reproduction(grid)
-        , nutrientDiffusion(grid, options)
+        , soilDiffusion(grid, options)
     {
-        // TODO: is this needed here?
-        backBuffer.nutrients.resize(state.nutrients.size());
+        backBuffer.soilWater.resize(state.soilWater.size());
+        backBuffer.soilMineral.resize(state.soilMineral.size());
         backBuffer.resources.resize(state.resources.size());
         backBuffer.cellTypes.resize(state.cellTypes.size());
     }
@@ -34,7 +34,7 @@ public:
     }
 
     void step(const Options &options) override {
-        nutrientDiffusion.step(state, backBuffer, options);
+        soilDiffusion.step(state, backBuffer, options);
         resourceTransfer.step(state, backBuffer, options);
         reproduction.step(state, backBuffer, options);
     }
@@ -51,5 +51,5 @@ private:
     // Simulation subsystems
     ResourceTransfer resourceTransfer;
     RandomNeighborReproduction reproduction;
-    NutrientDiffusion nutrientDiffusion;
+    SoilDiffusion soilDiffusion;
 };

@@ -108,12 +108,21 @@ void GuiFrameRenderer::renderVisualizationControls() {
         ImGui::PopItemWidth();
     }
     
-    // Nutrients layer
-    ImGui::Checkbox("Nutrients", &renderingOptions.showNutrients);
-    if (renderingOptions.showNutrients) {
+    // Soil Water layer
+    ImGui::Checkbox("Soil Water", &renderingOptions.showSoilWater);
+    if (renderingOptions.showSoilWater) {
         ImGui::SameLine();
         ImGui::PushItemWidth(120);
-        ImGui::SliderFloat("##nut_opacity", &renderingOptions.nutrientsOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::SliderFloat("##water_opacity", &renderingOptions.soilWaterOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::PopItemWidth();
+    }
+    
+    // Soil Mineral layer
+    ImGui::Checkbox("Soil Mineral", &renderingOptions.showSoilMineral);
+    if (renderingOptions.showSoilMineral) {
+        ImGui::SameLine();
+        ImGui::PushItemWidth(120);
+        ImGui::SliderFloat("##mineral_opacity", &renderingOptions.soilMineralOpacity, 0.0f, 1.0f, "%.2f");
         ImGui::PopItemWidth();
     }
 }
@@ -127,36 +136,52 @@ void GuiFrameRenderer::renderOptionsPanel() {
         ImGui::Text("Features:");
         ImGui::Checkbox("Resource Transfer", &opts.enableResourceTransfer);
         ImGui::Checkbox("Cell Multiplication", &opts.enableCellMultiplication);
-        ImGui::Checkbox("Nutrients System", &opts.enableNutrients);
+        ImGui::Checkbox("Soil System", &opts.enableSoilSystem);
         
         ImGui::Spacing();
-        ImGui::Text("Nutrient Parameters:");
+        ImGui::Text("Soil Parameters:");
         
         ImGui::PushItemWidth(150);
         
-        ImGui::SliderFloat("Diffusion Rate", &opts.nutrientDiffusionRate, 0.0f, 1.0f, "%.3f");
+        ImGui::SliderInt("Soil Layer Height", &opts.soilLayerHeight, 1, 30);
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of nutrient diffusion between adjacent cells");
+            ImGui::SetTooltip("Number of bottom rows that act as soil");
         }
         
-        ImGui::SliderFloat("Absorption Rate", &opts.nutrientAbsorptionRate, 0.0f, 2.0f, "%.3f");
+        ImGui::Separator();
+        ImGui::Text("Water:");
+        
+        ImGui::SliderFloat("Water Target", &opts.soilWaterTarget, 0.0f, 5.0f, "%.2f");
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Maximum nutrients a cell can absorb per tick");
+            ImGui::SetTooltip("Equilibrium water level in soil");
         }
         
-        ImGui::SliderFloat("Regeneration Rate", &opts.nutrientRegenerationRate, 0.0f, 1.0f, "%.3f");
+        ImGui::SliderFloat("Water Regen Rate", &opts.soilWaterRegenRate, 0.0f, 0.1f, "%.3f");
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of nutrient regeneration in soil layer");
+            ImGui::SetTooltip("Rate of water regeneration toward target");
         }
         
-        ImGui::SliderInt("Soil Layer Height", &opts.soilLayerHeight, 1, 20);
+        ImGui::SliderFloat("Water Diffusivity", &opts.soilWaterDiffusivity, 0.0f, 0.5f, "%.3f");
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Number of bottom rows that act as soil (nutrient sources)");
+            ImGui::SetTooltip("Rate of water diffusion between soil tiles");
         }
         
-        ImGui::SliderFloat("Max Nutrient", &opts.maxNutrient, 10.0f, 500.0f, "%.1f");
+        ImGui::Separator();
+        ImGui::Text("Minerals:");
+        
+        ImGui::SliderFloat("Mineral Target", &opts.soilMineralTarget, 0.0f, 5.0f, "%.2f");
         if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Maximum nutrient concentration per cell");
+            ImGui::SetTooltip("Equilibrium mineral level in soil");
+        }
+        
+        ImGui::SliderFloat("Mineral Regen Rate", &opts.soilMineralRegenRate, 0.0f, 0.05f, "%.4f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Rate of mineral regeneration toward target");
+        }
+        
+        ImGui::SliderFloat("Mineral Diffusivity", &opts.soilMineralDiffusivity, 0.0f, 0.5f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Rate of mineral diffusion between soil tiles");
         }
         
         ImGui::PopItemWidth();

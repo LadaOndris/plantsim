@@ -114,10 +114,11 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
             int idx = storageCoord.asFlat(storageDims);
             
             float pointResources = state.resources[idx];
-            float pointNutrients = state.nutrients[idx];
+            float pointSoilWater = state.soilWater[idx];
+            float pointSoilMineral = state.soilMineral[idx];
             auto pointType = static_cast<CellState::Type>(state.cellTypes[idx]);
 
-            glm::vec3 pointColor = computeCellColor(pointResources, pointNutrients, pointType, options);
+            glm::vec3 pointColor = computeCellColor(pointResources, pointSoilWater, pointSoilMineral, pointType, options);
 
             auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
 
@@ -131,7 +132,7 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
     }
 }
 
-glm::vec3 WorldStateRenderer::computeCellColor(float resources, float nutrients, 
+glm::vec3 WorldStateRenderer::computeCellColor(float resources, float soilWater, float soilMineral,
                                                 CellState::Type type, 
                                                 const RenderingOptions& options) const {
     glm::vec3 color{0.0f};
@@ -140,9 +141,11 @@ glm::vec3 WorldStateRenderer::computeCellColor(float resources, float nutrients,
     constexpr glm::vec3 CELL_COLOR{0.1f, 0.6f, 0.2f};
     constexpr glm::vec3 AIR_COLOR{0.05f, 0.05f, 0.05f};
     constexpr glm::vec3 RESOURCE_BASE_COLOR{1.0f, 0.0f, 0.0f};  // Red
-    constexpr glm::vec3 NUTRIENT_BASE_COLOR{0.0f, 0.3f, 1.0f};  // Blue with slight cyan
+    constexpr glm::vec3 WATER_BASE_COLOR{0.0f, 0.4f, 1.0f};     // Blue
+    constexpr glm::vec3 MINERAL_BASE_COLOR{0.6f, 0.3f, 0.1f};   // Brown/Orange
     constexpr float RESOURCE_MAX = 10.0f;
-    constexpr float NUTRIENT_MAX = 100.0f;
+    constexpr float WATER_MAX = 2.0f;
+    constexpr float MINERAL_MAX = 2.0f;
 
     auto blendLayer = [&](bool enabled, const glm::vec3& layerColor, float layerOpacity) {
         if (enabled && layerOpacity > 0.0f) {
@@ -164,11 +167,18 @@ glm::vec3 WorldStateRenderer::computeCellColor(float resources, float nutrients,
         blendLayer(true, resourceColor, options.resourcesOpacity * intensity);
     }
 
-    // Layer 3: Nutrients (Blue gradient)
-    if (options.showNutrients && nutrients > 0.0f) {
-        float intensity = std::min(nutrients / NUTRIENT_MAX, 1.0f);
-        glm::vec3 nutrientColor = NUTRIENT_BASE_COLOR * intensity;
-        blendLayer(true, nutrientColor, options.nutrientsOpacity * intensity);
+    // Layer 3: Soil Water (Blue gradient)
+    if (options.showSoilWater && soilWater > 0.0f) {
+        float intensity = std::min(soilWater / WATER_MAX, 1.0f);
+        glm::vec3 waterColor = WATER_BASE_COLOR * intensity;
+        blendLayer(true, waterColor, options.soilWaterOpacity * intensity);
+    }
+
+    // Layer 4: Soil Mineral (Brown/Orange gradient)
+    if (options.showSoilMineral && soilMineral > 0.0f) {
+        float intensity = std::min(soilMineral / MINERAL_MAX, 1.0f);
+        glm::vec3 mineralColor = MINERAL_BASE_COLOR * intensity;
+        blendLayer(true, mineralColor, options.soilMineralOpacity * intensity);
     }
 
     // Normalize if total opacity exceeds 1

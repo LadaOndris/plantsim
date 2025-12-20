@@ -32,10 +32,13 @@ State createInitialState(const ApplicationConfig& config) {
             SingleCell{center},
             SetResource{FixedAmount{0.0f}}
         },
-        // Initialize soil layer (bottom 5 rows) with nutrients
+        // Initialize soil layer with water and minerals
         PolicyApplication{
-            BottomRowsRegion{5},
-            SetNutrient{FixedAmount{100.0f}}
+            BottomRowsRegion{config.simulationOptions.soilLayerHeight},
+            CompositeAction{
+                SetSoilWater{FixedAmount{config.simulationOptions.soilWaterTarget}},
+                SetSoilMineral{FixedAmount{config.simulationOptions.soilMineralTarget}}
+            }
         }
     };
 

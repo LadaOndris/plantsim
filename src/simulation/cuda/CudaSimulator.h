@@ -12,7 +12,7 @@
  */
 class CudaSimulator : public ISimulator {
 public:
-    explicit CudaSimulator(State initialState);
+    explicit CudaSimulator(State initialState, const Options& options = Options{});
 
     const State& getState() const override;
 

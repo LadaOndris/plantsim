@@ -28,12 +28,14 @@ struct SimulationControl {
     bool hasPendingChanges() const {
         return pendingOptions.enableResourceTransfer != activeOptions.enableResourceTransfer
             || pendingOptions.enableCellMultiplication != activeOptions.enableCellMultiplication
-            || pendingOptions.enableNutrients != activeOptions.enableNutrients
-            || pendingOptions.nutrientDiffusionRate != activeOptions.nutrientDiffusionRate
-            || pendingOptions.nutrientAbsorptionRate != activeOptions.nutrientAbsorptionRate
-            || pendingOptions.nutrientRegenerationRate != activeOptions.nutrientRegenerationRate
+            || pendingOptions.enableSoilSystem != activeOptions.enableSoilSystem
             || pendingOptions.soilLayerHeight != activeOptions.soilLayerHeight
-            || pendingOptions.maxNutrient != activeOptions.maxNutrient;
+            || pendingOptions.soilWaterTarget != activeOptions.soilWaterTarget
+            || pendingOptions.soilMineralTarget != activeOptions.soilMineralTarget
+            || pendingOptions.soilWaterRegenRate != activeOptions.soilWaterRegenRate
+            || pendingOptions.soilMineralRegenRate != activeOptions.soilMineralRegenRate
+            || pendingOptions.soilWaterDiffusivity != activeOptions.soilWaterDiffusivity
+            || pendingOptions.soilMineralDiffusivity != activeOptions.soilMineralDiffusivity;
     }
     
     /**

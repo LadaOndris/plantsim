@@ -24,8 +24,11 @@ public:
     /// Cell types for each cell (size = width * height), values from CellState::Type
     std::vector<int> cellTypes;
     
-    /// Nutrient concentration for each cell (size = width * height)
-    std::vector<float> nutrients;
+    /// Soil water concentration for each cell (size = width * height)
+    std::vector<float> soilWater;
+    
+    /// Soil mineral concentration for each cell (size = width * height)
+    std::vector<float> soilMineral;
     
     State() = default;
 
@@ -36,18 +39,21 @@ public:
         , height(height)
         , resources(std::move(resources))
         , cellTypes(std::move(cellTypes))
-        , nutrients(resources.size(), 0.0f)
+        , soilWater(this->resources.size(), 0.0f)
+        , soilMineral(this->resources.size(), 0.0f)
     {}
     
     State(int width, int height, 
           std::vector<float> resources, 
           std::vector<int> cellTypes,
-          std::vector<float> nutrients)
+          std::vector<float> soilWater,
+          std::vector<float> soilMineral)
         : width(width)
         , height(height)
         , resources(std::move(resources))
         , cellTypes(std::move(cellTypes))
-        , nutrients(std::move(nutrients))
+        , soilWater(std::move(soilWater))
+        , soilMineral(std::move(soilMineral))
     {}
 
     /**
