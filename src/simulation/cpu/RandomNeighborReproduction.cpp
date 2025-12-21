@@ -51,12 +51,14 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
 
     auto valid = validity.array();
-    auto isAir  = (cellTypes.array() == static_cast<int>(CellState::Type::Air)).cast<float>();
-    auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
-    auto hasResources = (sugar.array() >= config.reproductionThreshold).cast<float>();
-    auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
+    const auto isAir  = (cellTypes.array() == static_cast<int>(CellState::Type::Air));
+    const auto isSoil = (cellTypes.array() == static_cast<int>(CellState::Type::Soil));
+    const auto isAvailable  = (isAir || isSoil).cast<float>();
+    const auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
+    const auto hasResources = (sugar.array() >= config.reproductionThreshold).cast<float>();
+    const auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
     
-    emptyMask = (valid * isAir).matrix();
+    emptyMask = (valid * isAvailable).matrix();
     eligibleMask = (valid * isCell * hasResources * hasEmptyNeighbor).matrix();
 
     // For each direction, check if neighbor in that direction is empty
