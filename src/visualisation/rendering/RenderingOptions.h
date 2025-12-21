@@ -5,14 +5,14 @@
  */
 struct RenderingOptions {
     // Layer visibility toggles
-    bool showResources = true;
+    bool showSugar = true;
     bool showCellTypes = true;
-    bool showSoilWater = true;
-    bool showSoilMineral = true;
+    bool showWater = true;
+    bool showMineral = true;
     
     // Layer opacity (0.0 = transparent, 1.0 = opaque)
-    float resourcesOpacity = 1.0f;
+    float sugarOpacity = 1.0f;
     float cellTypesOpacity = 0.5f;
-    float soilWaterOpacity = 0.6f;
-    float soilMineralOpacity = 0.6f;
+    float waterOpacity = 0.6f;
+    float mineralOpacity = 0.6f;
 };

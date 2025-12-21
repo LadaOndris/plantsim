@@ -90,12 +90,12 @@ void GuiFrameRenderer::renderVisualizationControls() {
     ImGui::Text("Visualization Layers");
     ImGui::Spacing();
     
-    // Resources layer
-    ImGui::Checkbox("Resources", &renderingOptions.showResources);
-    if (renderingOptions.showResources) {
+    // Sugar layer
+    ImGui::Checkbox("Sugar", &renderingOptions.showSugar);
+    if (renderingOptions.showSugar) {
         ImGui::SameLine();
         ImGui::PushItemWidth(120);
-        ImGui::SliderFloat("##res_opacity", &renderingOptions.resourcesOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::SliderFloat("##sugar_opacity", &renderingOptions.sugarOpacity, 0.0f, 1.0f, "%.2f");
         ImGui::PopItemWidth();
     }
     
@@ -108,21 +108,21 @@ void GuiFrameRenderer::renderVisualizationControls() {
         ImGui::PopItemWidth();
     }
     
-    // Soil Water layer
-    ImGui::Checkbox("Soil Water", &renderingOptions.showSoilWater);
-    if (renderingOptions.showSoilWater) {
+    // Water layer (plant water)
+    ImGui::Checkbox("Water", &renderingOptions.showWater);
+    if (renderingOptions.showWater) {
         ImGui::SameLine();
         ImGui::PushItemWidth(120);
-        ImGui::SliderFloat("##water_opacity", &renderingOptions.soilWaterOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::SliderFloat("##water_opacity", &renderingOptions.waterOpacity, 0.0f, 1.0f, "%.2f");
         ImGui::PopItemWidth();
     }
     
-    // Soil Mineral layer
-    ImGui::Checkbox("Soil Mineral", &renderingOptions.showSoilMineral);
-    if (renderingOptions.showSoilMineral) {
+    // Mineral layer (plant mineral)
+    ImGui::Checkbox("Mineral", &renderingOptions.showMineral);
+    if (renderingOptions.showMineral) {
         ImGui::SameLine();
         ImGui::PushItemWidth(120);
-        ImGui::SliderFloat("##mineral_opacity", &renderingOptions.soilMineralOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::SliderFloat("##mineral_opacity", &renderingOptions.mineralOpacity, 0.0f, 1.0f, "%.2f");
         ImGui::PopItemWidth();
     }
 }
@@ -233,6 +233,11 @@ void GuiFrameRenderer::renderOptionsPanel() {
         ImGui::SliderFloat("Water Half-Sat", &opts.waterHalfSat, 0.0f, 2.0f, "%.2f");
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Half-saturation constant for water in photosynthesis");
+        }
+        
+        ImGui::SliderFloat("Water Per Sugar", &opts.waterPerSugar, 0.0f, 5.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Water consumed per unit sugar produced");
         }
         
         ImGui::PopItemWidth();

@@ -42,6 +42,6 @@ private:
 
     void updateVisualizationInternalState(const RenderingOptions& options);
 
-    glm::vec3 computeCellColor(float resources, float soilWater, float soilMineral,
+    glm::vec3 computeCellColor(float sugar, float water, float mineral,
                                CellState::Type type, const RenderingOptions& options) const;
 };

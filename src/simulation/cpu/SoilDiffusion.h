@@ -11,7 +11,6 @@
  * Manages diffusive water and mineral fields on the hex grid with:
  * - State-dependent diffusion: only SOIL tiles diffuse resources
  * - Regeneration: soil layer regenerates toward target values
- * - Absorption: cells can absorb from adjacent soil (future feature)
  * - Separate diffusivity rates for water vs minerals
  * - Regeneration: soil += dt * regen_rate * (target - soil)
  * - Diffusion: X += dt * D * (avg_neighbors - X) only where state == SOIL

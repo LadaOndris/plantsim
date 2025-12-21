@@ -40,6 +40,7 @@ struct Options {
     float photoMaxRate = 0.08f;            // Max sugar production per tick
     float lightHalfSat = 0.4f;             // Half-saturation for light
     float waterHalfSat = 0.2f;             // Half-saturation for water
+    float waterPerSugar = 1.0f;            // Water consumed per unit sugar produced
     
     // Time step for physics
     float dt = 1.0f;

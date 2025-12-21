@@ -40,7 +40,7 @@ State createInitialState(const ApplicationConfig& config) {
         PolicyApplication{
             BottomRowsRegion{config.simulationOptions.soilLayerHeight},
             CompositeAction{
-                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget}),
+                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget / 4.0f}),
                 SetSoilMineral(FixedAmount{config.simulationOptions.soilMineralTarget})
             }
         }
