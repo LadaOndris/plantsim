@@ -43,13 +43,17 @@ protected:
         const int height = topology.height;
         const size_t totalCells = width * height;
 
-        std::vector<int> resources(totalCells, 0);
+        std::vector<float> plantSugar(totalCells, 0.0f);
+        std::vector<float> plantWater(totalCells, 0.0f);
+        std::vector<float> plantMineral(totalCells, 0.0f);
+        std::vector<float> soilWater(totalCells, 0.0f);
+        std::vector<float> soilMineral(totalCells, 0.0f);
         std::vector<int> cellTypes(totalCells, 0); // Air
 
         // Set up source cell with resources
         const AxialCoord cell{.q=1, .r=1};
         const int sourceIdx = cell.asFlat(topology.getDimension());
-        resources[sourceIdx] = 1;
+        plantSugar[sourceIdx] = 1.0f;
         cellTypes[sourceIdx] = 1; // Cell type
 
         // Set up neighboring cell (right neighbor)
@@ -58,12 +62,20 @@ protected:
         cellTypes[neighborIdx] = 1; // Cell type
 
         // State should contain the storage data.
-        auto storedResources = store(resources, width, height, 0);
+        auto storedPlantSugar = store(plantSugar, width, height, 0.0f);
+        auto storedPlantWater = store(plantWater, width, height, 0.0f);
+        auto storedPlantMineral = store(plantMineral, width, height, 0.0f);
+        auto storedSoilWater = store(soilWater, width, height, 0.0f);
+        auto storedSoilMineral = store(soilMineral, width, height, 0.0f);
         auto storedCellTypes = store(cellTypes, width, height, -1);
 
         return State(width, height, 
-                     std::vector<float>(storedResources.begin(), storedResources.end()), 
-                     storedCellTypes);
+                     std::move(storedCellTypes),
+                     std::move(storedSoilWater),
+                     std::move(storedSoilMineral),
+                     std::move(storedPlantSugar),
+                     std::move(storedPlantWater),
+                     std::move(storedPlantMineral));
     }
 };
 
@@ -88,23 +100,25 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     std::cout << MapPrinter::printHexMapResources(topology, finalState) << std::endl;
 
     // Verify resource conservation
-    int initialTotal = 0;
-    int finalTotal = 0;
+    float initialTotal = 0.0f;
+    float finalTotal = 0.0f;
     for (size_t i = 0; i < initialState.totalCells(); ++i) {
-        initialTotal += initialState.resources[i];
-        finalTotal += finalState.resources[i];
+        initialTotal += initialState.plantSugar[i];
+        finalTotal += finalState.plantSugar[i];
     }
-    ASSERT_EQ(initialTotal, finalTotal) << "Resources should be conserved";
+    ASSERT_FLOAT_EQ(initialTotal, finalTotal) << "Resources should be conserved";
 
-    // Check that the source cell has transferred its resource to the neighbor
+    // Check that diffusion has occurred between the two plant cells
     const AxialCoord cell {.q=1, .r=1};
     const AxialCoord neighbor{.q=2, .r=1};
 
     const int sourceIdx = topology.axialToStorageCoord(cell).asFlat(topology.getStorageDimension());
     const int neighborIdx = topology.axialToStorageCoord(neighbor).asFlat(topology.getStorageDimension());
 
-    ASSERT_EQ(finalState.resources[neighborIdx], 1);
-    ASSERT_EQ(finalState.resources[sourceIdx], 0);
+    // With diffusion, sugar should have spread from source to neighbor
+    // The exact values depend on the transport rate, but neighbor should now have some sugar
+    ASSERT_GT(finalState.plantSugar[neighborIdx], 0.0f) << "Neighbor should receive some sugar";
+    ASSERT_LT(finalState.plantSugar[sourceIdx], 1.0f) << "Source should have less sugar after transfer";
 }
 
 INSTANTIATE_TEST_SUITE_P(

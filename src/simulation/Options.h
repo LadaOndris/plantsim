@@ -25,6 +25,11 @@ struct Options {
     float waterUptakeRate = 0.08f;
     float mineralUptakeRate = 0.04f;
     
+    // Internal plant transport rates (diffusion between plant cells)
+    float sugarTransportRate = 0.18f;
+    float waterTransportRate = 0.10f;
+    float mineralTransportRate = 0.08f;
+    
     // Time step for physics
     float dt = 1.0f;
 };

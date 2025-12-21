@@ -23,9 +23,12 @@ public:
         , reproduction(grid)
         , soilDiffusion(grid, options)
     {
+        // Resize back buffer for all fields that get double-buffered
         backBuffer.soilWater.resize(state.soilWater.size());
         backBuffer.soilMineral.resize(state.soilMineral.size());
-        backBuffer.resources.resize(state.resources.size());
+        backBuffer.plantSugar.resize(state.plantSugar.size());
+        backBuffer.plantWater.resize(state.plantWater.size());
+        backBuffer.plantMineral.resize(state.plantMineral.size());
         backBuffer.cellTypes.resize(state.cellTypes.size());
     }
     

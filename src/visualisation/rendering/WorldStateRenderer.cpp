@@ -113,12 +113,12 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
             StorageCoord storageCoord = topology.axialToStorageCoord(axial);
             int idx = storageCoord.asFlat(storageDims);
             
-            float pointResources = state.resources[idx];
+            float plantSugar = state.plantSugar[idx];
             float pointSoilWater = state.soilWater[idx];
             float pointSoilMineral = state.soilMineral[idx];
             auto pointType = static_cast<CellState::Type>(state.cellTypes[idx]);
 
-            glm::vec3 pointColor = computeCellColor(pointResources, pointSoilWater, pointSoilMineral, pointType, options);
+            glm::vec3 pointColor = computeCellColor(plantSugar, pointSoilWater, pointSoilMineral, pointType, options);
 
             auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
 

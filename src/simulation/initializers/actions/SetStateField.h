@@ -36,19 +36,41 @@ SetStateField(AmountPolicy, std::vector<FieldType> State::*)
     -> SetStateField<FieldType, AmountPolicy>;
 
 /**
- * @brief Set resource values for cells.
+ * @brief Set plant sugar values for cells.
  * 
  * @tparam AmountPolicy A policy type that provides float compute(AxialCoord, GridTopology&)
  */
 template<typename AmountPolicy>
 auto SetResource(AmountPolicy amount) {
-    return SetStateField<float, AmountPolicy>(std::move(amount), &State::resources);
+    return SetStateField<float, AmountPolicy>(std::move(amount), &State::plantSugar);
+}
+
+/**
+ * @brief Set plant sugar values for cells (alias for SetResource).
+ */
+template<typename AmountPolicy>
+auto SetPlantSugar(AmountPolicy amount) {
+    return SetStateField<float, AmountPolicy>(std::move(amount), &State::plantSugar);
+}
+
+/**
+ * @brief Set plant water values for cells.
+ */
+template<typename AmountPolicy>
+auto SetPlantWater(AmountPolicy amount) {
+    return SetStateField<float, AmountPolicy>(std::move(amount), &State::plantWater);
+}
+
+/**
+ * @brief Set plant mineral values for cells.
+ */
+template<typename AmountPolicy>
+auto SetPlantMineral(AmountPolicy amount) {
+    return SetStateField<float, AmountPolicy>(std::move(amount), &State::plantMineral);
 }
 
 /**
  * @brief Set soil water values for cells.
- * 
- * @tparam AmountPolicy A policy type that provides float compute(AxialCoord, GridTopology&)
  */
 template<typename AmountPolicy>
 auto SetSoilWater(AmountPolicy amount) {
@@ -57,8 +79,6 @@ auto SetSoilWater(AmountPolicy amount) {
 
 /**
  * @brief Set soil mineral values for cells.
- * 
- * @tparam AmountPolicy A policy type that provides float compute(AxialCoord, GridTopology&)
  */
 template<typename AmountPolicy>
 auto SetSoilMineral(AmountPolicy amount) {

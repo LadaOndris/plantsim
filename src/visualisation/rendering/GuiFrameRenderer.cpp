@@ -184,6 +184,24 @@ void GuiFrameRenderer::renderOptionsPanel() {
             ImGui::SetTooltip("Rate of mineral diffusion between soil tiles");
         }
         
+        ImGui::Separator();
+        ImGui::Text("Internal Transport:");
+        
+        ImGui::SliderFloat("Sugar Transport", &opts.sugarTransportRate, 0.0f, 0.5f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Rate of sugar diffusion between plant cells");
+        }
+        
+        ImGui::SliderFloat("Water Transport", &opts.waterTransportRate, 0.0f, 0.5f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Rate of water diffusion between plant cells");
+        }
+        
+        ImGui::SliderFloat("Mineral Transport", &opts.mineralTransportRate, 0.0f, 0.5f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Rate of mineral diffusion between plant cells");
+        }
+        
         ImGui::PopItemWidth();
     }
 }

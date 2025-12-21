@@ -18,42 +18,55 @@ public:
     /// Height of the simulation grid
     int height = 0;
     
-    /// Resources for each cell (size = width * height)
-    std::vector<float> resources;
-    
     /// Cell types for each cell (size = width * height), values from CellState::Type
     std::vector<int> cellTypes;
     
+    // ========== Soil fields (environmental) ==========
     /// Soil water concentration for each cell (size = width * height)
     std::vector<float> soilWater;
     
     /// Soil mineral concentration for each cell (size = width * height)
     std::vector<float> soilMineral;
     
+    // ========== Plant internal stores ==========
+    /// Plant sugar (energy) for each cell (size = width * height)
+    std::vector<float> plantSugar;
+    
+    /// Plant water for each cell (size = width * height)
+    std::vector<float> plantWater;
+    
+    /// Plant mineral for each cell (size = width * height)
+    std::vector<float> plantMineral;
+    
     State() = default;
 
     State(int width, int height, 
-          std::vector<float> resources, 
           std::vector<int> cellTypes)
         : width(width)
         , height(height)
-        , resources(std::move(resources))
         , cellTypes(std::move(cellTypes))
-        , soilWater(this->resources.size(), 0.0f)
-        , soilMineral(this->resources.size(), 0.0f)
+        , soilWater(this->cellTypes.size(), 0.0f)
+        , soilMineral(this->cellTypes.size(), 0.0f)
+        , plantSugar(this->cellTypes.size(), 0.0f)
+        , plantWater(this->cellTypes.size(), 0.0f)
+        , plantMineral(this->cellTypes.size(), 0.0f)
     {}
     
     State(int width, int height, 
-          std::vector<float> resources, 
           std::vector<int> cellTypes,
           std::vector<float> soilWater,
-          std::vector<float> soilMineral)
+          std::vector<float> soilMineral,
+          std::vector<float> plantSugar,
+          std::vector<float> plantWater,
+          std::vector<float> plantMineral)
         : width(width)
         , height(height)
-        , resources(std::move(resources))
         , cellTypes(std::move(cellTypes))
         , soilWater(std::move(soilWater))
         , soilMineral(std::move(soilMineral))
+        , plantSugar(std::move(plantSugar))
+        , plantWater(std::move(plantWater))
+        , plantMineral(std::move(plantMineral))
     {}
 
     /**

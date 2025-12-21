@@ -6,11 +6,13 @@
 #include "simulation/CellState.h"
 
 /**
- * @brief Resource transfer between cells using matrix operations.
+ * @brief Internal transport of resources within plant cells using diffusion.
  * 
- * Each cell with resources distributes them equally to neighboring cells
- * that can receive (valid Cell type). The transfer is symmetric and 
- * conserves total resources.
+ * Implements the Python reference algorithm:
+ *   X += dt * T * (avg_plant_neighbors(X) - X)
+ * 
+ * Only PLANT cells participate. Each resource (sugar, water, mineral) has its
+ * own transport rate.
  */
 class ResourceTransfer {
 public:
@@ -24,9 +26,26 @@ private:
 
     const GridShiftHelper& grid;
 
+    /**
+     * @brief Apply diffusion-based transport to a single resource field.
+     * 
+     * @param resource Current resource values (h x w)
+     * @param nextResource Output buffer for updated values
+     * @param plantMask Mask indicating which cells are plants
+     * @param transportRate Diffusion rate for this resource
+     * @param dt Time step
+     */
+    void applyTransport(
+        const MatrixXf& resource,
+        Eigen::Ref<MatrixXf> nextResource,
+        const MatrixXf& plantMask,
+        float transportRate,
+        float dt
+    );
+
     // Pre-allocated buffers
-    MatrixXf receiverMask;
-    MatrixXf neighborsCanReceiveCount;
-    MatrixXf flowPerNeighbor;
-    MatrixXf totalIncoming;
+    MatrixXf plantMask;
+    MatrixXf neighborSum;
+    MatrixXf neighborCount;
+    MatrixXf avgNeighbor;
 };

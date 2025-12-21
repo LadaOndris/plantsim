@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
     std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
 
-    uint64_t checksum = computeChecksum(finalState.resources, topology.getStorageDimension());
+    uint64_t checksum = computeChecksum(finalState.plantSugar, topology.getStorageDimension());
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;
 
     return 0;

@@ -47,13 +47,13 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
     const int w = grid.width();
     const auto& validity = grid.getValidityMask();
     
-    Eigen::Map<const MatrixXf> resources(state.resources.data(), h, w);
+    Eigen::Map<const MatrixXf> sugar(state.plantSugar.data(), h, w);
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
 
     auto valid = validity.array();
     auto isAir  = (cellTypes.array() == static_cast<int>(CellState::Type::Air)).cast<float>();
     auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
-    auto hasResources = (resources.array() >= config.reproductionThreshold).cast<float>();
+    auto hasResources = (sugar.array() >= config.reproductionThreshold).cast<float>();
     auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
     
     emptyMask = (valid * isAir).matrix();
@@ -116,23 +116,24 @@ void RandomNeighborReproduction::applicationPhase(State& state, State& backBuffe
     const int h = grid.height();
     const int w = grid.width();
     
-    Eigen::Map<const MatrixXf> resources(state.resources.data(), h, w);
+    // Use sugar (energy) for reproduction cost
+    Eigen::Map<const MatrixXf> sugar(state.plantSugar.data(), h, w);
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
-    Eigen::Map<MatrixXf> nextResources(backBuffer.resources.data(), h, w);
+    Eigen::Map<MatrixXf> nextSugar(backBuffer.plantSugar.data(), h, w);
     Eigen::Map<MatrixXi> nextCellTypes(backBuffer.cellTypes.data(), h, w);
 
-    nextResources = resources;
+    nextSugar = sugar;
     nextCellTypes = cellTypes;
 
     // Deduct cost from winning parents
-    nextResources.array() -= parentCost.array() * config.reproductionCost;
+    nextSugar.array() -= parentCost.array() * config.reproductionCost;
 
     // Create children
     nextCellTypes = (childMask.array() > 0.5f).select(
         static_cast<int>(CellState::Type::Cell), nextCellTypes);
-    nextResources = (childMask.array() > 0.5f).select(
-        config.childInitialResources, nextResources);
+    nextSugar = (childMask.array() > 0.5f).select(
+        config.childInitialResources, nextSugar);
 
-    std::swap(state.resources, backBuffer.resources);
+    std::swap(state.plantSugar, backBuffer.plantSugar);
     std::swap(state.cellTypes, backBuffer.cellTypes);
 }

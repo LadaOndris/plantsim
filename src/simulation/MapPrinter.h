@@ -73,15 +73,15 @@ public:
   }
 
   /**
-   * @brief Prints State resources as hex map.
+   * @brief Prints State plant sugar as hex map.
    */
   static std::string printHexMapResources(const GridTopology& topology, const State& state) {
-    return printHexMap<float>(topology, state.resources,
+    return printHexMap<float>(topology, state.plantSugar,
                             [](float v) -> char {
                               if (v == 0)
                                 return '.';
                               if (v <= 9)
-                                return static_cast<char>('0' + v);
+                                return static_cast<char>('0' + static_cast<int>(v));
                               return '+';
                             });
   }
@@ -104,10 +104,10 @@ public:
   }
 
   /**
-   * @brief Prints State resources as raw storage.
+   * @brief Prints State plant sugar as raw storage.
    */
   static std::string printStorageResources(const GridTopology& topology, const State& state) {
-    return printStorage<float>(topology, state.resources,
+    return printStorage<float>(topology, state.plantSugar,
                              [](int v) -> char {
                                if (v == 0)
                                  return '.';
