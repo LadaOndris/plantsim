@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "ApplicationConfig.h"
+#include "simulation/initializers/actions/SetCellType.h"
 #include "simulation/initializers/actions/SetStateField.h"
 #include "visualisation/GraphicsContext.h"
 #include "visualisation/RenderLoop.h"
@@ -28,20 +29,18 @@ State createInitialState(const ApplicationConfig& config) {
     OffsetCoord seedSoil{config.gridWidth / 2, initialCellRow};
 
     StateInitializer initializer{
-        // Set center cells to Cell type with initial water for photosynthesis
+        PolicyApplication{
+            BottomRowsRegion{config.simulationOptions.soilLayerHeight},
+            CompositeAction{
+                SetCellType{CellState::Soil},
+                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget / 4.0f}),
+                SetSoilMineral(FixedAmount{config.simulationOptions.soilMineralTarget})
+            }
+        },
         PolicyApplication{
             CircleRegion{seedSoil, 1}, 
             CompositeAction{
                 SetCellType{CellState::Cell},
-                SetPlantWater(FixedAmount{0.1f})
-            }
-        },
-        // Initialize soil layer with water and minerals
-        PolicyApplication{
-            BottomRowsRegion{config.simulationOptions.soilLayerHeight},
-            CompositeAction{
-                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget / 4.0f}),
-                SetSoilMineral(FixedAmount{config.simulationOptions.soilMineralTarget})
             }
         }
     };
