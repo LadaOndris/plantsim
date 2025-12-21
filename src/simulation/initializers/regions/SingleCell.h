@@ -17,7 +17,7 @@ public:
     /**
      * @brief Construct from offset coordinates.
      */
-    explicit SingleCell(OffsetCoord coord) : target(oddrToAxial(coord)) {}
+    explicit SingleCell(OffsetCoord coord) : target(coord.toAxialCoord()) {}
 
     [[nodiscard]] constexpr bool contains(AxialCoord coord, const GridTopology& topology) const {
         return coord == target && topology.isValid(coord);

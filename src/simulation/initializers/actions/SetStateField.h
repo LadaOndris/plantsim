@@ -21,7 +21,7 @@ public:
         : amountPolicy(std::move(amount)), fieldPtr(field) {}
 
     void apply(AxialCoord coord, const GridTopology& topology, State& state) const {
-        OffsetCoord offset = axialToOddr(coord);
+        OffsetCoord offset = coord.toOffsetCoord();
         int index = offset.row * topology.width + offset.col;
         (state.*fieldPtr)[index] = static_cast<FieldType>(amountPolicy.compute(coord, topology));
     }

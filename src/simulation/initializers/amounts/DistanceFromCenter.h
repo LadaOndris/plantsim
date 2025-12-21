@@ -20,9 +20,8 @@ public:
         : centerValue(centerValue), edgeValue(edgeValue) {}
 
     [[nodiscard]] float compute(AxialCoord coord, const GridTopology& topology) const {
-        // Find center in offset coordinates, then convert to axial
         OffsetCoord centerOffset{topology.width / 2, topology.height / 2};
-        AxialCoord center = oddrToAxial(centerOffset);
+        AxialCoord center = centerOffset.toAxialCoord();
 
         // Compute hex distance
         int dq = coord.q - center.q;

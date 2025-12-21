@@ -14,6 +14,8 @@ enum class NeighborOffset {
     BottomRight
 };
 
+struct OffsetCoord;
+
 struct AxialCoord { 
     int q; 
     int r; 
@@ -41,9 +43,28 @@ struct AxialCoord {
         r -= other.r;
         return *this;
     }
+
+    constexpr OffsetCoord toOffsetCoord() const noexcept;
 };
 
-struct OffsetCoord { int col; int row; };
+struct OffsetCoord { 
+    int col; 
+    int row; 
+
+    constexpr AxialCoord toAxialCoord() const noexcept {
+        int parity = row & 1;
+        int q = col - (row - parity) / 2;
+        int r = row;
+        return AxialCoord{q, r};
+    }
+};
+
+inline constexpr OffsetCoord AxialCoord::toOffsetCoord() const noexcept {
+    int parity = r & 1;
+    int col = q + (r - parity) / 2;
+    int row = r;
+    return OffsetCoord{col, row};
+}
 
 struct StorageCoord { 
     int x; 
@@ -65,6 +86,10 @@ struct StorageCoord {
         x += other.x;
         y += other.y;
         return *this;
+    }
+
+    constexpr int size() const noexcept {
+        return x * y;
     }
 };
 
@@ -124,6 +149,10 @@ public:
         return {x, y};
     }
 
+    [[nodiscard]] constexpr StorageCoord toStorageCoord(OffsetCoord offset) const {
+        return toStorageCoord(offset.toAxialCoord());
+    }
+
     /**
      * @brief Converts storage coordinates (x, y) to axial coordinates (q, r).
      * 
@@ -141,13 +170,26 @@ public:
 
     /**
      * @brief Converts axial coordinates to a linear storage index.
-     * 
-     * @param axial The axial coordinates
-     * @return Linear index into the storage array
      */
-    [[nodiscard]] constexpr int toStorageFlat(AxialCoord axial) const {
+    [[nodiscard]] constexpr int toStorageIndex(AxialCoord axial) const {
         StorageCoord storage = toStorageCoord(axial);
         return storage.y * storageDim.x + storage.x;
+    }
+
+    [[nodiscard]] constexpr int toStorageIndex(StorageCoord storage) const {
+        return storage.y * storageDim.x + storage.x;
+    }
+
+    [[nodiscard]] constexpr int toStorageIndex(OffsetCoord offset) const {
+        return toStorageIndex(offset.toAxialCoord());
+    }
+
+    [[nodiscard]] constexpr int toLogicalIndex(OffsetCoord offset) const {
+        return offset.row * width + offset.col;
+    }
+
+    [[nodiscard]] constexpr int toLogicalIndex(AxialCoord axial) const {
+        return toLogicalIndex(axial.toOffsetCoord());
     }
 
     /**
@@ -213,34 +255,18 @@ private:
 
 };
 
-
-inline OffsetCoord axialToOddr(const AxialCoord& hex) {
-    int parity = hex.r & 1;
-    int col = hex.q + (hex.r - parity) / 2;
-    int row = hex.r;
-    return OffsetCoord{col, row};
-}
-
-inline AxialCoord oddrToAxial(const OffsetCoord& hex) {
-    int parity = hex.row & 1;
-    int q = hex.col - (hex.row - parity) / 2;
-    int r = hex.row;
-    return AxialCoord{q, r};
-}
-
 template <typename T>
 inline std::vector<T> store(std::vector<T> data, int width, int height, T defaultFillValue = -1) {
     std::vector<T> storage;
     GridTopology topology(width, height);
-    StorageCoord dim = topology.storageDim;
-    storage.resize(dim.x * dim.y, defaultFillValue);
+    storage.resize(topology.storageDim.size(), defaultFillValue);
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             T value = data[y * width + x];
-            AxialCoord axial = oddrToAxial({x, y});
-            StorageCoord storageCoord = topology.toStorageCoord(axial);
-            storage[storageCoord.y * dim.x + storageCoord.x] = value;
+            OffsetCoord offset{x, y};
+            int storageIndex = topology.toStorageIndex(offset);
+            storage[storageIndex] = value;
         }
     }
 

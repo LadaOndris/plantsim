@@ -37,7 +37,7 @@ public:
         }
 
         // Convert axial to offset coordinates for comparison
-        OffsetCoord offset = axialToOddr(coord);
+        OffsetCoord offset = coord.toOffsetCoord();
         
         return offset.col >= offsetX && offset.col < offsetX + width &&
                offset.row >= offsetY && offset.row < offsetY + height;

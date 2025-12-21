@@ -33,7 +33,7 @@ public:
             // Normalize q position to [0, 1]
             // For valid coords, q ranges roughly from -height/2 to width + height/2
             // Use offset coords for cleaner normalization
-            OffsetCoord offset = axialToOddr(coord);
+            OffsetCoord offset = coord.toOffsetCoord();
             t = static_cast<float>(offset.col) / static_cast<float>(topology.width - 1);
         } else {
             // Normalize r position to [0, 1]

@@ -101,16 +101,16 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
     const State &state = simulatorPtr->getState();
     StorageCoord storageDims = topology.storageDim;
 
-    for (int r = 0; r < topology.height; r++) {
-        for (int q = 0; q < topology.width; q++) {
-            OffsetCoord offset{.col = q, .row = r};
-            AxialCoord axial = oddrToAxial(offset);
+    for (int row = 0; row < topology.height; row++) {
+        for (int col = 0; col < topology.width; col++) {
+            OffsetCoord offset{.col = col, .row = row};
+            AxialCoord axial = offset.toAxialCoord();
             
             if (!topology.isValid(axial)) {
                 continue;
             }
 
-            StorageCoord storageCoord = topology.toStorageCoord(axial); // Use .toStorageFlat
+            StorageCoord storageCoord = topology.toStorageCoord(axial); // Use .toStorageIndex
             int idx = storageCoord.asFlat(storageDims);
             
             float plantSugar = state.plantSugar[idx];
@@ -120,7 +120,7 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
 
             glm::vec3 pointColor = computeCellColor(plantSugar, pointSoilWater, pointSoilMineral, pointType, options);
 
-            auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(r, q)];
+            auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(row, col)];
 
             for (auto &index: verticesIndices) {
                 auto& colorVector = this->meshData.vertices[index].color;

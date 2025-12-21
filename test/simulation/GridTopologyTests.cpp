@@ -89,7 +89,7 @@ TEST_P(GridTopologyAxialToStorageCoordTest, ToIndex) {
     GridTopology topology(p.width, p.height);
     StorageCoord dim = topology.storageDim;
     int expectedIndex = p.storage.y * dim.x + p.storage.x;
-    EXPECT_EQ(topology.toStorageFlat(p.axial), expectedIndex);
+    EXPECT_EQ(topology.toStorageIndex(p.axial), expectedIndex);
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -38,7 +38,8 @@ public:
         // Iterate over all logical cells using offset coordinates
         for (int row = 0; row < topology.height; ++row) {
             for (int col = 0; col < topology.width; ++col) {
-                AxialCoord axial = oddrToAxial({col, row});
+                OffsetCoord offset{col, row};
+                AxialCoord axial = offset.toAxialCoord();
                 
                 if (region.contains(axial, topology)) {
                     action.apply(axial, topology, state);
@@ -57,7 +58,8 @@ public:
         // Iterate over all logical cells using offset coordinates
         for (int row = 0; row < topology.height; ++row) {
             for (int col = 0; col < topology.width; ++col) {
-                AxialCoord axial = oddrToAxial({col, row});
+                OffsetCoord offset{col, row};
+                AxialCoord axial = offset.toAxialCoord();
                 
                 if (region.contains(axial, topology)) {
                     action.apply(axial, topology, matrix);

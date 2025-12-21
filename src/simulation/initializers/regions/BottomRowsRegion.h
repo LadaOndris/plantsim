@@ -30,7 +30,7 @@ public:
             return false;
         }
 
-        OffsetCoord offset = axialToOddr(coord);
+        OffsetCoord offset = coord.toOffsetCoord();
 
         return offset.row < rowCount;
     }

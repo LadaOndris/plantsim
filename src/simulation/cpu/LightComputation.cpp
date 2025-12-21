@@ -22,8 +22,8 @@ void LightComputation::compute(State& state, const Options& options) {
         
         for (int row = logicalHeight - 1; row >= 0; --row) {
             // Convert offset coordinates to storage index
-            AxialCoord axial = oddrToAxial({col, row});
-            int idx = topology.toStorageFlat(axial);
+            OffsetCoord offset{col, row};
+            int idx = topology.toStorageIndex(offset);
             
             state.light[idx] = intensity;
             

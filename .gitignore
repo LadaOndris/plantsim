@@ -40,3 +40,4 @@ build/
 cmake-build-*/
 venv/
 out/
+perf.*

@@ -22,7 +22,7 @@ public:
      * @brief Construct from offset coordinates and radius.
      */
     CircleRegion(OffsetCoord center, int radius)
-        : center(oddrToAxial(center)), radius(radius) {}
+        : center(center.toAxialCoord()), radius(radius) {}
 
     [[nodiscard]] bool contains(AxialCoord coord, const GridTopology& topology) const {
         if (!topology.isValid(coord)) {

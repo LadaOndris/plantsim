@@ -29,7 +29,7 @@ public:
      * @param matrix The Eigen matrix to modify (storage layout: row-major)
      */
     void apply(AxialCoord coord, const GridTopology& topology, MatrixXf& matrix) const {
-        OffsetCoord offset = axialToOddr(coord);
+        OffsetCoord offset = coord.toOffsetCoord();
         matrix(offset.row, offset.col) = amountPolicy.compute(coord, topology);
     }
 
