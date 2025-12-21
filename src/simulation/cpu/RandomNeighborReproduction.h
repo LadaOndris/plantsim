@@ -21,6 +21,7 @@ public:
         float reproductionThreshold = 1.0f;
         float reproductionCost = 1.0f;
         float childInitialResources = 0.0f;
+        float childInitialWater = 0.0f;
     };
 
     explicit RandomNeighborReproduction(const GridShiftHelper& grid, 

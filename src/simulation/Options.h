@@ -30,6 +30,17 @@ struct Options {
     float waterTransportRate = 0.10f;
     float mineralTransportRate = 0.08f;
     
+    // Light computation parameters
+    float lightTopIntensity = 1.0f;        // Light intensity at top of grid
+    float plantLightAbsorb = 0.45f;        // Fraction absorbed by plant cells
+    float deadLightAbsorb = 0.15f;         // Fraction absorbed by dead cells (future)
+    float soilLightAbsorb = 0.95f;         // Fraction absorbed by soil
+    
+    // Photosynthesis parameters
+    float photoMaxRate = 0.08f;            // Max sugar production per tick
+    float lightHalfSat = 0.4f;             // Half-saturation for light
+    float waterHalfSat = 0.2f;             // Half-saturation for water
+    
     // Time step for physics
     float dt = 1.0f;
 };

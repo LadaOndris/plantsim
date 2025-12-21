@@ -28,6 +28,10 @@ public:
     /// Soil mineral concentration for each cell (size = width * height)
     std::vector<float> soilMineral;
     
+    // ========== Environmental fields ==========
+    /// Light intensity reaching each cell (computed each step, size = width * height)
+    std::vector<float> light;
+    
     // ========== Plant internal stores ==========
     /// Plant sugar (energy) for each cell (size = width * height)
     std::vector<float> plantSugar;
@@ -47,6 +51,7 @@ public:
         , cellTypes(std::move(cellTypes))
         , soilWater(this->cellTypes.size(), 0.0f)
         , soilMineral(this->cellTypes.size(), 0.0f)
+        , light(this->cellTypes.size(), 0.0f)
         , plantSugar(this->cellTypes.size(), 0.0f)
         , plantWater(this->cellTypes.size(), 0.0f)
         , plantMineral(this->cellTypes.size(), 0.0f)
@@ -64,6 +69,7 @@ public:
         , cellTypes(std::move(cellTypes))
         , soilWater(std::move(soilWater))
         , soilMineral(std::move(soilMineral))
+        , light(this->cellTypes.size(), 0.0f)
         , plantSugar(std::move(plantSugar))
         , plantWater(std::move(plantWater))
         , plantMineral(std::move(plantMineral))

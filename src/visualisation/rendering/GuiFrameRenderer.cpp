@@ -202,6 +202,39 @@ void GuiFrameRenderer::renderOptionsPanel() {
             ImGui::SetTooltip("Rate of mineral diffusion between plant cells");
         }
         
+        ImGui::Separator();
+        ImGui::Text("Light & Photosynthesis:");
+        
+        ImGui::SliderFloat("Light Intensity", &opts.lightTopIntensity, 0.0f, 2.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Intensity of light at top of grid");
+        }
+        
+        ImGui::SliderFloat("Plant Light Absorb", &opts.plantLightAbsorb, 0.0f, 1.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Fraction of light absorbed by plant cells");
+        }
+        
+        ImGui::SliderFloat("Soil Light Absorb", &opts.soilLightAbsorb, 0.0f, 1.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Fraction of light absorbed by soil");
+        }
+        
+        ImGui::SliderFloat("Photo Max Rate", &opts.photoMaxRate, 0.0f, 0.5f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Maximum sugar production rate per tick");
+        }
+        
+        ImGui::SliderFloat("Light Half-Sat", &opts.lightHalfSat, 0.0f, 2.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Half-saturation constant for light");
+        }
+        
+        ImGui::SliderFloat("Water Half-Sat", &opts.waterHalfSat, 0.0f, 2.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Half-saturation constant for water in photosynthesis");
+        }
+        
         ImGui::PopItemWidth();
     }
 }

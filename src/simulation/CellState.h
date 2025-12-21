@@ -11,7 +11,9 @@
 struct CellState {
     enum Type {
         Air = 0,
-        Cell = 1
+        Cell = 1,
+        Soil = 2,
+        Dead = 3
     };
 
     Type type;

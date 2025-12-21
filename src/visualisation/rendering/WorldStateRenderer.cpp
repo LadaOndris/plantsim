@@ -143,7 +143,7 @@ glm::vec3 WorldStateRenderer::computeCellColor(float resources, float soilWater,
     constexpr glm::vec3 RESOURCE_BASE_COLOR{1.0f, 0.0f, 0.0f};  // Red
     constexpr glm::vec3 WATER_BASE_COLOR{0.0f, 0.4f, 1.0f};     // Blue
     constexpr glm::vec3 MINERAL_BASE_COLOR{0.6f, 0.3f, 0.1f};   // Brown/Orange
-    constexpr float RESOURCE_MAX = 10.0f;
+    constexpr float RESOURCE_MAX = 1.0f;
     constexpr float WATER_MAX = 2.0f;
     constexpr float MINERAL_MAX = 2.0f;
 

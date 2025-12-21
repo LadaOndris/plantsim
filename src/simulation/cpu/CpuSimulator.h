@@ -4,6 +4,8 @@
 #include "simulation/cpu/ResourceTransfer.h"
 #include "simulation/cpu/RandomNeighborReproduction.h"
 #include "simulation/cpu/SoilDiffusion.h"
+#include "simulation/cpu/LightComputation.h"
+#include "simulation/cpu/Photosynthesis.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/Options.h"
@@ -37,8 +39,12 @@ public:
     }
 
     void step(const Options &options) override {
+        LightComputation::compute(state, options);
         soilDiffusion.step(state, backBuffer, options);
+        
+        Photosynthesis::apply(state, options);
         resourceTransfer.step(state, backBuffer, options);
+        
         reproduction.step(state, backBuffer, options);
     }
 

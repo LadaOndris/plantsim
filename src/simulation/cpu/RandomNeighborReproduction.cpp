@@ -119,11 +119,14 @@ void RandomNeighborReproduction::applicationPhase(State& state, State& backBuffe
     // Use sugar (energy) for reproduction cost
     Eigen::Map<const MatrixXf> sugar(state.plantSugar.data(), h, w);
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
+    Eigen::Map<const MatrixXf> water(state.plantWater.data(), h, w);
     Eigen::Map<MatrixXf> nextSugar(backBuffer.plantSugar.data(), h, w);
     Eigen::Map<MatrixXi> nextCellTypes(backBuffer.cellTypes.data(), h, w);
+    Eigen::Map<MatrixXf> nextWater(backBuffer.plantWater.data(), h, w);
 
     nextSugar = sugar;
     nextCellTypes = cellTypes;
+    nextWater = water;
 
     // Deduct cost from winning parents
     nextSugar.array() -= parentCost.array() * config.reproductionCost;
@@ -133,7 +136,11 @@ void RandomNeighborReproduction::applicationPhase(State& state, State& backBuffe
         static_cast<int>(CellState::Type::Cell), nextCellTypes);
     nextSugar = (childMask.array() > 0.5f).select(
         config.childInitialResources, nextSugar);
+    // Give new cells initial water for photosynthesis
+    nextWater = (childMask.array() > 0.5f).select(
+        config.childInitialWater, nextWater);
 
     std::swap(state.plantSugar, backBuffer.plantSugar);
     std::swap(state.cellTypes, backBuffer.cellTypes);
+    std::swap(state.plantWater, backBuffer.plantWater);
 }

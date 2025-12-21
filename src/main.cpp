@@ -23,16 +23,19 @@ State createInitialState(const ApplicationConfig& config) {
     using namespace initializers;
 
     GridTopology topology{config.gridWidth, config.gridHeight};
-    OffsetCoord center{config.gridWidth / 2, 20};
+
+    int initialCellRow = config.simulationOptions.soilLayerHeight;
+    OffsetCoord seedSoil{config.gridWidth / 2, initialCellRow};
 
     StateInitializer initializer{
-        // Set center cells to Cell type
-        PolicyApplication{CircleRegion{center, 1}, SetCellType{CellState::Cell}},
-        // Set resources at center cell
-        // PolicyApplication{
-        //     SingleCell{center},
-        //     SetSoilMineral(FixedAmount{0.0f})
-        // },
+        // Set center cells to Cell type with initial water for photosynthesis
+        PolicyApplication{
+            CircleRegion{seedSoil, 1}, 
+            CompositeAction{
+                SetCellType{CellState::Cell},
+                SetPlantWater(FixedAmount{0.1f})
+            }
+        },
         // Initialize soil layer with water and minerals
         PolicyApplication{
             BottomRowsRegion{config.simulationOptions.soilLayerHeight},

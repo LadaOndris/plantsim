@@ -38,7 +38,7 @@ State createInitialState(const GridTopology &topology) {
         // Set resources at source cell
         PolicyApplication{
             SingleCell{center},
-            SetResource{FixedAmount{1000.0f}}
+            SetResource(FixedAmount{1000.0f})
         }
     };
 
