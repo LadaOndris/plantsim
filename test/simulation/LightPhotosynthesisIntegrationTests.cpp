@@ -10,7 +10,8 @@ protected:
     static constexpr int WIDTH = 5;
     static constexpr int HEIGHT = 8;
     
-    GridTopology topology{WIDTH, HEIGHT};
+    const GridTopology topology{WIDTH, HEIGHT};
+    const Photosynthesis photosynthesis{topology};
     SimulationTestHelper helper{topology};
     
     void SetUp() override {
@@ -25,7 +26,7 @@ protected:
     
     void runSimulationStep() {
         LightComputation::compute(helper.state, helper.options);
-        Photosynthesis::apply(helper.state, helper.options);
+        photosynthesis.apply(helper.state, helper.options);
     }
     
     float expectedSugar(float light, float water) const {

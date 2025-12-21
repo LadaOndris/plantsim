@@ -29,7 +29,7 @@ struct ResourceAccessor {
     
     float getTotalResource(const State& state) const {
         float total = 0.0f;
-        for (size_t i = 0; i < state.totalCells(); ++i) {
+        for (size_t i = 0; i < state.totalStorageCells(); ++i) {
             total += getSoilResource(state, i) + getPlantResource(state, i);
         }
         return total;

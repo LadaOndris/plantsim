@@ -11,6 +11,7 @@ protected:
     
     GridTopology topology{WIDTH, HEIGHT};
     SimulationTestHelper helper{topology};
+    Photosynthesis photosynthesis{topology};
     
     void SetUp() override {
         helper.options.dt = 1.0f;
@@ -20,7 +21,7 @@ protected:
     }
     
     void applyPhotosynthesis() {
-        Photosynthesis::apply(helper.state, helper.options);
+        photosynthesis.apply(helper.state, helper.options);
     }
     
     /**

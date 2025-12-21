@@ -2,7 +2,6 @@
 
 #include "simulation/State.h"
 #include "simulation/Options.h"
-#include "simulation/CellState.h"
 #include <Eigen/Dense>
 
 /**
@@ -16,6 +15,9 @@ public:
     using MatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using MatrixXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+    explicit Photosynthesis(const GridTopology& topology)
+        : topology(topology) {}
+
     /**
      * @brief Apply photosynthesis to all plant cells.
      * 
@@ -25,5 +27,7 @@ public:
      * @param state Current simulation state (plantSugar will be updated)
      * @param options Simulation parameters (rates, half-saturation constants, dt)
      */
-    static void apply(State& state, const Options& options);
+    void apply(State& state, const Options& options) const;
+private:
+    const GridTopology topology;
 };

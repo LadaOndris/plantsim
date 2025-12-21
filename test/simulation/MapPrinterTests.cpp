@@ -14,7 +14,7 @@ TEST(MapPrinterTest, PrintHexMapResources) {
         0, 0, 0, 0, 0,
         8, 6, 4, 2, 1
     };
-    std::vector<int> storedResources = store(resources, width, height, 0);
+    std::vector<int> storedResources = store(resources, topology, 0);
 
     std::string expectedOutput =
         ". 1 2 + 5 \n"
@@ -45,7 +45,7 @@ TEST(MapPrinterTest, PrintHexMapCellTypes) {
         1, 0, 2,
         2, 1, 0
     };
-    std::vector<int> storedCellTypes = store(cellTypes, width, height, -1);
+    std::vector<int> storedCellTypes = store(cellTypes, topology, -1);
 
     std::string expectedOutput =
         "A B C \n"
@@ -79,7 +79,7 @@ TEST(MapPrinterTest, PrintStorageMap) {
         0, 1,0,1,
         1,0,1,0
     };
-    std::vector<int> storedData = store(data, width, height, -1);
+    std::vector<int> storedData = store(data, topology, -1);
 
     std::string expectedOutput =
         "- + 0 0 + \n"

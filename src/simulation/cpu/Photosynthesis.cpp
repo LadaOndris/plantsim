@@ -1,9 +1,8 @@
 #include "simulation/cpu/Photosynthesis.h"
 
-void Photosynthesis::apply(State& state, const Options& options) {
-    // Calculate storage dimensions from logical dimensions
-    const int h = state.height;
-    const int w = state.width + (state.height - 1) / 2; // TODO: use GridTopology method?
+void Photosynthesis::apply(State& state, const Options& options) const {
+    const int h = state.storageDim.y;
+    const int w = state.storageDim.x;
 
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
     Eigen::Map<const MatrixXf> light(state.light.data(), h, w);

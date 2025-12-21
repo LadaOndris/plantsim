@@ -26,6 +26,7 @@ public:
         , reproduction(grid)
         , soilDiffusion(grid, options)
         , soilAbsorption(grid)
+        , photosynthesis(topology)
     {
         // Resize back buffer for all fields that get double-buffered
         backBuffer.soilWater.resize(state.soilWater.size());
@@ -45,7 +46,7 @@ public:
         soilDiffusion.step(state, backBuffer, options);
         soilAbsorption.step(state, backBuffer, options);
         
-        Photosynthesis::apply(state, options);
+        photosynthesis.apply(state, options);
         resourceTransfer.step(state, backBuffer, options);
         
         reproduction.step(state, backBuffer, options);
@@ -65,4 +66,5 @@ private:
     RandomNeighborReproduction reproduction;
     SoilDiffusion soilDiffusion;
     SoilAbsorption soilAbsorption;
+    Photosynthesis photosynthesis;
 };
