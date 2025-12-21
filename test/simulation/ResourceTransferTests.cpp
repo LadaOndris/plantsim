@@ -52,13 +52,13 @@ protected:
 
         // Set up source cell with resources
         const AxialCoord cell{.q=1, .r=1};
-        const int sourceIdx = cell.asFlat(topology.getDimension());
+        const int sourceIdx = topology.toLogicalIndex(cell);
         plantSugar[sourceIdx] = 1.0f;
         cellTypes[sourceIdx] = 1; // Cell type
 
         // Set up neighboring cell (right neighbor)
         const AxialCoord neighbor{.q=2, .r=1};
-        const int neighborIdx = neighbor.asFlat(topology.getDimension());
+        const int neighborIdx = topology.toLogicalIndex(neighbor);
         cellTypes[neighborIdx] = 1; // Cell type
 
         // State should contain the storage data.
@@ -112,8 +112,8 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     const AxialCoord cell {.q=1, .r=1};
     const AxialCoord neighbor{.q=2, .r=1};
 
-    const int sourceIdx = topology.toStorageCoord(cell).asFlat(topology.storageDim);
-    const int neighborIdx = topology.toStorageCoord(neighbor).asFlat(topology.storageDim);
+    const int sourceIdx = topology.toStorageIndex(cell);
+    const int neighborIdx = topology.toStorageIndex(neighbor);
 
     // With diffusion, sugar should have spread from source to neighbor
     // The exact values depend on the transport rate, but neighbor should now have some sugar

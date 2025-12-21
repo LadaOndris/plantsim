@@ -70,10 +70,6 @@ struct StorageCoord {
     int x; 
     int y;
 
-    constexpr int asFlat(const StorageCoord& dim) const {
-        return y * dim.x + x;
-    }
-    
     constexpr bool operator==(const StorageCoord& other) const {
         return x == other.x && y == other.y;
     }

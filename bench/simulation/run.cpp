@@ -15,12 +15,12 @@
 #include "simulation/initializers/PolicyApplication.h"
 
 template <typename T>
-uint64_t computeChecksum(const std::vector<T> &cells, StorageCoord storageDims) {
+uint64_t computeChecksum(const std::vector<T> &cells, const GridTopology &topology) {
     uint64_t checksum = 0;
-    for (int y = 0; y < storageDims.y; y++) {
-        for (int x = 0; x < storageDims.x; x++) {
+    for (int y = 0; y < topology.storageDim.y; y++) {
+        for (int x = 0; x < topology.storageDim.x; x++) {
             StorageCoord coord{.x=x, .y=y};
-            checksum = checksum * 31 + static_cast<int>(cells[coord.asFlat(storageDims)]);
+            checksum = checksum * 31 + static_cast<int>(cells[topology.toStorageIndex(coord)]);
         }
     }
     return checksum;
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Simulation completed in " << duration.count() << " ms" << std::endl;
     std::cout << "Steps/second: " << (simSteps * 1000.0 / duration.count()) << std::endl;
 
-    uint64_t checksum = computeChecksum(finalState.plantSugar, topology.storageDim);
+    uint64_t checksum = computeChecksum(finalState.plantSugar, topology);
     std::cout << "Map checksum: 0x" << std::hex << std::setw(16) << std::setfill('0') << checksum << std::dec << std::endl;
 
     return 0;
