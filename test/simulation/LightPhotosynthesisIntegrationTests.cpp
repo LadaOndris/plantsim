@@ -10,7 +10,8 @@ protected:
     static constexpr int WIDTH = 5;
     static constexpr int HEIGHT = 8;
     
-    SimulationTestHelper helper{WIDTH, HEIGHT};
+    GridTopology topology{WIDTH, HEIGHT};
+    SimulationTestHelper helper{topology};
     
     void SetUp() override {
         helper.options.lightTopIntensity = 1.0f;
@@ -51,7 +52,7 @@ protected:
 // =============================================================================
 
 TEST_F(LightPhotosynthesisIntegrationTest, SinglePlantAtTopProducesSugar) {
-    OffsetCoord coord{2, helper.topRow()};
+    OffsetCoord coord{2, topology.topRow()};
     
     placePlant(coord);
     
@@ -63,7 +64,7 @@ TEST_F(LightPhotosynthesisIntegrationTest, SinglePlantAtTopProducesSugar) {
 }
 
 TEST_F(LightPhotosynthesisIntegrationTest, PlantWithoutWaterProducesNoSugar) {
-    OffsetCoord coord{2, helper.topRow()};
+    OffsetCoord coord{2, topology.topRow()};
     
     placePlant(coord, 0.0f);
     
@@ -89,7 +90,7 @@ class CanopyDepthTest : public LightPhotosynthesisIntegrationTest,
 TEST_P(CanopyDepthTest, CanopyCreatesLightAndSugarGradient) {
     const auto param = GetParam();
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     
     // Create vertical stack of plants
     std::vector<OffsetCoord> coords;
@@ -129,7 +130,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(LightPhotosynthesisIntegrationTest, CanopyShadesLowerPlants) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coordTop{col, topRow};
     OffsetCoord coordLower{col, topRow - 1};
     
@@ -151,7 +152,7 @@ TEST_F(LightPhotosynthesisIntegrationTest, CanopyShadesLowerPlants) {
 }
 
 TEST_F(LightPhotosynthesisIntegrationTest, AdjacentColumnsAreIndependent) {
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coord1_top{1, topRow};
     OffsetCoord coord1_mid{1, topRow - 1};
     OffsetCoord coord1_bot{1, topRow - 2};
@@ -183,7 +184,7 @@ TEST_F(LightPhotosynthesisIntegrationTest, AdjacentColumnsAreIndependent) {
 
 TEST_F(LightPhotosynthesisIntegrationTest, AirGapAllowsLightToLowerPlant) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coordTop{col, topRow};
     OffsetCoord coordLower{col, topRow - 2};
     
@@ -205,7 +206,7 @@ TEST_F(LightPhotosynthesisIntegrationTest, AirGapAllowsLightToLowerPlant) {
 
 TEST_F(LightPhotosynthesisIntegrationTest, SoilBlocksLightCompletely) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coordTop{col, topRow};
     OffsetCoord coordBelow{col, topRow - 1};
     
@@ -236,7 +237,7 @@ class AccumulationLinearityTest : public LightPhotosynthesisIntegrationTest,
 
 TEST_P(AccumulationLinearityTest, SugarAccumulationIsLinear) {
     const auto param = GetParam();
-    OffsetCoord coord{2, helper.topRow()};
+    OffsetCoord coord{2, topology.topRow()};
     
     placePlant(coord, 10.0f);  // Lots of water to avoid depletion
     
@@ -266,7 +267,7 @@ INSTANTIATE_TEST_SUITE_P(
 );
 
 TEST_F(LightPhotosynthesisIntegrationTest, SugarAccumulatesOverTime) {
-    OffsetCoord coord{2, helper.topRow()};
+    OffsetCoord coord{2, topology.topRow()};
     
     placePlant(coord, 10.0f);  // Lots of water to avoid depletion
     
@@ -320,7 +321,7 @@ TEST_F(LightPhotosynthesisIntegrationTest, RealisticPlantAboveSoil) {
 }
 
 TEST_F(LightPhotosynthesisIntegrationTest, ZeroLightIntensityProducesNoSugar) {
-    OffsetCoord coord{2, helper.topRow()};
+    OffsetCoord coord{2, topology.topRow()};
     
     helper.options.lightTopIntensity = 0.0f;
     placePlant(coord);

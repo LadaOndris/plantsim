@@ -10,7 +10,8 @@ protected:
     static constexpr int WIDTH = 5;
     static constexpr int HEIGHT = 5;
     
-    SimulationTestHelper helper{WIDTH, HEIGHT};
+    GridTopology topology{WIDTH, HEIGHT};
+    SimulationTestHelper helper{topology};
     
     void SetUp() override {
         helper.options.lightTopIntensity = 1.0f;
@@ -39,7 +40,7 @@ TEST_F(LightComputationTest, AirColumnHasFullLightThroughout) {
     const int col = 2;
     for (int row = 0; row < HEIGHT; ++row) {
         OffsetCoord coord{col, row};
-        if (helper.isValid(coord)) {
+        if (topology.isValid(coord)) {
             EXPECT_FLOAT_EQ(helper.getLight(coord), 1.0f)
                 << "Air at row " << row << " should have full light";
         }
@@ -49,7 +50,7 @@ TEST_F(LightComputationTest, AirColumnHasFullLightThroughout) {
 TEST_F(LightComputationTest, TopRowReceivesFullLight) {
     // Place a plant at the top
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coord{col, topRow};
 
     helper.setCellType(coord, CellState::Type::Cell);
@@ -62,7 +63,7 @@ TEST_F(LightComputationTest, TopRowReceivesFullLight) {
 
 TEST_F(LightComputationTest, PlantCellAbsorbsLightForCellsBelow) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coord{col, topRow};
     
     // Place a single plant cell at the top
@@ -82,7 +83,7 @@ TEST_F(LightComputationTest, PlantCellAbsorbsLightForCellsBelow) {
 
 TEST_F(LightComputationTest, SoilStronglyAbsorbsLight) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord coord{col, topRow};
     OffsetCoord belowCoord{col, topRow - 1};
     
@@ -104,7 +105,7 @@ TEST_F(LightComputationTest, MultiplePlantLayersCompoundAttenuation) {
     const int col = 2;
     
     // Stack of 3 plants at the top of the grid
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     OffsetCoord topCoord{col, topRow};
     OffsetCoord secondCoord{col, topRow - 1};
     OffsetCoord thirdCoord{col, topRow - 2};
@@ -132,7 +133,7 @@ TEST_F(LightComputationTest, MultiplePlantLayersCompoundAttenuation) {
 }
 
 TEST_F(LightComputationTest, ColumnsAreIndependent) {
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     
     // Plant in column 1 only
     OffsetCoord plantCoord{1, topRow};
@@ -150,14 +151,14 @@ TEST_F(LightComputationTest, ColumnsAreIndependent) {
     
     // Column 0: should be unaffected (full light)
     OffsetCoord col0Below{0, topRow - 1};
-    if (helper.isValid(col0Below)) {
+    if (topology.isValid(col0Below)) {
         EXPECT_FLOAT_EQ(helper.getLight(col0Below), 1.0f);
     }
 }
 
 TEST_F(LightComputationTest, DeadCellsAbsorbLight) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     
     OffsetCoord deadCoord{col, topRow};
     OffsetCoord belowCoord{col, topRow - 1};
@@ -172,7 +173,7 @@ TEST_F(LightComputationTest, DeadCellsAbsorbLight) {
 
 TEST_F(LightComputationTest, AirGapDoesNotAbsorbLight) {
     const int col = 2;
-    const int topRow = helper.topRow();
+    const int topRow = topology.topRow();
     
     // Plant, then air gap, then more plant
     OffsetCoord topPlantCoord{col, topRow};
@@ -208,8 +209,8 @@ TEST_F(LightComputationTest, TopIntensityParameterIsRespected) {
     
     computeLight();
     
-    OffsetCoord coordTop{2, helper.topRow()};
-    OffsetCoord coordBottom{2, helper.bottomRow()};
+    OffsetCoord coordTop{2, topology.topRow()};
+    OffsetCoord coordBottom{2, topology.bottomRow()};
 
     EXPECT_FLOAT_EQ(helper.getLight(coordTop), 0.5f);
     EXPECT_FLOAT_EQ(helper.getLight(coordBottom), 0.5f);
@@ -225,7 +226,7 @@ TEST_F(LightComputationTest, LightCanReachNearZeroWithManyLayers) {
     
     // Bottom row should have very little light
     float expected = std::pow(transmittance(), HEIGHT - 1);
-    OffsetCoord coordBottom{col, helper.bottomRow()};
+    OffsetCoord coordBottom{col, topology.bottomRow()};
     EXPECT_NEAR(helper.getLight(coordBottom), expected, 0.001f);
 }
 
@@ -242,7 +243,8 @@ TEST_F(LightComputationTest, OverwritesPreviousLightValues) {
 }
 
 TEST_F(LightComputationTest, SingleRowGridHasFullLight) {
-    SimulationTestHelper helper{5, 1};
+    GridTopology singleRowTopology{5, 1};
+    SimulationTestHelper helper{singleRowTopology};
     helper.options.lightTopIntensity = 1.0f;
     
     LightComputation::compute(helper.state, helper.options);
@@ -250,7 +252,7 @@ TEST_F(LightComputationTest, SingleRowGridHasFullLight) {
     // All cells should have top light intensity
     for (int col = 0; col < 5; ++col) {
         OffsetCoord coord{col, 0};
-        if (helper.isValid(coord)) {
+        if (singleRowTopology.isValid(coord)) {
             EXPECT_FLOAT_EQ(helper.getLight(coord), 1.0f);
         }
     }
@@ -262,9 +264,9 @@ TEST_F(LightComputationTest, SingleRowGridHasFullLight) {
 
 TEST_F(LightComputationTest, CanopyCreatesVerticalLightGradient) {
     const int col = 2;
-    OffsetCoord topCoord{col, helper.topRow()};
-    OffsetCoord secondCoord{col, helper.topRow() - 1};
-    OffsetCoord thirdCoord{col, helper.topRow() - 2};
+    OffsetCoord topCoord{col, topology.topRow()};
+    OffsetCoord secondCoord{col, topology.topRow() - 1};
+    OffsetCoord thirdCoord{col, topology.topRow() - 2};
     
     // Create a canopy of plants at the top 3 rows
     helper.setCellType(topCoord, CellState::Type::Cell);
@@ -275,7 +277,7 @@ TEST_F(LightComputationTest, CanopyCreatesVerticalLightGradient) {
     
     // Light should strictly decrease going down through the canopy
     float lightAbove = helper.getLight(topCoord);
-    for (int row = helper.topRow() - 1; row >= helper.topRow() - 2; --row) {
+    for (int row = topology.topRow() - 1; row >= topology.topRow() - 2; --row) {
         OffsetCoord coord{col, row};
         float lightHere = helper.getLight(coord);
         EXPECT_LT(lightHere, lightAbove) 

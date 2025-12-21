@@ -9,7 +9,8 @@ protected:
     static constexpr int WIDTH = 5;
     static constexpr int HEIGHT = 5;
     
-    SimulationTestHelper helper{WIDTH, HEIGHT};
+    GridTopology topology{WIDTH, HEIGHT};
+    SimulationTestHelper helper{topology};
     
     void SetUp() override {
         helper.options.dt = 1.0f;

@@ -236,6 +236,28 @@ public:
         return storage.x >= minStorageX && storage.x <= maxStorageX;
     }
 
+    /**
+     * @brief Check if a coordinate is valid in the topology.
+     */
+    [[nodiscard]] bool isValid(OffsetCoord coord) const {
+        AxialCoord axial = coord.toAxialCoord();
+        return isValid(axial);
+    }
+
+    /**
+     * @brief Get topmost row index (where light enters from sky).
+     */
+    [[nodiscard]] int topRow() const {
+        return height - 1;
+    }
+
+    /**
+     * @brief Get bottommost row index (ground level).
+     */
+    [[nodiscard]] int bottomRow() const {
+        return 0;
+    }
+
 private:
     /**
      * @brief Returns the storage dimensions required for the axial coordinate map.

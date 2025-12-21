@@ -6,7 +6,6 @@
 #include "simulation/CellState.h"
 #include "simulation/initializers/Initializers.h"
 
-#include <functional>
 
 class SimulationTestHelper {
 public:
@@ -14,16 +13,12 @@ public:
     State state;
     Options options;
 
-    SimulationTestHelper(int width, int height)
-        : topology(width, height)
+    SimulationTestHelper(const GridTopology &topology)
+        : topology(topology)
         , state(createEmptyState(topology))
         , options{}
     {
     }
-
-    // =========================================================================
-    // Offset Coordinate Access (for general use)
-    // =========================================================================
 
     void setCellType(OffsetCoord coord, CellState::Type type) {
         int index = topology.toStorageIndex(coord);
@@ -58,65 +53,21 @@ public:
         return state.plantSugar[topology.toStorageIndex(coord)];
     }
 
-    // =========================================================================
-    // Convenience Methods
-    // =========================================================================
-
-    /**
-     * @brief Fill an entire offset column with a cell type.
-     * Light propagates through offset columns in the logical grid.
-     */
     void fillColumn(int col, CellState::Type type) {
         for (int row = 0; row < topology.height; ++row) {
             OffsetCoord coord{col, row};
-            if (isValid(coord)) {
+            if (topology.isValid(coord)) {
                 setCellType(coord, type);
             }
         }
     }
 
-    /**
-     * @brief Check if a coordinate is valid in the topology.
-     */
-    [[nodiscard]] bool isValid(OffsetCoord coord) const {
-        AxialCoord axial = coord.toAxialCoord();
-        return topology.isValid(axial);
-    }
-
-    /**
-     * @brief Get topmost row index (where light enters from sky).
-     */
-    [[nodiscard]] int topRow() const {
-        return topology.height - 1;
-    }
-
-    /**
-     * @brief Get bottommost row index (ground level).
-     */
-    [[nodiscard]] int bottomRow() const {
-        return 0;
-    }
-
-    /**
-     * @brief Get storage width.
-     */
-    [[nodiscard]] int storageWidth() const {
-        return topology.storageDim.x;
-    }
-
-    /**
-     * @brief Get storage height (same as logical height).
-     */
-    [[nodiscard]] int storageHeight() const {
-        return topology.storageDim.y;
-    }
-
 private:
-    static State createEmptyState(const GridTopology& topo) {
+    static State createEmptyState(const GridTopology& topology) {
         using namespace initializers;
         StateInitializer initializer{
             PolicyApplication{FullGrid{}, SetCellType{CellState::Type::Air}}
         };
-        return initializer.initialize(topo);
+        return initializer.initialize(topology);
     }
 };
