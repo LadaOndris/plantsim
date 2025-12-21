@@ -14,8 +14,8 @@ struct Options {
     float soilMineralTarget = 1.0f;
     
     // Soil regeneration rates (toward target, per tick)
-    float soilWaterRegenRate = 0.02f;
-    float soilMineralRegenRate = 0.005f;
+    float soilWaterRegenRate = 0.002f;
+    float soilMineralRegenRate = 0.0005f;
     
     // Soil diffusion rates (state-dependent, only in soil)
     float soilWaterDiffusivity = 0.18f;
@@ -37,7 +37,7 @@ struct Options {
     float soilLightAbsorb = 0.95f;         // Fraction absorbed by soil
     
     // Photosynthesis parameters
-    float photoMaxRate = 0.08f;            // Max sugar production per tick
+    float photoMaxRate = 0.01f;            // Max sugar production per tick
     float lightHalfSat = 0.4f;             // Half-saturation for light
     float waterHalfSat = 0.2f;             // Half-saturation for water
     float waterPerSugar = 1.0f;            // Water consumed per unit sugar produced

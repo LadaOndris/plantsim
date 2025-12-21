@@ -4,6 +4,7 @@
 #include "simulation/cpu/ResourceTransfer.h"
 #include "simulation/cpu/RandomNeighborReproduction.h"
 #include "simulation/cpu/SoilDiffusion.h"
+#include "simulation/cpu/SoilAbsorption.h"
 #include "simulation/cpu/LightComputation.h"
 #include "simulation/cpu/Photosynthesis.h"
 #include "simulation/GridTopology.h"
@@ -24,6 +25,7 @@ public:
         , resourceTransfer(grid)
         , reproduction(grid)
         , soilDiffusion(grid, options)
+        , soilAbsorption(grid)
     {
         // Resize back buffer for all fields that get double-buffered
         backBuffer.soilWater.resize(state.soilWater.size());
@@ -41,6 +43,7 @@ public:
     void step(const Options &options) override {
         LightComputation::compute(state, options);
         soilDiffusion.step(state, backBuffer, options);
+        soilAbsorption.step(state, backBuffer, options);
         
         Photosynthesis::apply(state, options);
         resourceTransfer.step(state, backBuffer, options);
@@ -61,4 +64,5 @@ private:
     ResourceTransfer resourceTransfer;
     RandomNeighborReproduction reproduction;
     SoilDiffusion soilDiffusion;
+    SoilAbsorption soilAbsorption;
 };

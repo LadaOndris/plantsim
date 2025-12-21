@@ -21,6 +21,8 @@ set(INCLUDE_DIR ${SRC_DIR})
 set(SOURCES
     ${SRC_DIR}/simulation/cpu/Photosynthesis.cpp
     ${SRC_DIR}/simulation/cpu/LightComputation.cpp
+    ${SRC_DIR}/simulation/cpu/SoilAbsorption.cpp
+    ${SRC_DIR}/simulation/cpu/GridShiftHelper.cpp
 )
 
 set(TEST_SOURCES
@@ -31,6 +33,7 @@ set(TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/PhotosynthesisTests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/LightComputationTests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/LightPhotosynthesisIntegrationTests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/SoilAbsorptionTests.cpp
 )
 
 set(BINARY_NAME plantsim_tests)
