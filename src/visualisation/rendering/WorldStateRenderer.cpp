@@ -154,8 +154,8 @@ glm::vec3 WorldStateRenderer::computeCellColor(float sugar, float water, float m
     };
 
     // Layer 1: Cell Types
-    if (options.showCellTypes) {
-        glm::vec3 cellTypeColor = (type == CellState::Type::Cell) ? CELL_COLOR : AIR_COLOR;
+    if (options.showCellTypes && type == CellState::Type::Cell) {
+        glm::vec3 cellTypeColor = CELL_COLOR;
         blendLayer(true, cellTypeColor, options.cellTypesOpacity);
     }
 
