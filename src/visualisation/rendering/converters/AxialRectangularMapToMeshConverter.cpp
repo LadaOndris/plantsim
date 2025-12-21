@@ -33,9 +33,6 @@ MeshData AxialRectangularMapToMeshConverter::convert(const GridTopology &topolog
 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-//            auto axialCoords = convertOffsetToAxial(point->coords);
-//            auto point = map.getPoint(axialCoords.first, axialCoords.second);
-
             auto currentCellVertexIndices = &meshData.cellVerticesMap[std::make_pair(i, j)];
             std::vector<unsigned int> currentCellIndices{singleCellIndices};
             // Shift the base cell indices to form indices for the current cell.

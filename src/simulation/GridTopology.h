@@ -180,14 +180,6 @@ public:
         return toStorageIndex(offset.toAxialCoord());
     }
 
-    [[nodiscard]] constexpr int toLogicalIndex(OffsetCoord offset) const {
-        return offset.row * width + offset.col;
-    }
-
-    [[nodiscard]] constexpr int toLogicalIndex(AxialCoord axial) const {
-        return toLogicalIndex(axial.toOffsetCoord());
-    }
-
     /**
      * @brief Checks if axial coordinates represent a valid hex cell (not padding).
      * 
@@ -274,17 +266,17 @@ private:
 };
 
 template <typename T>
-inline std::vector<T> store(std::vector<T> data, int width, int height, T defaultFillValue = -1) {
+inline std::vector<T> store(const std::vector<T>& logical,
+                            const GridTopology& topology,
+                            T defaultFillValue) {
     std::vector<T> storage;
-    GridTopology topology(width, height);
-    storage.resize(topology.storageDim.size(), defaultFillValue);
+    storage.resize(static_cast<size_t>(topology.storageDim.x) * topology.storageDim.y, defaultFillValue);
 
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            T value = data[y * width + x];
-            OffsetCoord offset{x, y};
-            int storageIndex = topology.toStorageIndex(offset);
-            storage[storageIndex] = value;
+    for (int row = 0; row < topology.height; ++row) {
+        for (int col = 0; col < topology.width; ++col) {
+            const T value = logical[static_cast<size_t>(row) * topology.width + col];
+            const int idx = topology.toStorageIndex(OffsetCoord{col, row});
+            storage[static_cast<size_t>(idx)] = value;
         }
     }
 

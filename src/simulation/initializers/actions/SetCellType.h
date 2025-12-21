@@ -14,7 +14,7 @@ public:
     explicit constexpr SetCellType(CellState::Type type) : cellType(type) {}
 
     void apply(AxialCoord coord, const GridTopology& topology, State& state) const {
-        int index = topology.toLogicalIndex(coord);
+        int index = topology.toStorageIndex(coord);
         state.cellTypes[index] = static_cast<int>(cellType);
     }
 private:

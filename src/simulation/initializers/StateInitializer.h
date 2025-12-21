@@ -40,36 +40,11 @@ public:
      * @return State The initialized state with resources and cell types set
      */
     [[nodiscard]] State initialize(const GridTopology& topology) const {
-        const size_t totalCells = topology.totalCells();
+        State state(topology);
 
-        // Create a temporary state with flat (logical) layout for initialization
-        State flatState;
-        flatState.width = topology.width;
-        flatState.height = topology.height;
-        flatState.cellTypes.resize(totalCells, static_cast<int>(CellState::Air));
-        flatState.soilWater.resize(totalCells, 0.0f);
-        flatState.soilMineral.resize(totalCells, 0.0f);
-        flatState.plantSugar.resize(totalCells, 0.0f);
-        flatState.plantWater.resize(totalCells, 0.0f);
-        flatState.plantMineral.resize(totalCells, 0.0f);
+        applyPolicies(topology, state, std::index_sequence_for<Policies...>{});
 
-        applyPolicies(topology, flatState, std::index_sequence_for<Policies...>{});
-
-        // Convert to storage layout
-        auto storedCellTypes = store<int>(flatState.cellTypes, topology.width, topology.height, -1);
-        auto storedSoilWater = store<float>(flatState.soilWater, topology.width, topology.height, 0.0f);
-        auto storedSoilMineral = store<float>(flatState.soilMineral, topology.width, topology.height, 0.0f);
-        auto storedPlantSugar = store<float>(flatState.plantSugar, topology.width, topology.height, 0.0f);
-        auto storedPlantWater = store<float>(flatState.plantWater, topology.width, topology.height, 0.0f);
-        auto storedPlantMineral = store<float>(flatState.plantMineral, topology.width, topology.height, 0.0f);
-
-        return State(topology.width, topology.height, 
-                     std::move(storedCellTypes),
-                     std::move(storedSoilWater),
-                     std::move(storedSoilMineral),
-                     std::move(storedPlantSugar),
-                     std::move(storedPlantWater),
-                     std::move(storedPlantMineral));
+        return state;
     }
 
 private:

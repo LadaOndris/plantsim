@@ -52,35 +52,21 @@ protected:
     
     GridTopology topology{DEFAULT_GRID_SIZE, DEFAULT_GRID_SIZE};
     
-    /**
-     * @brief Create a state with customizable plant and soil resource configuration.
-     */
     State createState(const std::vector<OffsetCoord>& plantCoords,
-                     float soilWater = 0.0f,
-                     float soilMineral = 0.0f) const {
-        const size_t totalCells = static_cast<size_t>(topology.width) * topology.height;
-        
-        std::vector<int> cellTypes(totalCells, static_cast<int>(CellState::Type::Air));
-        std::vector<float> soilWaterVec(totalCells, 0.0f);
-        std::vector<float> soilMineralVec(totalCells, 0.0f);
-        std::vector<float> plantSugar(totalCells, 0.0f);
-        std::vector<float> plantWaterVec(totalCells, 0.0f);
-        std::vector<float> plantMineralVec(totalCells, 0.0f);
-        
+                      const float soilWaterValue = 0.0f,
+                      const float soilMineralValue = 0.0f) const
+    {
+        State s(topology);
+
         for (const auto& coord : plantCoords) {
-            int idx = topology.toLogicalIndex(coord);
-            cellTypes[idx] = static_cast<int>(CellState::Type::Cell);
-            soilWaterVec[idx] = soilWater;
-            soilMineralVec[idx] = soilMineral;
+            const int storageIdx = topology.toStorageIndex(coord);
+
+            s.cellTypes[storageIdx] = static_cast<int>(CellState::Type::Cell);
+            s.soilWater[storageIdx] = soilWaterValue;
+            s.soilMineral[storageIdx] = soilMineralValue;
         }
-        
-        return State(topology.width, topology.height,
-                     store(cellTypes, topology.width, topology.height, -1),
-                     store(soilWaterVec, topology.width, topology.height, 0.0f),
-                     store(soilMineralVec, topology.width, topology.height, 0.0f),
-                     store(plantSugar, topology.width, topology.height, 0.0f),
-                     store(plantWaterVec, topology.width, topology.height, 0.0f),
-                     store(plantMineralVec, topology.width, topology.height, 0.0f));
+
+        return s;
     }
     
     State createSinglePlantState(float soilWater = 1.0f, float soilMineral = 0.5f) const {

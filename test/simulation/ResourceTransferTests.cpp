@@ -38,44 +38,21 @@ std::ostream& operator<<(std::ostream& os, const ResourceTransferParams& param) 
 
 class ResourceTransferFixture : public ::testing::TestWithParam<ResourceTransferParams> {
 protected:
-    State createTestState(const GridTopology &topology) {
-        const int width = topology.width;
-        const int height = topology.height;
-        const size_t totalCells = width * height;
-
-        std::vector<float> plantSugar(totalCells, 0.0f);
-        std::vector<float> plantWater(totalCells, 0.0f);
-        std::vector<float> plantMineral(totalCells, 0.0f);
-        std::vector<float> soilWater(totalCells, 0.0f);
-        std::vector<float> soilMineral(totalCells, 0.0f);
-        std::vector<int> cellTypes(totalCells, 0); // Air
+    State createTestState(const GridTopology& topology) {
+        State s(topology);
 
         // Set up source cell with resources
-        const AxialCoord cell{.q=1, .r=1};
-        const int sourceIdx = topology.toLogicalIndex(cell);
-        plantSugar[sourceIdx] = 1.0f;
-        cellTypes[sourceIdx] = 1; // Cell type
+        const AxialCoord cell{.q = 1, .r = 1};
+        const int sourceIdx = topology.toStorageIndex(cell);
+        s.cellTypes[sourceIdx] = static_cast<int>(CellState::Cell);
+        s.plantSugar[sourceIdx] = 1.0f;
 
         // Set up neighboring cell (right neighbor)
-        const AxialCoord neighbor{.q=2, .r=1};
-        const int neighborIdx = topology.toLogicalIndex(neighbor);
-        cellTypes[neighborIdx] = 1; // Cell type
+        const AxialCoord neighbor{.q = 2, .r = 1};
+        const int neighborIdx = topology.toStorageIndex(neighbor);
+        s.cellTypes[neighborIdx] = static_cast<int>(CellState::Cell);
 
-        // State should contain the storage data.
-        auto storedPlantSugar = store(plantSugar, width, height, 0.0f);
-        auto storedPlantWater = store(plantWater, width, height, 0.0f);
-        auto storedPlantMineral = store(plantMineral, width, height, 0.0f);
-        auto storedSoilWater = store(soilWater, width, height, 0.0f);
-        auto storedSoilMineral = store(soilMineral, width, height, 0.0f);
-        auto storedCellTypes = store(cellTypes, width, height, -1);
-
-        return State(width, height, 
-                     std::move(storedCellTypes),
-                     std::move(storedSoilWater),
-                     std::move(storedSoilMineral),
-                     std::move(storedPlantSugar),
-                     std::move(storedPlantWater),
-                     std::move(storedPlantMineral));
+        return s;
     }
 };
 
@@ -102,7 +79,7 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     // Verify resource conservation
     float initialTotal = 0.0f;
     float finalTotal = 0.0f;
-    for (size_t i = 0; i < initialState.totalCells(); ++i) {
+    for (size_t i = 0; i < initialState.totalStorageCells(); ++i) {
         initialTotal += initialState.plantSugar[i];
         finalTotal += finalState.plantSugar[i];
     }

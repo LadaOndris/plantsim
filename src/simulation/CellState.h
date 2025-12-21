@@ -10,6 +10,7 @@
  */
 struct CellState {
     enum Type {
+        Padding = -1,
         Air = 0,
         Cell = 1,
         Soil = 2,
