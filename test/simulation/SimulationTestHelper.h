@@ -32,7 +32,7 @@ public:
      */
     [[nodiscard]] int index(int col, int row) const {
         AxialCoord axial = oddrToAxial({col, row});
-        return topology.toIndex(axial);
+        return topology.toStorageFlat(axial);
     }
 
     [[nodiscard]] int index(OffsetCoord coord) const {
@@ -46,7 +46,7 @@ public:
      * algorithms that operate on storage space (like LightComputation).
      */
     [[nodiscard]] int storageIndex(int storageCol, int storageRow) const {
-        StorageCoord dim = topology.getStorageDimension();
+        StorageCoord dim = topology.storageDim;
         return storageRow * dim.x + storageCol;
     }
 
@@ -54,7 +54,7 @@ public:
      * @brief Get storage dimensions.
      */
     [[nodiscard]] StorageCoord storageDim() const {
-        return topology.getStorageDimension();
+        return topology.storageDim;
     }
 
     // =========================================================================

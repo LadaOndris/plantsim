@@ -112,8 +112,8 @@ TEST_P(ResourceTransferFixture, SingleStep) {
     const AxialCoord cell {.q=1, .r=1};
     const AxialCoord neighbor{.q=2, .r=1};
 
-    const int sourceIdx = topology.axialToStorageCoord(cell).asFlat(topology.getStorageDimension());
-    const int neighborIdx = topology.axialToStorageCoord(neighbor).asFlat(topology.getStorageDimension());
+    const int sourceIdx = topology.toStorageCoord(cell).asFlat(topology.storageDim);
+    const int neighborIdx = topology.toStorageCoord(neighbor).asFlat(topology.storageDim);
 
     // With diffusion, sugar should have spread from source to neighbor
     // The exact values depend on the transport rate, but neighbor should now have some sugar

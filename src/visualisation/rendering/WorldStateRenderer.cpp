@@ -99,7 +99,7 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
  */
 void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions& options) {
     const State &state = simulatorPtr->getState();
-    StorageCoord storageDims = topology.getStorageDimension();
+    StorageCoord storageDims = topology.storageDim;
 
     for (int r = 0; r < topology.height; r++) {
         for (int q = 0; q < topology.width; q++) {
@@ -110,7 +110,7 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
                 continue;
             }
 
-            StorageCoord storageCoord = topology.axialToStorageCoord(axial);
+            StorageCoord storageCoord = topology.toStorageCoord(axial); // Use .toStorageFlat
             int idx = storageCoord.asFlat(storageDims);
             
             float plantSugar = state.plantSugar[idx];

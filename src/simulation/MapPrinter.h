@@ -24,7 +24,7 @@ public:
                                   const std::vector<T>& data,
                                   std::function<char(T)> mapper) {
     std::ostringstream oss;
-    StorageCoord dim = topology.getStorageDimension();
+    StorageCoord dim = topology.storageDim;
 
     for (int y = 0; y < dim.y; y++) {
       for (int x = 0; x < dim.x; x++) {
@@ -50,7 +50,7 @@ public:
                                  const std::vector<T>& data,
                                  std::function<char(T)> mapper) {
     std::ostringstream oss;
-    StorageCoord dim = topology.getStorageDimension();
+    StorageCoord dim = topology.storageDim;
 
     for (int y = 0; y < dim.y; y++) {
       // Indent odd rows for hexagonal offset
@@ -58,7 +58,7 @@ public:
         oss << ' ';
       }
       for (int x = 0; x < dim.x; x++) {
-        AxialCoord axial = topology.storageToAxialCoord({x, y});
+        AxialCoord axial = topology.toAxialCoord({x, y});
         
         if (topology.isValid(axial)) {
           int idx = y * dim.x + x;

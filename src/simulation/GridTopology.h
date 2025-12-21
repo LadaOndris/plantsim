@@ -80,6 +80,10 @@ class GridTopology {
 public:
     const int width;
     const int height;
+    const StorageCoord storageDim;
+
+    GridTopology(const int width, const int height) 
+        : width(width), height(height), storageDim(getStorageDimension()){}
 
     static constexpr AxialCoord getNeighborOffset(NeighborOffset direction) {
         return neighborOffsets[static_cast<int>(direction)];
@@ -91,31 +95,12 @@ public:
         AxialCoord{-1, 0}, AxialCoord{-1, +1}, AxialCoord{0, +1}
     };
 
-    constexpr GridTopology(int width, int height) 
-    : width(width), height(height) {}
-
     [[nodiscard]] constexpr size_t totalCells() const {
         return static_cast<size_t>(width) * height;
     }
 
     [[nodiscard]] constexpr AxialCoord getDimension() const {
         return AxialCoord{width, height};
-    }
-
-    /**
-     * @brief Returns the storage dimensions required for the axial coordinate map.
-     * 
-     * @details The axial coordinates are stored in a 2D array with unused cells.
-     * The storage width is larger than the logical width to accommodate the
-     * hexagonal stagger pattern.
-     * 
-     * @see https://www.redblobgames.com/grids/hexagons/#map-storage
-     * 
-     * @return Pair of (storageWidth, storageHeight)
-     */
-    [[nodiscard]] constexpr StorageCoord getStorageDimension() const {
-        int additionalWidth = (height - 1) / 2;
-        return {width + additionalWidth, height};
     }
 
     /**
@@ -132,7 +117,7 @@ public:
      * @param axial The axial coordinates
      * @return Storage coordinates
      */
-    [[nodiscard]] constexpr StorageCoord axialToStorageCoord(AxialCoord axial) const {
+    [[nodiscard]] constexpr StorageCoord toStorageCoord(AxialCoord axial) const {
         int offset = (height - 1) / 2;
         int x = axial.q + offset;
         int y = axial.r;
@@ -142,12 +127,12 @@ public:
     /**
      * @brief Converts storage coordinates (x, y) to axial coordinates (q, r).
      * 
-     * @details Inverse of axialToStorageCoord.
+     * @details Inverse of toStorageCoord(AxialCoord).
      * 
      * @param storage The storage coordinates
      * @return Axial coordinates
      */
-    [[nodiscard]] constexpr AxialCoord storageToAxialCoord(StorageCoord storage) const {
+    [[nodiscard]] constexpr AxialCoord toAxialCoord(StorageCoord storage) const {
         int offset = (height - 1) / 2;
         int q = storage.x - offset;
         int r = storage.y;
@@ -160,10 +145,9 @@ public:
      * @param axial The axial coordinates
      * @return Linear index into the storage array
      */
-    [[nodiscard]] constexpr int toIndex(AxialCoord axial) const {
-        StorageCoord storage = axialToStorageCoord(axial);
-        StorageCoord dim = getStorageDimension();
-        return storage.y * dim.x + storage.x;
+    [[nodiscard]] constexpr int toStorageFlat(AxialCoord axial) const {
+        StorageCoord storage = toStorageCoord(axial);
+        return storage.y * storageDim.x + storage.x;
     }
 
     /**
@@ -198,8 +182,7 @@ public:
 
     [[nodiscard]] constexpr bool isValid(StorageCoord storage) const {
         // Quick bounds check against underlying storage dimensions
-        StorageCoord dim = getStorageDimension();
-        if (storage.x < 0 || storage.x >= dim.x || storage.y < 0 || storage.y >= dim.y) {
+        if (storage.x < 0 || storage.x >= storageDim.x || storage.y < 0 || storage.y >= storageDim.y) {
             return false;
         }
 
@@ -210,6 +193,24 @@ public:
 
         return storage.x >= minStorageX && storage.x <= maxStorageX;
     }
+
+private:
+    /**
+     * @brief Returns the storage dimensions required for the axial coordinate map.
+     * 
+     * @details The axial coordinates are stored in a 2D array with unused cells.
+     * The storage width is larger than the logical width to accommodate the
+     * hexagonal stagger pattern.
+     * 
+     * @see https://www.redblobgames.com/grids/hexagons/#map-storage
+     * 
+     * @return Pair of (storageWidth, storageHeight)
+     */
+    [[nodiscard]] constexpr StorageCoord getStorageDimension() const {
+        int additionalWidth = (height - 1) / 2;
+        return {width + additionalWidth, height};
+    }
+
 };
 
 
@@ -231,14 +232,14 @@ template <typename T>
 inline std::vector<T> store(std::vector<T> data, int width, int height, T defaultFillValue = -1) {
     std::vector<T> storage;
     GridTopology topology(width, height);
-    StorageCoord dim = topology.getStorageDimension();
+    StorageCoord dim = topology.storageDim;
     storage.resize(dim.x * dim.y, defaultFillValue);
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             T value = data[y * width + x];
             AxialCoord axial = oddrToAxial({x, y});
-            StorageCoord storageCoord = topology.axialToStorageCoord(axial);
+            StorageCoord storageCoord = topology.toStorageCoord(axial);
             storage[storageCoord.y * dim.x + storageCoord.x] = value;
         }
     }

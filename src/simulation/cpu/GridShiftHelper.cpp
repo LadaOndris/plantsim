@@ -8,7 +8,7 @@ GridShiftHelper::GridShiftHelper(const GridTopology& topology) {
 }
 
 void GridShiftHelper::initStorageDimensions(const GridTopology& topology) {
-    const StorageCoord storageDims = topology.getStorageDimension();
+    const StorageCoord storageDims = topology.storageDim;
     storageWidth = storageDims.x;
     storageHeight = storageDims.y;
 }

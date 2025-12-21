@@ -6,7 +6,7 @@ void LightComputation::compute(State& state, const Options& options) {
     const int logicalHeight = state.height;
     
     GridTopology topology(logicalWidth, logicalHeight);
-    StorageCoord storageDim = topology.getStorageDimension();
+    StorageCoord storageDim = topology.storageDim;
     
     // Resize light vector if needed
     const size_t totalStorageCells = static_cast<size_t>(storageDim.x) * storageDim.y;
@@ -23,7 +23,7 @@ void LightComputation::compute(State& state, const Options& options) {
         for (int row = logicalHeight - 1; row >= 0; --row) {
             // Convert offset coordinates to storage index
             AxialCoord axial = oddrToAxial({col, row});
-            int idx = topology.toIndex(axial);
+            int idx = topology.toStorageFlat(axial);
             
             state.light[idx] = intensity;
             

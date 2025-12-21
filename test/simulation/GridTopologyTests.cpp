@@ -18,7 +18,7 @@ class GridTopologyStorageTest : public ::testing::TestWithParam<StorageTestParam
 TEST_P(GridTopologyStorageTest, StorageDimension) {
     const auto p = GetParam();
     GridTopology topology(p.cols, p.rows);
-    EXPECT_EQ(topology.getStorageDimension(), p.expected);
+    EXPECT_EQ(topology.storageDim, p.expected);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -45,7 +45,7 @@ class GridTopologyAxialToStorageCoordTest : public ::testing::TestWithParam<Axia
 TEST_P(GridTopologyAxialToStorageCoordTest, AxialToStorageCoord) {
     const auto p = GetParam();
     GridTopology topology(p.width, p.height);
-    EXPECT_EQ(topology.axialToStorageCoord(p.axial), p.storage);
+    EXPECT_EQ(topology.toStorageCoord(p.axial), p.storage);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -67,7 +67,7 @@ class GridTopologyStorageToAxialCoordTest : public ::testing::TestWithParam<Axia
 TEST_P(GridTopologyStorageToAxialCoordTest, StorageToAxialCoord) {
     const auto p = GetParam();
     GridTopology topology(p.width, p.height);
-    EXPECT_EQ(topology.storageToAxialCoord(p.storage), p.axial);
+    EXPECT_EQ(topology.toAxialCoord(p.storage), p.axial);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -87,9 +87,9 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(GridTopologyAxialToStorageCoordTest, ToIndex) {
     const auto p = GetParam();
     GridTopology topology(p.width, p.height);
-    StorageCoord dim = topology.getStorageDimension();
+    StorageCoord dim = topology.storageDim;
     int expectedIndex = p.storage.y * dim.x + p.storage.x;
-    EXPECT_EQ(topology.toIndex(p.axial), expectedIndex);
+    EXPECT_EQ(topology.toStorageFlat(p.axial), expectedIndex);
 }
 
 INSTANTIATE_TEST_SUITE_P(
