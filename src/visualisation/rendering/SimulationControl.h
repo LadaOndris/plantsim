@@ -26,16 +26,7 @@ struct SimulationControl {
      * @return true if pendingOptions differs from activeOptions
      */
     bool hasPendingChanges() const {
-        return pendingOptions.enableResourceTransfer != activeOptions.enableResourceTransfer
-            || pendingOptions.enableCellMultiplication != activeOptions.enableCellMultiplication
-            || pendingOptions.enableSoilSystem != activeOptions.enableSoilSystem
-            || pendingOptions.soilLayerHeight != activeOptions.soilLayerHeight
-            || pendingOptions.soilWaterTarget != activeOptions.soilWaterTarget
-            || pendingOptions.soilMineralTarget != activeOptions.soilMineralTarget
-            || pendingOptions.soilWaterRegenRate != activeOptions.soilWaterRegenRate
-            || pendingOptions.soilMineralRegenRate != activeOptions.soilMineralRegenRate
-            || pendingOptions.soilWaterDiffusivity != activeOptions.soilWaterDiffusivity
-            || pendingOptions.soilMineralDiffusivity != activeOptions.soilMineralDiffusivity;
+        return pendingOptions != activeOptions;
     }
     
     /**

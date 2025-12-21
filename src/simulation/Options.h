@@ -44,4 +44,7 @@ struct Options {
     
     // Time step for physics
     float dt = 1.0f;
+
+
+    bool operator==(const Options&) const = default;
 };
