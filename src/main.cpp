@@ -4,6 +4,7 @@
 #include "ApplicationConfig.h"
 #include "simulation/initializers/actions/SetCellType.h"
 #include "simulation/initializers/actions/SetStateField.h"
+#include "simulation/initializers/amounts/FixedAmount.h"
 #include "visualisation/GraphicsContext.h"
 #include "visualisation/RenderLoop.h"
 #include "visualisation/rendering/RendererRegistry.h"
@@ -31,17 +32,14 @@ State createInitialState(const ApplicationConfig& config) {
     StateInitializer initializer{
         PolicyApplication{
             BottomRowsRegion{config.simulationOptions.soilLayerHeight},
-            CompositeAction{
-                SetCellType{CellState::Soil},
-                SetSoilWater(FixedAmount{config.simulationOptions.soilWaterTarget / 4.0f}),
-                SetSoilMineral(FixedAmount{config.simulationOptions.soilMineralTarget})
+            SeedSoil{
+                FixedAmount{config.simulationOptions.soilWaterTarget / 4.0f},
+                FixedAmount{config.simulationOptions.soilMineralTarget}
             }
         },
         PolicyApplication{
             CircleRegion{seedSoil, 1}, 
-            CompositeAction{
-                SetCellType{CellState::Cell},
-            }
+            SeedCell{FixedAmount{config.simulationOptions.childInitialHealth}}
         }
     };
 

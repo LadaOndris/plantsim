@@ -1,4 +1,5 @@
 #include "simulation/cpu/RandomNeighborReproduction.h"
+#include "simulation/Options.h"
 #include <algorithm>
 #include <cmath>
 
@@ -37,12 +38,12 @@ void RandomNeighborReproduction::step(State& state, State& backBuffer, const Opt
         return;
     }
 
-    intentionPhase(state);
+    intentionPhase(state, options);
     resolutionPhase();
-    applicationPhase(state, backBuffer);
+    applicationPhase(state, backBuffer, options);
 }
 
-void RandomNeighborReproduction::intentionPhase(const State& state) {
+void RandomNeighborReproduction::intentionPhase(const State& state, const Options& options) {
     const int h = grid.height();
     const int w = grid.width();
     const auto& validity = grid.getValidityMask();
@@ -55,7 +56,7 @@ void RandomNeighborReproduction::intentionPhase(const State& state) {
     const auto isSoil = (cellTypes.array() == static_cast<int>(CellState::Type::Soil));
     const auto isAvailable  = (isAir || isSoil).cast<float>();
     const auto isCell = (cellTypes.array() == static_cast<int>(CellState::Type::Cell)).cast<float>();
-    const auto hasResources = (sugar.array() >= config.reproductionThreshold).cast<float>();
+    const auto hasResources = (sugar.array() >= options.reproductionThreshold).cast<float>();
     const auto hasEmptyNeighbor = (emptyNeighborCount.array() > 0).cast<float>();
     
     emptyMask = (valid * isAvailable).matrix();
@@ -114,7 +115,8 @@ void RandomNeighborReproduction::resolutionPhase() {
     }
 }
 
-void RandomNeighborReproduction::applicationPhase(State& state, State& backBuffer) {
+void RandomNeighborReproduction::applicationPhase(
+        State& state, State& backBuffer, const Options& options) {
     const int h = grid.height();
     const int w = grid.width();
     
@@ -122,27 +124,33 @@ void RandomNeighborReproduction::applicationPhase(State& state, State& backBuffe
     Eigen::Map<const MatrixXf> sugar(state.plantSugar.data(), h, w);
     Eigen::Map<const MatrixXi> cellTypes(state.cellTypes.data(), h, w);
     Eigen::Map<const MatrixXf> water(state.plantWater.data(), h, w);
+    Eigen::Map<const MatrixXf> health(state.plantHealth.data(), h, w);
     Eigen::Map<MatrixXf> nextSugar(backBuffer.plantSugar.data(), h, w);
     Eigen::Map<MatrixXi> nextCellTypes(backBuffer.cellTypes.data(), h, w);
     Eigen::Map<MatrixXf> nextWater(backBuffer.plantWater.data(), h, w);
+    Eigen::Map<MatrixXf> nextHealth(backBuffer.plantHealth.data(), h, w);
 
     nextSugar = sugar;
     nextCellTypes = cellTypes;
     nextWater = water;
+    nextHealth = health;
 
     // Deduct cost from winning parents
-    nextSugar.array() -= parentCost.array() * config.reproductionCost;
+    nextSugar.array() -= parentCost.array() * options.reproductionCost;
 
     // Create children
     nextCellTypes = (childMask.array() > 0.5f).select(
         static_cast<int>(CellState::Type::Cell), nextCellTypes);
     nextSugar = (childMask.array() > 0.5f).select(
-        config.childInitialResources, nextSugar);
+        options.childInitialResources, nextSugar);
     // Give new cells initial water for photosynthesis
     nextWater = (childMask.array() > 0.5f).select(
-        config.childInitialWater, nextWater);
+        options.childInitialWater, nextWater);
+    nextHealth = (childMask.array() > 0.5f).select(
+        options.childInitialHealth, nextHealth);
 
     std::swap(state.plantSugar, backBuffer.plantSugar);
     std::swap(state.cellTypes, backBuffer.cellTypes);
     std::swap(state.plantWater, backBuffer.plantWater);
+    std::swap(state.plantHealth, backBuffer.plantHealth);
 }

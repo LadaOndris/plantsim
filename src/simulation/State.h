@@ -29,6 +29,11 @@ public:
     std::vector<float> plantSugar;
     std::vector<float> plantWater;
     std::vector<float> plantMineral;
+    std::vector<float> plantHealth;
+    
+    // Dead cell resource pools (for recycling)
+    std::vector<float> deadWater;
+    std::vector<float> deadMineral;
     
     explicit State(const GridTopology& topology,
                    float defaultSoilWater = 0.0f,
@@ -50,6 +55,10 @@ public:
         plantSugar.assign(n, 0.0f);
         plantWater.assign(n, 0.0f);
         plantMineral.assign(n, 0.0f);
+        plantHealth.assign(n, 0.0f);
+        
+        deadWater.assign(n, 0.0f);
+        deadMineral.assign(n, 0.0f);
     }
 
     void initializeCellsToAir(const GridTopology& topology) {

@@ -22,7 +22,9 @@ struct ApplicationConfig {
     Options simulationOptions{
         .enableResourceTransfer = true,
         .enableCellMultiplication = true,
-        .enableSoilSystem = true
+        .enableSoilSystem = true,
+        .enableMaintenanceAndDeath = true,
+        .enableDeadDecay = true
     };
 
     /// Number of simulation steps per render frame

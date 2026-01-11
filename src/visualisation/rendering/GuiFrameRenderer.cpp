@@ -125,6 +125,24 @@ void GuiFrameRenderer::renderVisualizationControls() {
         ImGui::SliderFloat("##mineral_opacity", &renderingOptions.mineralOpacity, 0.0f, 1.0f, "%.2f");
         ImGui::PopItemWidth();
     }
+    
+    // Health layer
+    ImGui::Checkbox("Health", &renderingOptions.showHealth);
+    if (renderingOptions.showHealth) {
+        ImGui::SameLine();
+        ImGui::PushItemWidth(120);
+        ImGui::SliderFloat("##health_opacity", &renderingOptions.healthOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::PopItemWidth();
+    }
+    
+    // Light layer
+    ImGui::Checkbox("Light", &renderingOptions.showLight);
+    if (renderingOptions.showLight) {
+        ImGui::SameLine();
+        ImGui::PushItemWidth(120);
+        ImGui::SliderFloat("##light_opacity", &renderingOptions.lightOpacity, 0.0f, 1.0f, "%.2f");
+        ImGui::PopItemWidth();
+    }
 }
 
 void GuiFrameRenderer::renderOptionsPanel() {
@@ -137,6 +155,8 @@ void GuiFrameRenderer::renderOptionsPanel() {
         ImGui::Checkbox("Resource Transfer", &opts.enableResourceTransfer);
         ImGui::Checkbox("Cell Multiplication", &opts.enableCellMultiplication);
         ImGui::Checkbox("Soil System", &opts.enableSoilSystem);
+        ImGui::Checkbox("Maintenance & Death", &opts.enableMaintenanceAndDeath);
+        ImGui::Checkbox("Dead Decay", &opts.enableDeadDecay);
         
         ImGui::Spacing();
         ImGui::Text("Soil Parameters:");
@@ -238,6 +258,52 @@ void GuiFrameRenderer::renderOptionsPanel() {
         ImGui::SliderFloat("Water Per Sugar", &opts.waterPerSugar, 0.0f, 5.0f, "%.2f");
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Water consumed per unit sugar produced");
+        }
+        
+        ImGui::Separator();
+        ImGui::Text("Maintenance & Death:");
+        
+        ImGui::SliderFloat("Sugar Maint Cost", &opts.sugarMaintCost, 0.0f, 0.2f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Sugar consumed per plant cell per tick for maintenance");
+        }
+        
+        ImGui::SliderFloat("Water Maint Cost", &opts.waterMaintCost, 0.0f, 0.1f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Base water consumed per plant cell per tick");
+        }
+        
+        ImGui::SliderFloat("Water Light Loss", &opts.waterLightLoss, 0.0f, 0.1f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Extra water loss scaled by light (transpiration)");
+        }
+        
+        ImGui::SliderFloat("Sugar Deficit Damage", &opts.sugarDeficitDamage, 0.0f, 10.0f, "%.1f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Health damage per unit sugar deficit");
+        }
+        
+        ImGui::SliderFloat("Water Deficit Damage", &opts.waterDeficitDamage, 0.0f, 10.0f, "%.1f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Health damage per unit water deficit");
+        }
+        
+        ImGui::SliderFloat("Health Regen Rate", &opts.healthRegenRate, 0.0f, 0.2f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Health regeneration per tick when resources are sufficient");
+        }
+        
+        ImGui::Separator();
+        ImGui::Text("Dead Decay:");
+        
+        ImGui::SliderFloat("Decay Rate", &opts.deadDecayRate, 0.0f, 0.2f, "%.3f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Fraction of dead cell resources released per tick");
+        }
+        
+        ImGui::SliderFloat("Dead to Soil Bias", &opts.deadToSoilBias, 0.0f, 2.0f, "%.2f");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("How strongly dead cells return minerals to soil");
         }
         
         ImGui::PopItemWidth();

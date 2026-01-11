@@ -115,9 +115,11 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
             float plantSugar = state.plantSugar[idx];
             float water = state.plantWater[idx] + state.soilWater[idx];
             float mineral = state.plantMineral[idx] + state.soilMineral[idx];
+            float health = state.plantHealth[idx];
+            float light = state.light[idx];
             auto pointType = static_cast<CellState::Type>(state.cellTypes[idx]);
 
-            glm::vec3 pointColor = computeCellColor(plantSugar, water, mineral, pointType, options);
+            glm::vec3 pointColor = computeCellColor(plantSugar, water, mineral, health, light, pointType, options);
 
             auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(row, col)];
 
@@ -132,6 +134,7 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
 }
 
 glm::vec3 WorldStateRenderer::computeCellColor(float sugar, float water, float mineral,
+                                                float health, float light,
                                                 CellState::Type type, 
                                                 const RenderingOptions& options) const {
     glm::vec3 color{0.0f};
@@ -139,12 +142,17 @@ glm::vec3 WorldStateRenderer::computeCellColor(float sugar, float water, float m
 
     constexpr glm::vec3 CELL_COLOR{0.1f, 0.6f, 0.2f};
     constexpr glm::vec3 AIR_COLOR{0.05f, 0.05f, 0.05f};
+    constexpr glm::vec3 DEAD_COLOR{0.3f, 0.2f, 0.15f};  // Brownish dead matter
     constexpr glm::vec3 SUGAR_BASE_COLOR{1.0f, 0.0f, 0.0f};   // Red
     constexpr glm::vec3 WATER_BASE_COLOR{0.0f, 0.4f, 1.0f};   // Blue
     constexpr glm::vec3 MINERAL_BASE_COLOR{0.6f, 0.3f, 0.1f}; // Brown/Orange
+    constexpr glm::vec3 HEALTH_LOW_COLOR{1.0f, 0.0f, 0.0f};   // Red for low health
+    constexpr glm::vec3 HEALTH_HIGH_COLOR{0.0f, 1.0f, 0.0f};  // Green for high health
+    constexpr glm::vec3 LIGHT_COLOR{1.0f, 1.0f, 0.8f};        // Warm yellow light
     constexpr float SUGAR_MAX = 1.0f;
     constexpr float WATER_MAX = 1.0f;
     constexpr float MINERAL_MAX = 1.0f;
+    constexpr float LIGHT_MAX = 1.0f;
 
     auto blendLayer = [&](bool enabled, const glm::vec3& layerColor, float layerOpacity) {
         if (enabled && layerOpacity > 0.0f) {
@@ -153,10 +161,13 @@ glm::vec3 WorldStateRenderer::computeCellColor(float sugar, float water, float m
         }
     };
 
-    // Layer 1: Cell Types
-    if (options.showCellTypes && type == CellState::Type::Cell) {
-        glm::vec3 cellTypeColor = CELL_COLOR;
-        blendLayer(true, cellTypeColor, options.cellTypesOpacity);
+    // Layer 1: Cell Types (including Dead cells)
+    if (options.showCellTypes) {
+        if (type == CellState::Type::Cell) {
+            blendLayer(true, CELL_COLOR, options.cellTypesOpacity);
+        } else if (type == CellState::Type::Dead) {
+            blendLayer(true, DEAD_COLOR, options.cellTypesOpacity);
+        }
     }
 
     // Layer 2: Sugar (Red gradient)
@@ -178,6 +189,21 @@ glm::vec3 WorldStateRenderer::computeCellColor(float sugar, float water, float m
         float intensity = std::min(mineral / MINERAL_MAX, 1.0f);
         glm::vec3 mineralColor = MINERAL_BASE_COLOR * intensity;
         blendLayer(true, mineralColor, options.mineralOpacity * intensity);
+    }
+    
+    // Layer 5: Health (only for plant cells - gradient from red to green)
+    if (options.showHealth && type == CellState::Type::Cell) {
+        float healthNorm = std::clamp(health, 0.0f, 1.0f);
+        // Interpolate between low health (red) and high health (green)
+        glm::vec3 healthColor = glm::mix(HEALTH_LOW_COLOR, HEALTH_HIGH_COLOR, healthNorm);
+        blendLayer(true, healthColor, options.healthOpacity);
+    }
+    
+    // Layer 6: Light (yellow/white gradient)
+    if (options.showLight && light > 0.0f) {
+        float intensity = std::min(light / LIGHT_MAX, 1.0f);
+        glm::vec3 lightColor = LIGHT_COLOR * intensity;
+        blendLayer(true, lightColor, options.lightOpacity * intensity);
     }
 
     // Normalize if total opacity exceeds 1

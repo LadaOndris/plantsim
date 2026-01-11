@@ -17,20 +17,10 @@
  */
 class RandomNeighborReproduction {
 public:
-    struct Config {
-        float reproductionThreshold = 1.0f;
-        float reproductionCost = 1.0f;
-        float childInitialResources = 0.0f;
-        float childInitialWater = 0.0f;
-    };
-
     explicit RandomNeighborReproduction(const GridShiftHelper& grid, 
                                          unsigned int seed = std::random_device{}());
 
     void step(State& state, State& backBuffer, const Options& options);
-
-    void setConfig(const Config& cfg) { config = cfg; }
-    [[nodiscard]] const Config& getConfig() const { return config; }
 
 private:
     using MatrixXf = GridShiftHelper::MatrixXf;
@@ -38,9 +28,7 @@ private:
     static constexpr int NUM_DIRECTIONS = GridShiftHelper::NUM_DIRECTIONS;
 
     const GridShiftHelper& grid;
-    Config config;
     std::mt19937 rng;
-
 
     // Core masks
     MatrixXf emptyMask;
@@ -61,7 +49,7 @@ private:
     MatrixXf childMask;
 
     void initBuffers();
-    void intentionPhase(const State& state);
+    void intentionPhase(const State& state, const Options& options);
     void resolutionPhase();
-    void applicationPhase(State& state, State& backBuffer);
+    void applicationPhase(State& state, State& backBuffer, const Options& options);
 };

@@ -85,5 +85,9 @@ auto SetSoilMineral(AmountPolicy amount) {
     return SetStateField<float, AmountPolicy>(std::move(amount), &State::soilMineral);
 }
 
+template <typename AmountPolicy>
+auto SetCellHealth(AmountPolicy amount) {
+    return SetStateField<float, AmountPolicy>(std::move(amount), &State::plantHealth);
+}
 
 } // namespace initializers

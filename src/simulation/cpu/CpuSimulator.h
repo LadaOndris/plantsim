@@ -7,6 +7,8 @@
 #include "simulation/cpu/SoilAbsorption.h"
 #include "simulation/cpu/LightComputation.h"
 #include "simulation/cpu/Photosynthesis.h"
+#include "simulation/cpu/MaintenanceAndDeath.h"
+#include "simulation/cpu/DeadDecay.h"
 #include "simulation/GridTopology.h"
 #include "simulation/State.h"
 #include "simulation/Options.h"
@@ -27,6 +29,8 @@ public:
         , soilDiffusion(grid, options)
         , soilAbsorption(grid)
         , photosynthesis(topology)
+        , maintenanceAndDeath(grid)
+        , deadDecay(grid)
     {
         // Resize back buffer for all fields that get double-buffered
         backBuffer.soilWater.resize(state.soilWater.size());
@@ -34,6 +38,9 @@ public:
         backBuffer.plantSugar.resize(state.plantSugar.size());
         backBuffer.plantWater.resize(state.plantWater.size());
         backBuffer.plantMineral.resize(state.plantMineral.size());
+        backBuffer.plantHealth.resize(state.plantHealth.size());
+        backBuffer.deadWater.resize(state.deadWater.size());
+        backBuffer.deadMineral.resize(state.deadMineral.size());
         backBuffer.cellTypes.resize(state.cellTypes.size());
     }
     
@@ -48,6 +55,9 @@ public:
         
         photosynthesis.apply(state, options);
         resourceTransfer.step(state, backBuffer, options);
+        
+        maintenanceAndDeath.step(state, backBuffer, options);
+        deadDecay.step(state, backBuffer, options);
         
         reproduction.step(state, backBuffer, options);
     }
@@ -67,4 +77,6 @@ private:
     SoilDiffusion soilDiffusion;
     SoilAbsorption soilAbsorption;
     Photosynthesis photosynthesis;
+    MaintenanceAndDeath maintenanceAndDeath;
+    DeadDecay deadDecay;
 };
