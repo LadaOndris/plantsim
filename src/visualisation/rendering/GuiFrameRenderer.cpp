@@ -5,6 +5,7 @@
 #include <imgui_impl_opengl3.h>
 
 #include "GuiFrameRenderer.h"
+#include "SliderHelper.h"
 
 GuiFrameRenderer::GuiFrameRenderer() = default;
 
@@ -151,6 +152,15 @@ void GuiFrameRenderer::renderOptionsPanel() {
         
         Options& opts = simulationControl.pendingOptions;
         
+        // Reset to Defaults button
+        if (ImGui::Button("Reset All to Defaults")) {
+            opts = DefaultOptions;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Reset all simulation parameters to their default values");
+        }
+        
+        ImGui::Spacing();
         ImGui::Text("Features:");
         ImGui::Checkbox("Resource Transfer", &opts.enableResourceTransfer);
         ImGui::Checkbox("Cell Multiplication", &opts.enableCellMultiplication);
@@ -171,140 +181,108 @@ void GuiFrameRenderer::renderOptionsPanel() {
         ImGui::Separator();
         ImGui::Text("Water:");
         
-        ImGui::SliderFloat("Water Target", &opts.soilWaterTarget, 0.0f, 5.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Equilibrium water level in soil");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Target", &opts.soilWaterTarget, 
+            DefaultOptions.soilWaterTarget, "Equilibrium water level in soil", "%.2f");
         
-        ImGui::SliderFloat("Water Regen Rate", &opts.soilWaterRegenRate, 0.0f, 0.1f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of water regeneration toward target");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Regen Rate", &opts.soilWaterRegenRate, 
+            DefaultOptions.soilWaterRegenRate, "Rate of water regeneration toward target", "%.4f");
         
-        ImGui::SliderFloat("Water Diffusivity", &opts.soilWaterDiffusivity, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of water diffusion between soil tiles");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Diffusivity", &opts.soilWaterDiffusivity, 
+            DefaultOptions.soilWaterDiffusivity, "Rate of water diffusion between soil tiles", "%.3f");
+        
+        NonLinearSlider::SliderFloatWithValue("Water Uptake Rate", &opts.waterUptakeRate, 
+            DefaultOptions.waterUptakeRate, "Max water pulled from soil per edge per tick", "%.3f");
         
         ImGui::Separator();
         ImGui::Text("Minerals:");
         
-        ImGui::SliderFloat("Mineral Target", &opts.soilMineralTarget, 0.0f, 5.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Equilibrium mineral level in soil");
-        }
+        NonLinearSlider::SliderFloatWithValue("Mineral Target", &opts.soilMineralTarget, 
+            DefaultOptions.soilMineralTarget, "Equilibrium mineral level in soil", "%.2f");
         
-        ImGui::SliderFloat("Mineral Regen Rate", &opts.soilMineralRegenRate, 0.0f, 0.05f, "%.4f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of mineral regeneration toward target");
-        }
+        NonLinearSlider::SliderFloatWithValue("Mineral Regen Rate", &opts.soilMineralRegenRate, 
+            DefaultOptions.soilMineralRegenRate, "Rate of mineral regeneration toward target", "%.5f");
         
-        ImGui::SliderFloat("Mineral Diffusivity", &opts.soilMineralDiffusivity, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of mineral diffusion between soil tiles");
-        }
+        NonLinearSlider::SliderFloatWithValue("Mineral Diffusivity", &opts.soilMineralDiffusivity, 
+            DefaultOptions.soilMineralDiffusivity, "Rate of mineral diffusion between soil tiles", "%.3f");
+        
+        NonLinearSlider::SliderFloatWithValue("Mineral Uptake Rate", &opts.mineralUptakeRate, 
+            DefaultOptions.mineralUptakeRate, "Max mineral pulled from soil per edge per tick", "%.3f");
         
         ImGui::Separator();
         ImGui::Text("Internal Transport:");
         
-        ImGui::SliderFloat("Sugar Transport", &opts.sugarTransportRate, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of sugar diffusion between plant cells");
-        }
+        NonLinearSlider::SliderFloatWithValue("Sugar Transport", &opts.sugarTransportRate, 
+            DefaultOptions.sugarTransportRate, "Rate of sugar diffusion between plant cells", "%.3f");
         
-        ImGui::SliderFloat("Water Transport", &opts.waterTransportRate, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of water diffusion between plant cells");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Transport", &opts.waterTransportRate, 
+            DefaultOptions.waterTransportRate, "Rate of water diffusion between plant cells", "%.3f");
         
-        ImGui::SliderFloat("Mineral Transport", &opts.mineralTransportRate, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Rate of mineral diffusion between plant cells");
-        }
+        NonLinearSlider::SliderFloatWithValue("Mineral Transport", &opts.mineralTransportRate, 
+            DefaultOptions.mineralTransportRate, "Rate of mineral diffusion between plant cells", "%.3f");
         
         ImGui::Separator();
         ImGui::Text("Light & Photosynthesis:");
         
-        ImGui::SliderFloat("Light Intensity", &opts.lightTopIntensity, 0.0f, 2.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Intensity of light at top of grid");
-        }
+        NonLinearSlider::SliderFloatWithValue("Light Intensity", &opts.lightTopIntensity, 
+            DefaultOptions.lightTopIntensity, "Intensity of light at top of grid", "%.2f");
         
-        ImGui::SliderFloat("Plant Light Absorb", &opts.plantLightAbsorb, 0.0f, 1.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Fraction of light absorbed by plant cells");
-        }
+        // Light absorption values are bounded [0, 1] - use linear slider
+        NonLinearSlider::SliderFloatLinear("Plant Light Absorb", &opts.plantLightAbsorb, 0.0f, 1.0f,
+            "Fraction of light absorbed by plant cells", "%.2f");
         
-        ImGui::SliderFloat("Soil Light Absorb", &opts.soilLightAbsorb, 0.0f, 1.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Fraction of light absorbed by soil");
-        }
+        NonLinearSlider::SliderFloatLinear("Dead Light Absorb", &opts.deadLightAbsorb, 0.0f, 1.0f,
+            "Fraction of light absorbed by dead cells", "%.2f");
         
-        ImGui::SliderFloat("Photo Max Rate", &opts.photoMaxRate, 0.0f, 0.5f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Maximum sugar production rate per tick");
-        }
+        NonLinearSlider::SliderFloatLinear("Soil Light Absorb", &opts.soilLightAbsorb, 0.0f, 1.0f,
+            "Fraction of light absorbed by soil", "%.2f");
         
-        ImGui::SliderFloat("Light Half-Sat", &opts.lightHalfSat, 0.0f, 2.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Half-saturation constant for light");
-        }
+        NonLinearSlider::SliderFloatWithValue("Photo Max Rate", &opts.photoMaxRate, 
+            DefaultOptions.photoMaxRate, "Maximum sugar production rate per tick", "%.3f");
         
-        ImGui::SliderFloat("Water Half-Sat", &opts.waterHalfSat, 0.0f, 2.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Half-saturation constant for water in photosynthesis");
-        }
+        NonLinearSlider::SliderFloatWithValue("Light Half-Sat", &opts.lightHalfSat, 
+            DefaultOptions.lightHalfSat, "Half-saturation constant for light", "%.2f");
         
-        ImGui::SliderFloat("Water Per Sugar", &opts.waterPerSugar, 0.0f, 5.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Water consumed per unit sugar produced");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Half-Sat", &opts.waterHalfSat, 
+            DefaultOptions.waterHalfSat, "Half-saturation constant for water in photosynthesis", "%.2f");
+        
+        NonLinearSlider::SliderFloatWithValue("Water Per Sugar", &opts.waterPerSugar, 
+            DefaultOptions.waterPerSugar, "Water consumed per unit sugar produced", "%.2f");
         
         ImGui::Separator();
         ImGui::Text("Maintenance & Death:");
         
-        ImGui::SliderFloat("Sugar Maint Cost", &opts.sugarMaintCost, 0.0f, 0.2f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Sugar consumed per plant cell per tick for maintenance");
-        }
+        NonLinearSlider::SliderFloatWithValue("Sugar Maint Cost", &opts.sugarMaintCost, 
+            DefaultOptions.sugarMaintCost, "Sugar consumed per plant cell per tick for maintenance", "%.4f");
         
-        ImGui::SliderFloat("Water Maint Cost", &opts.waterMaintCost, 0.0f, 0.1f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Base water consumed per plant cell per tick");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Maint Cost", &opts.waterMaintCost, 
+            DefaultOptions.waterMaintCost, "Base water consumed per plant cell per tick", "%.4f");
         
-        ImGui::SliderFloat("Water Light Loss", &opts.waterLightLoss, 0.0f, 0.1f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Extra water loss scaled by light (transpiration)");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Light Loss", &opts.waterLightLoss, 
+            DefaultOptions.waterLightLoss, "Extra water loss scaled by light (transpiration)", "%.3f");
         
-        ImGui::SliderFloat("Sugar Deficit Damage", &opts.sugarDeficitDamage, 0.0f, 10.0f, "%.1f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Health damage per unit sugar deficit");
-        }
+        NonLinearSlider::SliderFloatWithValue("Sugar Deficit Damage", &opts.sugarDeficitDamage, 
+            DefaultOptions.sugarDeficitDamage, "Health damage per unit sugar deficit", "%.3f");
         
-        ImGui::SliderFloat("Water Deficit Damage", &opts.waterDeficitDamage, 0.0f, 10.0f, "%.1f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Health damage per unit water deficit");
-        }
+        NonLinearSlider::SliderFloatWithValue("Water Deficit Damage", &opts.waterDeficitDamage, 
+            DefaultOptions.waterDeficitDamage, "Health damage per unit water deficit", "%.3f");
         
-        ImGui::SliderFloat("Health Regen Rate", &opts.healthRegenRate, 0.0f, 0.2f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Health regeneration per tick when resources are sufficient");
-        }
+        NonLinearSlider::SliderFloatWithValue("Health Regen Rate", &opts.healthRegenRate, 
+            DefaultOptions.healthRegenRate, "Health regeneration per tick when resources are sufficient", "%.3f");
         
         ImGui::Separator();
         ImGui::Text("Dead Decay:");
         
-        ImGui::SliderFloat("Decay Rate", &opts.deadDecayRate, 0.0f, 0.2f, "%.3f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("Fraction of dead cell resources released per tick");
-        }
+        NonLinearSlider::SliderFloatWithValue("Decay Rate", &opts.deadDecayRate, 
+            DefaultOptions.deadDecayRate, "Fraction of dead cell resources released per tick", "%.3f");
         
-        ImGui::SliderFloat("Dead to Soil Bias", &opts.deadToSoilBias, 0.0f, 2.0f, "%.2f");
-        if (ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("How strongly dead cells return minerals to soil");
-        }
+        NonLinearSlider::SliderFloatWithValue("Dead to Soil Bias", &opts.deadToSoilBias, 
+            DefaultOptions.deadToSoilBias, "How strongly dead cells return minerals to soil", "%.2f");
+        
+        ImGui::Separator();
+        ImGui::Text("Time Step:");
+        
+        NonLinearSlider::SliderFloatWithValue("dt", &opts.dt, 
+            DefaultOptions.dt, "Time step multiplier for physics", "%.2f");
         
         ImGui::PopItemWidth();
     }

@@ -70,3 +70,5 @@ struct Options {
 
     bool operator==(const Options&) const = default;
 };
+
+inline constexpr Options DefaultOptions{};
