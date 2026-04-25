@@ -1,5 +1,4 @@
 
-#include <iostream>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -7,19 +6,10 @@
 #include "GuiFrameRenderer.h"
 #include "SliderHelper.h"
 
-GuiFrameRenderer::GuiFrameRenderer() = default;
-
 void GuiFrameRenderer::initializeWithOptions(const Options& initialOptions, int stepsPerFrame) {
     simulationControl.pendingOptions = initialOptions;
     simulationControl.activeOptions = initialOptions;
     simulationControl.stepsPerFrame = stepsPerFrame;
-}
-
-bool GuiFrameRenderer::initialize() {
-    return true;
-}
-
-void GuiFrameRenderer::destroy() {
 }
 
 void GuiFrameRenderer::render(const WindowDefinition &window, const RenderingOptions &options) {

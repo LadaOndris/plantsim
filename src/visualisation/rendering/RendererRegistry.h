@@ -3,8 +3,6 @@
 #include "Renderer.h"
 #include <memory>
 #include <vector>
-#include <typeinfo>
-#include <iostream>
 
 /**
  * @brief Registry for managing renderer lifecycle.
@@ -35,23 +33,6 @@ public:
     }
 
     /**
-     * @brief Initialize all registered renderers.
-     * 
-     * @return true if all renderers initialized successfully
-     */
-    bool initializeAll() {
-        for (const auto& renderer : renderers) {
-            if (!renderer->initialize()) {
-                auto& rendererObject = *renderer;
-                std::cerr << "[ERROR] Failed to initialize renderer: " 
-                          << typeid(rendererObject).name() << std::endl;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * @brief Render all registered renderers.
      * 
      * @param window Current window definition
@@ -61,18 +42,6 @@ public:
         for (const auto& renderer : renderers) {
             renderer->render(window, options);
         }
-    }
-
-    /**
-     * @brief Destroy all registered renderers.
-     * 
-     * Should be called before graphics context shutdown.
-     */
-    void destroyAll() {
-        for (const auto& renderer : renderers) {
-            renderer->destroy();
-        }
-        renderers.clear();
     }
 
     /**

@@ -15,6 +15,8 @@
 #include "simulation/SimulatorFactory.h"
 #include "simulation/GridTopology.h"
 #include "simulation/initializers/Initializers.h"
+#include "visualisation/rendering/shaders/ProgramBuilder.h"
+#include "visualisation/rendering/shaders/Shader.h"
 
 namespace {
 
@@ -56,17 +58,14 @@ void registerRenderers(
     const ApplicationConfig& config
 ) {
     // World state renderer (simulation visualization)
-    auto worldStateProgram = std::make_shared<ShaderProgram>();
-    worldStateProgram->addShader(
-        std::make_unique<Shader>(config.vertexShaderPath.c_str(), ShaderType::Vertex)
-    );
-    worldStateProgram->addShader(
-        std::make_unique<Shader>(config.fragmentShaderPath.c_str(), ShaderType::Fragment)
-    );
+    ShaderProgram worldStateProgram = ProgramBuilder()
+        .addShader(config.vertexShaderPath, ShaderType::Vertex)
+        .addShader(config.fragmentShaderPath, ShaderType::Fragment)
+        .build();
 
     AxialRectangularMapToMeshConverter mapConverter{};
     auto worldStateRenderer = std::make_shared<WorldStateRenderer>(
-        topology, simulatorPtr, mapConverter, worldStateProgram
+        topology, simulatorPtr, mapConverter, std::move(worldStateProgram)
     );
     registry.add(worldStateRenderer);
 
@@ -76,16 +75,12 @@ void registerRenderers(
     registry.add(guiRenderer);
 }
 
-} // namespace
-
-int main() {
-    std::cout << "Starting the application..." << std::endl;
-
+void runApplication() {
     ApplicationConfig config{};
 
     GraphicsContext context;
     if (!context.initialize(config.window)) {
-        return EXIT_FAILURE;
+        throw std::runtime_error("Failed to initialize graphics context");
     }
 
     GridTopology topology{config.gridWidth, config.gridHeight};
@@ -95,17 +90,9 @@ int main() {
     RendererRegistry registry;
     registerRenderers(registry, topology, simulator, config);
 
-    if (!registry.initializeAll()) {
-        registry.destroyAll();
-        return EXIT_FAILURE;
-    }
-
-    // Get the GUI renderer as the options provider
     auto guiRenderer = registry.get<GuiFrameRenderer>();
     if (!guiRenderer) {
-        std::cerr << "[ERROR] GuiFrameRenderer not created" << std::endl;
-        registry.destroyAll();
-        return EXIT_FAILURE;
+        throw std::runtime_error("GuiFrameRenderer not created");
     }
 
     // Create state creator lambda for reset functionality
@@ -114,8 +101,22 @@ int main() {
     };
 
     RenderLoop::run(context, registry, *guiRenderer, simulator, config, stateCreator);
+}
 
-    registry.destroyAll();
+} // namespace
+
+int main() {
+    std::cout << "Starting the application..." << std::endl;
+
+    try {
+        runApplication();
+    } catch (const std::exception& ex) {
+        std::cerr << "Application error: " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << "Unknown error occurred" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

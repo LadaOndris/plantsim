@@ -75,7 +75,7 @@ endif()
 # =============================================================================
 if(BUILD_MAIN)
     add_subdirectory(src)
-    file(COPY shaders/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+    file(COPY src/visualisation/shaders/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin/shaders)
 endif()
 
 if(BUILD_BENCH)

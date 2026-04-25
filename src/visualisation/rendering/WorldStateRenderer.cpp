@@ -1,30 +1,24 @@
 
 #include <algorithm>
 #include "WorldStateRenderer.h"
-#include "visualisation/rendering/converters/AxialRectangularMapToMeshConverter.h"
 #include <GLFW/glfw3.h>
 
 WorldStateRenderer::WorldStateRenderer(const GridTopology &topology, 
                                        std::unique_ptr<ISimulator>& simulatorPtr,
                                        const MapConverter &mapConverter, 
-                                       std::shared_ptr<ShaderProgram> program)
+                                       ShaderProgram shaderProgram)
         : topology{topology},
           simulatorPtr{simulatorPtr},
           mapConverter(mapConverter),
-          shaderProgram{std::move(program)} {
-}
-
-
-bool WorldStateRenderer::initialize() {
-    bool isShaderProgramBuilt = shaderProgram->build();
-    if (!isShaderProgramBuilt) {
-        return false;
-    }
-
+          _shaderProgram{std::move(shaderProgram)} {
     constructVertices();
     setupVertexArrays();
+}
 
-    return true;
+WorldStateRenderer::~WorldStateRenderer() {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 }
 
 void WorldStateRenderer::constructVertices() {
@@ -59,16 +53,10 @@ void WorldStateRenderer::setupVertexArrays() {
     }
 }
 
-void WorldStateRenderer::destroy() {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-}
-
 void WorldStateRenderer::render(const WindowDefinition &window, const RenderingOptions &options) {
     updateVisualizationInternalState(options);
 
-    shaderProgram->use();
+    _shaderProgram.use();
 
     glNamedBufferSubData(VBO, 0, meshData.vertices.size() * sizeof(GLVertex),
                          &meshData.vertices.front());
@@ -82,8 +70,8 @@ void WorldStateRenderer::render(const WindowDefinition &window, const RenderingO
 
     glm::mat4 projectionMat = glm::ortho(left, right, bottom, top, nearVal, farVal);
 
-    shaderProgram->setMat4("model", glm::mat4{1.f});
-    shaderProgram->setMat4("projection", projectionMat);
+    _shaderProgram.setMat4("model", glm::mat4{1.f});
+    _shaderProgram.setMat4("projection", projectionMat);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, meshData.indices.size(), GL_UNSIGNED_INT, nullptr);
