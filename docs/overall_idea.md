@@ -189,12 +189,12 @@ class PlantSim:
     def step(self):
         dt = self.p.dt
 
-        self._soil_regen(dt)
-        self._soil_diffuse(dt)
-        self._compute_light()
-        self._soil_uptake_into_plants(dt)
-        self._photosynthesis(dt)
-        self._internal_transport(dt)
+        self._soil_regen(dt) # done
+        self._soil_diffuse(dt) # done
+        self._compute_light() # done
+        self._soil_uptake_into_plants(dt) # done
+        self._photosynthesis(dt) # done
+        self._internal_transport(dt) # done
         self._maintenance_and_death(dt)
         self._dead_decay(dt)
 
