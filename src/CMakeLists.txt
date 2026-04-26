@@ -11,6 +11,8 @@ find_package(imgui REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(OpenMP REQUIRED)
 
+include(../third-party/glad/glad.cmake)
+
 if(BACKEND_UPPER STREQUAL "CPU")
     find_package(Eigen3 REQUIRED NO_MODULE)
 elseif(BACKEND_UPPER STREQUAL "CUDA")
@@ -37,6 +39,7 @@ set(COMMON_LIBS
     glm::glm
     imgui
     Freetype::Freetype
+    glad
 )
 
 if(BACKEND_UPPER STREQUAL "CPU")

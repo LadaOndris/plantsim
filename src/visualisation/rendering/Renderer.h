@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../WindowDefinition.h"
+#include "visualisation/WindowDefinition.h"
 #include "RenderingOptions.h"
 
 class Renderer {

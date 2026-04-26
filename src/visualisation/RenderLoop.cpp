@@ -1,5 +1,5 @@
 #include "RenderLoop.h"
-#include "../include/glad/glad.h"
+#include "glad/glad.h"
 #include "simulation/SimulatorFactory.h"
 
 void RenderLoop::run(

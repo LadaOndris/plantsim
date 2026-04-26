@@ -20,9 +20,6 @@
 
 namespace {
 
-/**
- * @brief Create the initial simulation state based on configuration.
- */
 State createInitialState(const ApplicationConfig& config) {
     using namespace initializers;
 
@@ -48,16 +45,12 @@ State createInitialState(const ApplicationConfig& config) {
     return initializer.initialize(topology);
 }
 
-/**
- * @brief Register all renderers with the registry.
- */
 void registerRenderers(
     RendererRegistry& registry,
     const GridTopology& topology,
     std::unique_ptr<ISimulator>& simulatorPtr,
     const ApplicationConfig& config
 ) {
-    // World state renderer (simulation visualization)
     ShaderProgram worldStateProgram = ProgramBuilder()
         .addShader(config.vertexShaderPath, ShaderType::Vertex)
         .addShader(config.fragmentShaderPath, ShaderType::Fragment)
@@ -69,7 +62,6 @@ void registerRenderers(
     );
     registry.add(worldStateRenderer);
 
-    // GUI renderer (ImGui overlay)
     auto guiRenderer = std::make_shared<GuiFrameRenderer>();
     guiRenderer->initializeWithOptions(config.simulationOptions, config.stepsPerFrame);
     registry.add(guiRenderer);
@@ -95,7 +87,6 @@ void runApplication() {
         throw std::runtime_error("GuiFrameRenderer not created");
     }
 
-    // Create state creator lambda for reset functionality
     auto stateCreator = [&config]() -> State {
         return createInitialState(config);
     };

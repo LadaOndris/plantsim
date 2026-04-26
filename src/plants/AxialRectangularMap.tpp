@@ -2,7 +2,7 @@
 // This file is included by AxialRectangularMap.h
 
 #include <stdexcept>
-#include "../NotImplementedException.h"
+#include "NotImplementedException.h"
 
 template<typename CellData>
 AxialRectangularMap<CellData>::AxialRectangularMap(int width, int height) :

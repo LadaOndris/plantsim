@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../include/glad/glad.h"
-#include <GLFW/glfw3.h>
 #include "WindowDefinition.h"
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
 
 /**
  * @brief RAII wrapper for graphics context initialization.

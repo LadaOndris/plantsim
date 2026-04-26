@@ -39,7 +39,7 @@ set(TEST_SOURCES
 set(BINARY_NAME plantsim_tests)
 
 
-add_executable(${BINARY_NAME} ${TEST_SOURCES} ${SOURCES} ../include/utils.h)
+add_executable(${BINARY_NAME} ${TEST_SOURCES} ${SOURCES})
 
 target_link_libraries(${BINARY_NAME}
     gtest
