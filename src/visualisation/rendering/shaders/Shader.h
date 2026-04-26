@@ -3,28 +3,10 @@
 
 #include <glad/glad.h> // include glad to get all the required OpenGL headers
 
+#include <stdexcept>
 #include <string>
-#include <fstream>
-#include <iostream>
-#include <filesystem>
 
-namespace fs = std::filesystem;
-
-namespace {
-
-std::string loadFile(const fs::path& path)
-{
-    std::ifstream file(path, std::ios::binary);
-
-    if (!file)
-        throw std::runtime_error("Failed to open file: " + path.string());
-
-    return std::string(
-        std::istreambuf_iterator<char>(file),
-        std::istreambuf_iterator<char>()
-    );
-}
-}
+#include "resources/ResourceLoader.h"
 
 enum ShaderType {
     Vertex,
@@ -81,7 +63,7 @@ private:
     unsigned int _id = 0;
 
     void build() {
-        std::string shaderSourceCode = loadFile(_sourcePath);
+        std::string shaderSourceCode = resources::load(_sourcePath);
         const char* shaderSourceCodeCStr = shaderSourceCode.c_str();
 
         auto shaderTypeNumber = convertShaderTypeToGlNumber();

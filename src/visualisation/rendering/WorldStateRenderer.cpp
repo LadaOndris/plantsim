@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "WorldStateRenderer.h"
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 WorldStateRenderer::WorldStateRenderer(const GridTopology &topology, 
                                        std::unique_ptr<ISimulator>& simulatorPtr,

@@ -29,6 +29,14 @@ elseif(BACKEND_UPPER STREQUAL "SYCL")
     )
 endif()
 
+include(../third-party/cmrc/cmrc.cmake)
+cmrc_add_resource_library(plantsim_shaders
+    ALIAS plantsim::shaders
+    WHENCE ${CMAKE_SOURCE_DIR}/src/visualisation
+    ${CMAKE_SOURCE_DIR}/src/visualisation/shaders/map/shader.vert
+    ${CMAKE_SOURCE_DIR}/src/visualisation/shaders/map/shader.frag
+)
+
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES false *.h *.cpp *.c *.cu)
 set(TEST_SOURCES ${SOURCES})
 list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
@@ -68,14 +76,14 @@ target_include_directories(${BINARY}_run PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include
 )
-target_link_libraries(${BINARY}_run PRIVATE ${COMMON_LIBS} ${BACKEND_LIBS})
+target_link_libraries(${BINARY}_run PRIVATE ${COMMON_LIBS} ${BACKEND_LIBS} plantsim::shaders)
 
 add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
 target_include_directories(${BINARY}_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/include
 )
-target_link_libraries(${BINARY}_lib PUBLIC ${COMMON_LIBS} ${BACKEND_LIBS})
+target_link_libraries(${BINARY}_lib PUBLIC ${COMMON_LIBS} ${BACKEND_LIBS} plantsim::shaders)
 
 if(Boost_FOUND)
     target_link_libraries(${BINARY}_run ${Boost_LIBRARIES})
