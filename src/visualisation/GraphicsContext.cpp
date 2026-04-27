@@ -1,5 +1,6 @@
 #include "GraphicsContext.h"
 #include "OpenGLDebug.h"
+#include "visualisation/WindowDefinition.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -140,11 +141,26 @@ void GraphicsContext::errorCallback(int error, const char* description) {
 void GraphicsContext::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     auto* context = static_cast<GraphicsContext*>(glfwGetWindowUserPointer(window));
     if (context) {
+        ViewportInfo viewportInfo = context->getViewportInfo({width, height});
+        glViewport(
+            viewportInfo.xOffset, 
+            viewportInfo.yOffset, 
+            viewportInfo.width, 
+            viewportInfo.height
+        );
         std::cout << "Window resized to " << width << "/" << height << std::endl;
-        glViewport(0, 0, width, height);
+
         context->windowDefinition.width = width;
         context->windowDefinition.height = height;
     }
+}
+
+ViewportInfo GraphicsContext::getViewportInfo(ResizeInfo resizeInfo) const {
+    // Use a centered square viewport to maintain aspect ratio, pillerboxing/letterboxing as needed
+    int minDim = std::min(resizeInfo.width, resizeInfo.height);
+    int xOffset = (resizeInfo.width - minDim) / 2;
+    int yOffset = (resizeInfo.height - minDim) / 2;
+    return {xOffset, yOffset, minDim, minDim};
 }
 
 void GraphicsContext::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {

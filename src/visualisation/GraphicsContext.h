@@ -4,6 +4,19 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
+
+struct ViewportInfo {
+    int xOffset;
+    int yOffset;
+    int width;
+    int height;
+};
+
+struct ResizeInfo {
+    int width;
+    int height;
+};
+
 /**
  * @brief RAII wrapper for graphics context initialization.
  * 
@@ -65,6 +78,8 @@ private:
     bool initializeGlfw(const WindowDefinition& windowDef);
     bool initializeGlad();
     bool initializeImgui();
+
+    ViewportInfo getViewportInfo(ResizeInfo resizeInfo) const;
 
     static void errorCallback(int error, const char* description);
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
