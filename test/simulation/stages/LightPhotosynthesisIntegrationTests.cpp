@@ -240,7 +240,7 @@ TEST_P(AccumulationLinearityTest, SugarAccumulationIsLinear) {
     const auto param = GetParam();
     OffsetCoord coord{2, topology.topRow()};
     
-    placePlant(coord, 10.0f);  // Lots of water to avoid depletion
+    placePlant(coord, 100.0f);  // Large water reservoir to avoid depletion
     
     runSimulationStep();
     float perStepIncrement = helper.getPlantSugar(coord);
@@ -270,7 +270,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(LightPhotosynthesisIntegrationTest, SugarAccumulatesOverTime) {
     OffsetCoord coord{2, topology.topRow()};
     
-    placePlant(coord, 10.0f);  // Lots of water to avoid depletion
+    placePlant(coord, 100.0f);  // Large water reservoir to avoid depletion
     
     std::vector<float> sugarLevels;
     

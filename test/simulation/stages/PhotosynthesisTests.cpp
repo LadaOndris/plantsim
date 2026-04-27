@@ -30,7 +30,9 @@ protected:
     float expectedSugar(float light, float water) const {
         float lightTerm = light / (light + helper.options.lightHalfSat);
         float waterTerm = water / (water + helper.options.waterHalfSat);
-        return helper.options.dt * helper.options.photoMaxRate * lightTerm * waterTerm;
+        float potentialSugar = helper.options.dt * helper.options.photoMaxRate * lightTerm * waterTerm;
+        float maxSugarFromWater = water / helper.options.waterPerSugar;
+        return std::min(potentialSugar, maxSugarFromWater);
     }
     
     /**
@@ -196,7 +198,7 @@ TEST_F(PhotosynthesisTest, MultiplePlantCellsWorkIndependently) {
 TEST_F(PhotosynthesisTest, SugarAccumulatesOverMultipleSteps) {
     OffsetCoord coord{2, 2};
     
-    setupPlantCell(coord, 1.0f, 1.0f);
+    setupPlantCell(coord, 1.0f, 100.0f);
     
     // First step
     applyPhotosynthesis();
@@ -206,7 +208,7 @@ TEST_F(PhotosynthesisTest, SugarAccumulatesOverMultipleSteps) {
     applyPhotosynthesis();
     float afterSecond = helper.getPlantSugar(coord);
     
-    EXPECT_FLOAT_EQ(afterSecond, 2.0f * afterFirst);
+    EXPECT_NEAR(afterSecond, 2.0f * afterFirst, 1e-5f);
 }
 
 TEST_F(PhotosynthesisTest, TimeStepScalesProduction) {
