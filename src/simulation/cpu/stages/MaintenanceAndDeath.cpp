@@ -1,4 +1,4 @@
-#include "simulation/cpu/MaintenanceAndDeath.h"
+#include "simulation/cpu/stages/MaintenanceAndDeath.h"
 
 MaintenanceAndDeath::MaintenanceAndDeath(const GridShiftHelper& grid)
     : grid(grid)

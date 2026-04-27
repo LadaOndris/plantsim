@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <cmath>
 
-#include "SimulationTestHelper.h"
+#include "../SimulationTestHelper.h"
 #include "simulation/GridTopology.h"
-#include "simulation/cpu/LightComputation.h"
+#include "simulation/cpu/stages/LightComputation.h"
 
 class LightComputationTest : public ::testing::Test {
 protected:

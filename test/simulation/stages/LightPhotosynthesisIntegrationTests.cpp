@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <cmath>
 
-#include "SimulationTestHelper.h"
-#include "simulation/cpu/LightComputation.h"
-#include "simulation/cpu/Photosynthesis.h"
+#include "../SimulationTestHelper.h"
+#include "simulation/cpu/stages/LightComputation.h"
+#include "simulation/cpu/stages/Photosynthesis.h"
 
 class LightPhotosynthesisIntegrationTest : public ::testing::Test {
 protected:

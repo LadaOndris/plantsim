@@ -1,4 +1,4 @@
-#include "simulation/cpu/RandomNeighborReproduction.h"
+#include "simulation/cpu/stages/RandomNeighborReproduction.h"
 #include "simulation/Options.h"
 #include <algorithm>
 #include <cmath>

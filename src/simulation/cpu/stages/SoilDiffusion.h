@@ -1,6 +1,6 @@
 #pragma once
 
-#include "simulation/cpu/GridShiftHelper.h"
+#include "simulation/cpu/utils/GridShiftHelper.h"
 #include "simulation/State.h"
 #include "simulation/Options.h"
 #include "simulation/CellState.h"

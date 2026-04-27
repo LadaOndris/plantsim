@@ -1,4 +1,4 @@
-#include "simulation/cpu/Photosynthesis.h"
+#include "simulation/cpu/stages/Photosynthesis.h"
 
 void Photosynthesis::apply(State& state, const Options& options) const {
     const int h = state.storageDim.y;

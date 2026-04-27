@@ -19,21 +19,21 @@ set(INCLUDE_DIR ${SRC_DIR})
 
 # All the sources being tested: simulation and plants for now.
 set(SOURCES
-    ${SRC_DIR}/simulation/cpu/Photosynthesis.cpp
-    ${SRC_DIR}/simulation/cpu/LightComputation.cpp
-    ${SRC_DIR}/simulation/cpu/SoilAbsorption.cpp
-    ${SRC_DIR}/simulation/cpu/GridShiftHelper.cpp
+    ${SRC_DIR}/simulation/cpu/stages/Photosynthesis.cpp
+    ${SRC_DIR}/simulation/cpu/stages/LightComputation.cpp
+    ${SRC_DIR}/simulation/cpu/stages/SoilAbsorption.cpp
+    ${SRC_DIR}/simulation/cpu/utils/GridShiftHelper.cpp
 )
 
 set(TEST_SOURCES
-    #${CMAKE_CURRENT_SOURCE_DIR}/simulation/GpuContextTests.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/simulation/ResourceTransferTests.cpp  # Temporarily disabled - has API issues
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/LightComputationTests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/LightPhotosynthesisIntegrationTests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/PhotosynthesisTests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/ResourceTransferTests.cpp  # Temporarily disabled - has API issues
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/SoilAbsorptionTests.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/GridTopologyTests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/MapPrinterTests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/PhotosynthesisTests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/LightComputationTests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/LightPhotosynthesisIntegrationTests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation/SoilAbsorptionTests.cpp
 )
 
 set(BINARY_NAME plantsim_tests)

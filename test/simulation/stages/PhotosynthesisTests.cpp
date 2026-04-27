@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "SimulationTestHelper.h"
+#include "../SimulationTestHelper.h"
 #include "simulation/GridTopology.h"
-#include "simulation/cpu/Photosynthesis.h"
+#include "simulation/cpu/stages/Photosynthesis.h"
 
 class PhotosynthesisTest : public ::testing::Test {
 protected:

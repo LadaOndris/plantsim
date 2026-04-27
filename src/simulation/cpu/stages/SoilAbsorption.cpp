@@ -1,4 +1,4 @@
-#include "simulation/cpu/SoilAbsorption.h"
+#include "simulation/cpu/stages/SoilAbsorption.h"
 
 SoilAbsorption::SoilAbsorption(const GridShiftHelper& grid)
     : grid(grid)

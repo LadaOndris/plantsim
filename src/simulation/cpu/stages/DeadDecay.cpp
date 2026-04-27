@@ -1,4 +1,4 @@
-#include "simulation/cpu/DeadDecay.h"
+#include "simulation/cpu/stages/DeadDecay.h"
 
 DeadDecay::DeadDecay(const GridShiftHelper& grid)
     : grid(grid)

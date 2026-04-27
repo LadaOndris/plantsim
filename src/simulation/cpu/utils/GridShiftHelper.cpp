@@ -1,4 +1,4 @@
-#include "simulation/cpu/GridShiftHelper.h"
+#include "simulation/cpu/utils/GridShiftHelper.h"
 #include <cmath>
 
 GridShiftHelper::GridShiftHelper(const GridTopology& topology) {

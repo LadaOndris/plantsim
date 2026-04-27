@@ -1,4 +1,4 @@
-#include "simulation/cpu/LightComputation.h"
+#include "simulation/cpu/stages/LightComputation.h"
 #include "simulation/GridTopology.h"
 
 void LightComputation::compute(State& state, const Options& options) {

@@ -1,4 +1,4 @@
-#include "simulation/cpu/ResourceTransfer.h"
+#include "simulation/cpu/stages/ResourceTransfer.h"
 
 ResourceTransfer::ResourceTransfer(const GridShiftHelper& grid)
     : grid(grid)

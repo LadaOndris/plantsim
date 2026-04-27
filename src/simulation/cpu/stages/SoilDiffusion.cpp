@@ -1,4 +1,4 @@
-#include "simulation/cpu/SoilDiffusion.h"
+#include "simulation/cpu/stages/SoilDiffusion.h"
 #include "simulation/initializers/Initializers.h"
 #include "simulation/initializers/amounts/FixedAmount.h"
 #include <Eigen/Dense>
