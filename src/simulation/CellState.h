@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "plants/Point.h"
-
 /**
  * Represents the state of a single cell in the simulation.
  * Contains application-specific data associated with each cell in the map.
