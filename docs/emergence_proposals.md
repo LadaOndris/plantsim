@@ -8,6 +8,12 @@ biology), with pros, cons, and expected impact on plant lifetime.
 > Goal: plants should *emerge* from the environment, not be hard-coded.
 > Each proposal below adds an environmental pressure that local cells respond to —
 > the global shape is a consequence of stacked pressures, not a rule.
+>
+> **Emergence rule.** No `if-else` behavioral rules of the form "if condition X then
+> do Y" that directly produce the desired plant-like outcome. Mechanisms must be
+> environmental forces, scalar fields, or local cell-state dynamics whose
+> interaction *produces* the outcome as a side effect. Anything below that fails
+> this test is filtered out in §3.
 
 ---
 
@@ -15,7 +21,7 @@ biology), with pros, cons, and expected impact on plant lifetime.
 
 Diagnosing the missing forces, given what's already implemented:
 
-* **Reproduction direction is uniform random.** [`RandomNeighborReproduction`](../src/simulation/cpu/RandomNeighborReproduction.cpp) picks any empty neighbor with equal probability → isotropic spread.
+* **Reproduction direction is uniform random.** [`RandomNeighborReproduction`](../src/simulation/cpu/stages/RandomNeighborReproduction.cpp) picks any empty neighbor with equal probability → isotropic spread.
 * **Light reaches the whole canopy roughly equally** — at the canopy frontier, the topmost cells are all directly exposed, so there's no sub-pixel bias toward "up" vs. "out".
 * **Self-shading penalty is absent.** Lower cells get less light → less sugar → could die from maintenance, but currently `RandomNeighborReproduction` keeps making new cells faster than the bottom dies, and the top cells don't preferentially extend upward.
 * **No structural cost.** A cell hanging in air with no support is just as cheap as a cell with a stem under it.
@@ -296,69 +302,142 @@ cells, or apply a "wind force" that breaks unstable tiles.
 
 ---
 
-## 3. Recommended stacks
+## 3. Filtered out (not emergent)
 
-Three combinations, in increasing complexity:
+These were considered but violate the emergence rule. Recorded so we don't
+relitigate them.
 
-### Stack 1 — Minimal "looks like a plant"
-**A1 (phototropism) + A2 (crowding) + A4 (stability) + D1 (gravity fall).**
-
-This is essentially the python `_growth` + `_gravity_fall` ported. Cheapest
-viable upgrade. Produces stems that lean toward light, don't fill themselves
-in, and don't float in mid-air. Branching is implicit (when the tip is
-crowded, a side direction wins).
-
-* Cost: ~2 weeks of CPU work.
-* Result: identifiable "stem with leaves at top" silhouette. Plants live until
-  light or water budget is exhausted.
-
-### Stack 2 — Branching architecture
-**Stack 1 + B1 (meristem aging) + B2 (apical dominance).**
-
-Adds explicit growth-zone localization. Now plants have a clear *life stage*:
-juvenile single stem → adolescent lateral branches → mature canopy → senescent.
-
-* Cost: adds two new fields (`age`, `auxin`) and one diffusion-style step.
-* Result: tree-like branching that matures and dies. This is where the
-  simulation starts to *look like real plants* rather than just oriented blobs.
-
-### Stack 3 — Ecosystem
-**Stack 2 + C1 (vascular distance) + E1 (multi-seed competition).**
-
-Adds the long-range coupling: tall plants pay a transport cost; competitive
-neighbors create selection pressure. Combined with the genetics layer, this is
-the original vision in [README.md](../README.md).
-
-* Cost: requires re-wiring [src/genetics/](../src/genetics/); adds an
-  iterative diffusion for `distanceFromSoil`.
-* Result: an evolving ecosystem with measurable plant lifetimes, succession,
-  and DNA-driven morphology.
+* **A3 — Gravitropism / "up bias".** A constant directional preference unrelated to any sensed quantity. Real plants sense gravity via statoliths *and* integrate it with light gradients; the upward orientation is itself emergent from those, not a primitive. Use **A1** (responds to a real field) instead.
+* **A4 — Stability requirement.** "Must have support to grow" is a hard if-else. Replaced by **D1** (gravity-fall): unsupported tiles physically drop, so supported topology persists by selection rather than by rule.
+* **B3 — Explicit root/shoot/leaf typing.** A label that prescribes behavior. Functional differentiation is already emergent: a cell on soil naturally absorbs minerals, a cell in light naturally photosynthesizes. No type field needed.
+* **E2 — Stochastic disturbance.** Externally imposed; doesn't arise from the environment's dynamics. May be useful as a stress-test later, not part of the core emergence story.
 
 ---
 
-## 4. Implementation order suggestion
+## 4. Prioritization
 
-1. **Bring `RandomNeighborReproduction` toward Stack 1 first.** Add the utility
-   scoring (A1+A2+A4) as opt-in `Options` flags. Keep the existing
-   random-neighbor as a fallback for benchmarking. This is incremental; each
-   force can be A/B'd individually.
-2. **Add gravity (D1).** Once you have unstable tiles, you need a way to
-   resolve them.
-3. **Add meristem aging (B1).** Tiny change, big behavioral impact —
-   localizes growth to a frontier.
-4. **Add apical dominance (B2).** Pays for itself the moment the plant gets
-   big enough for branches to matter.
-5. **Vascular distance (C1)** and **multi-seed (E1)** come last — they require
-   more infrastructure (graph distance / genetics).
+Ordered by **how much each mechanism breaks the blob**, given that earlier
+mechanisms are already in place. "Impact" is the change in silhouette;
+"foundational?" marks whether later items depend on it.
+
+| Priority | Mechanism                       | Impact | Foundational?  | Effort  |
+| :------: | ------------------------------- | :----: | :------------: | :-----: |
+| **P0**   | **A1** Phototropism             | huge   | —              | small   |
+| **P0**   | **B1** Apical meristem aging    | huge   | needed for B2  | small   |
+| **P0**   | **B2** Apical dominance (auxin) | huge   | depends on B1  | medium  |
+| **P1**   | **D1** Gravity fall             | medium | —              | small   |
+| **P1**   | **C1** Vascular distance        | medium | —              | medium  |
+| **P2**   | **E1** Multi-seed competition   | huge*  | needs genetics | large   |
+| **P3**   | **A2** Crowding penalty         | small  | —              | trivial |
+| **P3**   | **C2** Source/sink transport    | small  | —              | medium  |
+| **P3**   | **C3** Long-distance signaling  | small  | —              | medium  |
+| **P3**   | **D2** Cantilever / moment      | medium | depends on D1  | large   |
+
+\* E1 has huge impact only over many simulation steps (selection pressure
+accumulates); single-step impact is small.
+
+**Impact, in one line each:**
+
+* **A1** blob → upright (light becomes the growth-direction signal)
+* **B1** omnidirectional → frontier-only (only young cells reproduce)
+* **B2** spire → branched (auxin suppression releases lateral buds far from the apex)
+* **D1** kills overhangs (unsupported tiles fall)
+* **C1** caps tree height, balances root ↔ canopy (transport cost grows with distance)
+* **E1** selection pressure for height (neighbors shading neighbors)
+* **A2** smooths growth fronts
+* **C2** focuses growth at tips (sink-driven sugar flow)
+* **C3** plant-wide coordination via signal fields
+* **D2** self-pruning of old branches (moment exceeds support)
+
+### Why this order
+
+#### P0 — the three forces that turn a blob into a plant
+
+These three mechanisms together cover all three properties the current
+simulation lacks (vertical structure, branching topology, mortality). All three
+are responses to real physical fields or local cell-state dynamics — none of
+them is a hardcoded rule about "where plants should grow".
+
+1. **A1 Phototropism** — direction selection becomes proportional to the
+   `light` field at each candidate. *Why this is emergent:* nothing in the rule
+   says "grow up". Plants only grow toward light because, in the current world,
+   light comes from above. Place a light source on the side and the plants
+   bend sideways. Place the world in a cave and they don't grow up at all.
+   This is the smallest patch with the largest visual impact.
+2. **B1 Apical meristem aging** — add an `age` field per plant cell.
+   Reproduction probability decays with age (or: a stochastic mature event
+   makes a cell stop reproducing). *Why this is emergent:* every cell still
+   follows the same rule; the localization of growth to the frontier emerges
+   from the fact that newly-spawned cells are the only young ones. Without
+   this, every interior cell competes for division and the blob refills itself
+   faster than maintenance can prune it.
+3. **B2 Apical dominance** — add an `auxin` scalar field. Young/meristematic
+   cells emit auxin; auxin diffuses through the plant network with decay;
+   reproduction probability is multiplied by `1 / (1 + auxin/k)`. *Why this is
+   emergent:* this is *the* canonical biological mechanism for branching
+   architecture. Lateral buds far from any active tip naturally fall below the
+   suppression threshold and become new growth zones; the geometry of the
+   plant (and not a rule) decides where branches form. Removing the apex
+   releases suppression and triggers regrowth — exactly as in real plants.
+
+After P0, plants should already look recognizably plant-like: a stem with a
+clear growth tip, branches when the plant is large enough, and a finite
+lifecycle that ends when no auxin source remains.
+
+#### P1 — physical realism
+
+4. **D1 Gravity fall** — bottom-up sweep moves unsupported plant/dead tiles
+   one cell down. *Why this is emergent:* gravity is a real environmental force
+   in this world (light comes from up; gravity goes down). It punishes
+   horizontal overgrowth without an "is this stable?" rule.
+5. **C1 Vascular distance penalty** — compute (or approximate via diffusion) a
+   `distanceFromSoil` field on the plant network; maintenance cost scales with
+   it (cavitation/friction analog). *Why this is emergent:* tall plants
+   biologically pay more to push water up. With this, the equilibrium height
+   of a plant is a function of its root system size, not a constant. Trees
+   stop growing taller because growth no longer pays for itself, not because
+   of a hardcoded cap.
+
+#### P2 — ecosystem
+
+6. **E1 Multi-seed competition** — initialize N seeds with parameter variation
+   (when [src/genetics/](../src/genetics/) is back online). *Why this is
+   emergent:* the original `README.md` vision. With many seeds, the selection
+   pressure for vertical growth comes from neighbors-shading-neighbors rather
+   than from any individual plant's behavior. This is also where DNA can
+   finally bias things like "phototropism strength" or "auxin decay rate" and
+   evolve plants that look different.
+
+#### P3 — refinements
+
+The remaining options are small wins after P0–P2 are in place. Implement only
+if the silhouette still has a specific deficiency that one of them addresses.
 
 ---
 
-## 5. Open questions for the user
+## 5. Lifetime impact summary
 
-* Do you want plants to be **mortal by design** (lifetime-bounded) or just
-  resource-limited? Affects whether B1 (aging) is core or optional.
-* Should branching be **driven by suppression** (B2 auxin) or by **explicit
-  structural rules** (e.g., "every Nth tile spawns a side branch")?
-  Suppression is biologically real but harder to tune.
-* Will the simulation eventually run **multiple plant species** in one world?
-  If yes, all per-cell state needs a `speciesId`, which changes the data layout.
+How plant lifetime evolves as each priority tier is added on top of the
+previous ones:
+
+* **Today (blob)** — Plants grow until resources run out, then die back. Uniform random reproduction outpaces maintenance death.
+* **+ A1** — *Shorter* lifetime. Plants overgrow their water budget and die from unbounded upward expansion with no internal limit.
+* **+ A1 + B1** — *Finite* lifetime. Plant stops growing once tips mature; slowly senesces from accumulated maintenance death. Aging caps total mass produced.
+* **+ A1 + B1 + B2** — *Rich lifecycle*: juvenile (single stem) → adolescent (branches release) → mature → senescent. Apex starves and dies → secondary growth → eventually whole plant becomes unsupported.
+* **+ D1** — Baseline lifetime unchanged, but punctuated by structural collapse events. Gravity removes overhangs and may fragment plants into surviving pieces.
+* **+ C1** — *Bounded equilibrium height*. Plants persist longer at a stable size; tall plants stop expanding when transport cost exceeds photosynthesis gain.
+* **+ E1** — Individual lifetimes become *contextual* — they depend on neighbors. Succession dynamics emerge; older plants outcompeted as the canopy fills.
+
+---
+
+## 6. Open questions for the user
+
+* Should branching emerge from **B2 auxin suppression** or from **stochastic
+  meristem revival** (a small probability per tick that an aged cell reverts
+  to meristematic)? Both are emergent; the auxin route is biologically the
+  textbook answer, the revival route is simpler to tune.
+* For **C1 vascular distance**: compute via iterative diffusion (cheap,
+  approximate) or via a true graph BFS each step (exact, expensive)?
+* When **E1 multi-seed** is wired up, do we want all seeds to share parameters
+  (testing competition under uniform conditions) or to draw from a parameter
+  distribution (testing whether selection picks a winning phenotype)?

@@ -1,95 +1,34 @@
+add_subdirectory(common)
+add_subdirectory(resources)
+add_subdirectory(simulation)
+add_subdirectory(visualisation)
 
-set(BINARY ${CMAKE_PROJECT_NAME})
+if(BUILD_MAIN)
+    foreach(BACKEND ${BACKEND_LIST})
+        string(TOUPPER "${BACKEND}" BACKEND_UPPER)
+        string(TOLOWER "${BACKEND}" BACKEND_LOWER)
 
-# =============================================================================
-# Common dependencies
-# =============================================================================
-find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-find_package(imgui REQUIRED)
-find_package(Freetype REQUIRED)
-find_package(OpenMP REQUIRED)
+        add_executable(plantsim_${BACKEND_LOWER} main.cpp)
 
-include(../third-party/glad/glad.cmake)
+        set_target_properties(plantsim_${BACKEND_LOWER} PROPERTIES
+            OUTPUT_NAME plantsim
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${BACKEND_LOWER}
+        )
 
-if(BACKEND_UPPER STREQUAL "CPU")
-    find_package(Eigen3 REQUIRED NO_MODULE)
-elseif(BACKEND_UPPER STREQUAL "CUDA")
-    find_package(Eigen3 REQUIRED NO_MODULE)
-    find_package(CUDAToolkit REQUIRED)
-elseif(BACKEND_UPPER STREQUAL "SYCL")
-    find_package(Eigen3 REQUIRED NO_MODULE)
-    find_package(IntelSYCL REQUIRED)
-    find_library(OpenMP_libiomp5_LIBRARY
-        NAMES iomp5
-        HINTS ENV INTEL_ONEAPI_ROOT
-        PATH_SUFFIXES compiler/latest/lib
-                      compiler/latest/linux/compiler/lib/intel64_lin
-    )
+        target_link_libraries(plantsim_${BACKEND_LOWER} PRIVATE
+            plantsim_simulation_${BACKEND_LOWER}
+            plantsim_visualisation
+            plantsim_resources
+        )
+
+        message(STATUS "Configured plantsim_${BACKEND_LOWER}")
+    endforeach()
 endif()
 
-include(../third-party/cmrc/cmrc.cmake)
-cmrc_add_resource_library(plantsim_shaders
-    ALIAS plantsim::shaders
-    WHENCE ${CMAKE_SOURCE_DIR}/src/visualisation
-    ${CMAKE_SOURCE_DIR}/src/visualisation/shaders/map/shader.vert
-    ${CMAKE_SOURCE_DIR}/src/visualisation/shaders/map/shader.frag
-)
-
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES false *.h *.cpp *.c *.cu)
-set(TEST_SOURCES ${SOURCES})
-list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
-
-set(COMMON_LIBS
-    OpenGL::GL
-    glfw
-    glm::glm
-    imgui
-    Freetype::Freetype
-    glad
-)
-
-if(BACKEND_UPPER STREQUAL "CPU")
-    set(BACKEND_LIBS
-        OpenMP::OpenMP_CXX
-        Eigen3::Eigen
-    )
-elseif(BACKEND_UPPER STREQUAL "CUDA")
-    set(BACKEND_LIBS
-        CUDA::cudart
-        OpenMP::OpenMP_CXX
-        Eigen3::Eigen
-    )
-elseif(BACKEND_UPPER STREQUAL "SYCL")
-    set(BACKEND_LIBS
-        sycl
-        ${OpenMP_libiomp5_LIBRARY}
-        Eigen3::Eigen
-    )
-else()
-    set(BACKEND_LIBS OpenMP::OpenMP_CXX)
+if(BUILD_BENCH)
+    add_subdirectory(bench)
 endif()
 
-add_executable(${BINARY}_run ${SOURCES})
-target_include_directories(${BINARY}_run PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/include
-)
-target_link_libraries(${BINARY}_run PRIVATE ${COMMON_LIBS} ${BACKEND_LIBS} plantsim::shaders)
-
-add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
-target_include_directories(${BINARY}_lib PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/include
-)
-target_link_libraries(${BINARY}_lib PUBLIC ${COMMON_LIBS} ${BACKEND_LIBS} plantsim::shaders)
-
-if(Boost_FOUND)
-    target_link_libraries(${BINARY}_run ${Boost_LIBRARIES})
+if(BUILD_EXPERIMENTS)
+    add_subdirectory(experiments)
 endif()
-
-target_compile_definitions(${BINARY}_run PRIVATE
-    TARGET_BACKEND="${BACKEND_LOWER}"
-    BACKEND_${BACKEND_UPPER}=1
-)

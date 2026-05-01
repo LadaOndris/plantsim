@@ -5,7 +5,7 @@
 #include "rendering/RenderingOptionsProvider.h"
 #include "rendering/GuiFrameRenderer.h"
 #include "simulation/ISimulator.h"
-#include "ApplicationConfig.h"
+#include "common/ApplicationConfig.h"
 #include <functional>
 
 /**

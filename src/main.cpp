@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-#include "ApplicationConfig.h"
+#include "common/ApplicationConfig.h"
 #include "simulation/initializers/actions/SetCellType.h"
 #include "simulation/initializers/actions/SetStateField.h"
 #include "simulation/initializers/amounts/FixedAmount.h"

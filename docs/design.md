@@ -1,4 +1,6 @@
-# Business Logic Design Design
+# Business Logic Design
+
+This file contains enumeration of various approaches to designing the plant simulator. It is meant to serve as a source of ideas. 
 
 ## Cell reproduction
 

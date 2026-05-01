@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "common/ApplicationConfig.h"
 #include "simulation/ISimulator.h"
 #include "simulation/Options.h"
 #include "simulation/GridTopology.h"
@@ -75,7 +76,9 @@ int main(int argc, char* argv[]) {
 
     // Backend is set at compile time via -DTARGET_BACKEND=<backend>
     std::cout << "Using backend: " << SimulatorFactory::getBackendName() << std::endl;
-    std::unique_ptr<ISimulator> simulatorPtr = SimulatorFactory::create(std::move(initialState));
+
+    ApplicationConfig config{};
+    std::unique_ptr<ISimulator> simulatorPtr = SimulatorFactory::create(std::move(initialState), config.simulationOptions);
 
     Options simOptions{
         .enableResourceTransfer = true,

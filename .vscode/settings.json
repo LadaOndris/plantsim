@@ -1,3 +1,7 @@
 {
-    "C_Cpp.intelliSenseEngine": "disabled"
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "chat.tools.terminal.autoApprove": {
+        "mkdir": true,
+        "cp": true
+    }
 }

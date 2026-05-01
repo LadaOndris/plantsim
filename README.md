@@ -34,7 +34,7 @@ docs/             # Design documents, notes, descriptions
 
 | Layer | Technology |
 | --- | --- |
-| Language | C++20 |
+| Language | C++23 |
 | Build | CMake |
 | Compute (CPU) | Eigen (vectorization) |
 | Compute (GPU) | CUDA |
@@ -53,7 +53,7 @@ make -j$(nproc)
 
 Start the main application window with the live visualization of the running simulation:
 ```bash
-./bin/plantsim
+./bin/cpu/plantsim
 ```
 
 ### CMake options for build
