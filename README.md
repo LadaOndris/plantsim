@@ -4,7 +4,7 @@ Plantsim is a plant growth simulator with one core constraint: plant shapes are 
 
 ***This is a work in progress.*** The currently implemented stages of the simulation don't allow for real-plant-like shapes. Instead, the living organism appears as a blob covering the surface of the soil.
 
-![Plant growing from soil with real-time parameter panel](run-analysis/example-of-initial-growth-2.png)
+![Plant growing from soil with real-time parameter panel](docs/screenshots/example-of-initial-growth-2.png)
 
 ## How it works
 
