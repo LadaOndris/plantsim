@@ -51,7 +51,7 @@ All stages are vectorized with Eigen `RowMajor` matrices over the **storage grid
 A precomputed `validityMask` excludes padding cells; a `GridShiftHelper` provides
 6-direction outgoing/incoming block shifts.
 
-### Light — [`LightComputation`](../src/simulation/cpu/LightComputation.cpp)
+### Light — [`LightComputation`](../src/simulation/cpu/stages/LightComputation.cpp)
 
 Single static method, runs first each step.
 
@@ -60,7 +60,7 @@ Single static method, runs first each step.
 * After writing, attenuate: `intensity *= (1 - absorb[type])`. Absorption coefficients from `Options`: `plantLightAbsorb`, `soilLightAbsorb`, `deadLightAbsorb`. Air does not attenuate.
 * Result: a full `light` field used by photosynthesis and by maintenance (transpiration term).
 
-### Soil regeneration + diffusion — [`SoilDiffusion`](../src/simulation/cpu/SoilDiffusion.cpp)
+### Soil regeneration + diffusion — [`SoilDiffusion`](../src/simulation/cpu/stages/SoilDiffusion.cpp)
 
 One stage that does both python steps. Operates on `soilWater` and `soilMineral` separately, same algorithm.
 
@@ -69,7 +69,7 @@ One stage that does both python steps. Operates on `soilWater` and `soilMineral`
 * **Diffusion:** masked hex average. For each of the 6 directions, accumulate `(field * soilMask)` shifted in, and accumulate `soilMask` shifted in to count valid neighbors. `avg = sum / count` (with fallback to self where `count==0`). Then `field += dt * D * (avg - field) * soilMask`.
 * Clamp to ≥ 0. Swap front/back buffers.
 
-### Soil absorption (uptake) — [`SoilAbsorption`](../src/simulation/cpu/SoilAbsorption.cpp)
+### Soil absorption (uptake) — [`SoilAbsorption`](../src/simulation/cpu/stages/SoilAbsorption.cpp)
 
 **Diverges from python on purpose:** a plant cell absorbs from the soil *at its own tile*, not from adjacent soil.
 
@@ -79,7 +79,7 @@ One stage that does both python steps. Operates on `soilWater` and `soilMineral`
 * `nextSoilResource = soilResource - actualUptake`, `nextPlantResource = plantResource + actualUptake`.
 * Run independently for water and mineral. No edge-splitting, no neighbor counting.
 
-### Photosynthesis — [`Photosynthesis`](../src/simulation/cpu/Photosynthesis.cpp)
+### Photosynthesis — [`Photosynthesis`](../src/simulation/cpu/stages/Photosynthesis.cpp)
 
 Adds an explicit water cost per sugar produced — extra vs. python, which only used water as a saturation modifier.
 
@@ -89,7 +89,7 @@ Adds an explicit water cost per sugar produced — extra vs. python, which only 
 * Cap by stoichiometry: `maxFromWater = water / waterPerSugar`. Final: `sugarProduced = min(potential, maxFromWater)`.
 * Apply: `sugar += sugarProduced`, `water -= sugarProduced * waterPerSugar`.
 
-### Internal transport — [`ResourceTransfer`](../src/simulation/cpu/ResourceTransfer.cpp)
+### Internal transport — [`ResourceTransfer`](../src/simulation/cpu/stages/ResourceTransfer.cpp)
 
 Plant-network diffusion — three independent passes for sugar, water, mineral, with separate transport rates.
 
@@ -99,7 +99,7 @@ Plant-network diffusion — three independent passes for sugar, water, mineral, 
 * `nextResource = resource + plantMask * dt * T * (avg - resource)`.
 * Swap buffers.
 
-### Maintenance & death — [`MaintenanceAndDeath`](../src/simulation/cpu/MaintenanceAndDeath.cpp)
+### Maintenance & death — [`MaintenanceAndDeath`](../src/simulation/cpu/stages/MaintenanceAndDeath.cpp)
 
 Plant pays per-tick costs in sugar and water. Adds a **health regeneration** path that the python prototype lacks.
 
@@ -111,7 +111,7 @@ Plant pays per-tick costs in sugar and water. Adds a **health regeneration** pat
 * New health is clamped to `[0, 1]` on plant tiles.
 * **Death:** plant tiles with `health <= 0` flip to `Dead`; their `water` and `mineral` move into `deadWater` / `deadMineral`; `sugar`, `water`, `mineral`, `health` are zeroed on the dead tile.
 
-### Dead decay — [`DeadDecay`](../src/simulation/cpu/DeadDecay.cpp)
+### Dead decay — [`DeadDecay`](../src/simulation/cpu/stages/DeadDecay.cpp)
 
 Releases dead pools into adjacent soil neighbors, then garbage-collects empty dead tiles.
 
@@ -121,7 +121,7 @@ Releases dead pools into adjacent soil neighbors, then garbage-collects empty de
 * `nextSoilWater += income * soilMask`; same for mineral.
 * **Cleanup (extra vs. python):** dead tiles with both pools below `1e-6` flip to `Air`.
 
-### Reproduction (current "growth") — [`RandomNeighborReproduction`](../src/simulation/cpu/RandomNeighborReproduction.cpp)
+### Reproduction (current "growth") — [`RandomNeighborReproduction`](../src/simulation/cpu/stages/RandomNeighborReproduction.cpp)
 
 Three-phase vectorized algorithm. **Diverges from python's `_growth`** — no utility scoring, no instability/crowding penalties, no per-tile attempt probability. Predates the python design; see [design.md §1](design.md).
 
@@ -133,24 +133,12 @@ Three-phase vectorized algorithm. **Diverges from python's `_growth`** — no ut
 * **Resolution:** for each direction `d`, shift `directionChosen[d]` to its target. First-claim wins (`tempBuffer *= emptyMask * (1 - childMask)`). Add to `childMask`; shift back to mark the parent in `parentCost`.
 * **Application:** `nextSugar -= parentCost * reproductionCost`. For child cells: `cellTypes := Cell`, `sugar := childInitialResources`, `water := childInitialWater`, `health := childInitialHealth`. Swap buffers.
 
-> Note: the eligibility check uses `Air OR Soil` for "empty" — which means cells *can* reproduce into soil tiles. Worth confirming if intentional.
-
 ---
 
-## Missing / divergent behaviors (the actual TODO list)
+## TODOs
 
-* **Gravity-fall** — no implementation in any backend. Python: bottom-up sweep, falls one tile in the gravity direction if neighbor is air, moving plant or dead state with all its stores.
-* **Utility-based growth** — current reproduction is random-neighbor; python scores candidates by `w_light * light + w_soil_contact * contact - w_crowd * crowd - w_unstable * instability + noise` and gates by `grow_attempt_prob`. Decision pending — random-neighbor may stay as the baseline.
-* **Adjacency-based soil uptake** — current `SoilAbsorption` uses overlap (kept on purpose). Python uses adjacency with edge-splitting.
-* **Dynamic soil mask** — `SoilDiffusion` precomputes the soil region from `soilLayerHeight` once at construction; if soil tiles ever change at runtime (e.g., dead → soil conversion later), the mask will be wrong.
-* **CUDA backend re-sync** — bring CUDA up to the current `State` (split sugar/water/mineral/health/dead pools/light, all 8 stages). Currently only the old single-resource flavor of transfer + reproduction exists.
-* **SYCL backend** — `step()` body is empty.
-* **Bench out of date** — [bench/simulation/run.cpp:78](../bench/simulation/run.cpp#L78) calls `SimulatorFactory::create(initialState)` without the `Options` arg the factory now requires.
+* [ ] **Gravity-fall** — no implementation in any backend. Design is required.
+* [ ] **Utility-based growth** — current reproduction is random-neighbor; a more sophisticated approach can be designed.
+* [ ] **CUDA backend re-sync** — bring CUDA up to the current `State`.
+* [ ] **Bench out of date** — [bench/simulation/run.cpp:78](../bench/simulation/run.cpp#L78) calls `SimulatorFactory::create(initialState)` without the `Options` arg the factory now requires.
 
----
-
-## Free-form ideas / open design questions
-
-(Section for the user to extend.)
-
-* (e.g.) "Cells should sense local resource gradients before reproducing" — design notes go here.

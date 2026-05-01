@@ -89,7 +89,7 @@ https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/202
 Check gpu visibility with: `sycl-ls`
 
 
-## Testes
+## Tests
 
 ```bash
 cmake -S ~/projects/plantsim/ -B ~/projects/plantsim/build   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_CXX_COMPILER=dpcpp   -DBUILD_BENCH=OFF   -DBUILD_MAIN=OFF -DBUILD_TEST=ON
