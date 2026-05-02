@@ -1,0 +1,83 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "backend",
+            "type": "pickString",
+            "description": "Select backend",
+            "options": [
+                "cpu",
+                "cuda"
+            ],
+            "default": "cpu"
+        },
+        {
+            "id": "buildType",
+            "type": "pickString",
+            "description": "Select build type",
+            "options": [
+                "release",
+                "debug"
+            ],
+            "default": "release"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Build Release",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ./venv/bin/activate && PROFILE=\"${input:backend}-release\" && conan install . -pr:h conan/profiles/$PROFILE -of build/$PROFILE --build=missing && conan build . -pr:h conan/profiles/$PROFILE -of build/$PROFILE"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build & Run Release",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ./venv/bin/activate && PROFILE=\"${input:backend}-release\" && conan install . -pr:h conan/profiles/$PROFILE -of build/$PROFILE --build=missing && conan build . -pr:h conan/profiles/$PROFILE -of build/$PROFILE && find build/$PROFILE -name plantsim -type f -exec {} \\;"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ./venv/bin/activate && PROFILE=\"${input:backend}-${input:buildType}\" && conan install . -pr:h conan/profiles/$PROFILE -of build/$PROFILE --build=missing && conan build . -pr:h conan/profiles/$PROFILE -of build/$PROFILE"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ./venv/bin/activate && PROFILE=\"${input:backend}-${input:buildType}\" && find build/$PROFILE -name plantsim -type f -exec {} \\;"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
