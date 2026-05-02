@@ -1,0 +1,9 @@
+include(base)
+
+[settings]
+build_type=Release
+
+[options]
+plantsim/*:with_cpu=True
+plantsim/*:with_cuda=True
+plantsim/*:with_sycl=False

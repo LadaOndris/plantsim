@@ -15,12 +15,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
-string(TOLOWER "${CMAKE_BUILD_TYPE}" _build_type_lower)
-set(PLANTSIM_BIN_DIR ${CMAKE_SOURCE_DIR}/build/${_build_type_lower}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLANTSIM_BIN_DIR})
 
 option(ENABLE_PROFILING "Enable profiling flags for gprof/perf" OFF)
-option(BUILD_MAIN "Build main application" ON)
+option(BUILD_VISUALIZATION "Build the plantsim visualization application" ON)
 option(BUILD_BENCH "Build benchmarks" OFF)
 option(BUILD_TEST "Build tests" OFF)
 option(BUILD_EXPERIMENTS "Build experiments" OFF)
@@ -44,7 +41,7 @@ endforeach()
 
 message(STATUS "Enabled backends: ${BACKEND_LIST}")
 
-if(BUILD_MAIN OR BUILD_BENCH OR BUILD_TEST OR BUILD_EXPERIMENTS)
+if(BUILD_VISUALIZATION OR BUILD_BENCH OR BUILD_TEST OR BUILD_EXPERIMENTS)
     add_subdirectory(src)
 endif()
 

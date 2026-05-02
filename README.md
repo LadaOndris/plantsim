@@ -44,27 +44,40 @@ docs/             # Design documents, notes, descriptions
 
 ## How to run
 
-Build the main application:
+The build is driven by [Conan 2](https://conan.io/). Dependencies are fetched per profile, so a CPU-only build does not require CUDA or oneAPI to be installed.
+
+Install Conan once:
 ```bash
-mkdir build && cd build
-cmake .. -DBUILD_MAIN=ON -DTARGET_BACKENDS=CPU
-make -j$(nproc)
+pip install conan
 ```
 
-Start the main application window with the live visualization of the running simulation:
+Build the main application (CPU backend):
 ```bash
-./bin/cpu/plantsim
+conan install . -pr conan/profiles/cpu-release --build=missing
+conan build . -pr conan/profiles/cpu-release
+./build/cpu-release/Release/bin/cpu/plantsim
 ```
 
-### CMake options for build
+### Available profiles
 
-| CMake option | Values | Default |
-| --- | --- | --- |
-| `TARGET_BACKENDS` | `CPU`, `CUDA`, `SYCL` (comma-separated) | `CPU` |
-| `BUILD_MAIN` | `ON/OFF` | `ON` |
-| `BUILD_TEST` | `ON/OFF` | `OFF` |
-| `BUILD_BENCH` | `ON/OFF` | `OFF` |
-| `ENABLE_PROFILING` | `ON/OFF` | `OFF` |
+Profiles live in [`conan/profiles/`](conan/profiles/). Pick the one that matches what you want to build:
+
+| Profile | Backends | Build type | Extras |
+| --- | --- | --- | --- |
+| `cpu-release` / `cpu-debug` | CPU | Release / Debug | — |
+| `cuda-release` / `cuda-debug` | CUDA | Release / Debug | — |
+| `all-release` / `all-debug` | CPU + CUDA | Release / Debug | — |
+| `cpu-dev-release` / `cpu-dev-debug` | CPU | Release / Debug | tests + benchmarks |
+| `cuda-dev-release` / `cuda-dev-debug` | CUDA | Release / Debug | tests + benchmarks |
+| `cpu-release-profiling` | CPU | Release | gprof/perf flags |
+
+### System prerequisites per backend
+
+Conan handles the "normal" libraries (Eigen, glfw, glm, imgui, freetype, gtest, glad). Compute toolchains stay system-installed and are only required for the matching backend:
+
+- **CPU profiles** (`cpu-*`, `all-*`): C++23-capable compiler (gcc 13+ recommended). Nothing else.
+- **CUDA profiles** (`cuda-*`, `all-*`): CUDA Toolkit ≥ 12 with `nvcc` on `PATH`, plus a compatible NVIDIA driver.
+- **SYCL profiles**: Intel oneAPI Base Toolkit installed with `INTEL_ONEAPI_ROOT` set in the environment.
 
 
 ## Challenges

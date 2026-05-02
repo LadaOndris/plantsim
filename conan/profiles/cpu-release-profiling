@@ -1,0 +1,4 @@
+include(cpu-release)
+
+[options]
+plantsim/*:enable_profiling=True

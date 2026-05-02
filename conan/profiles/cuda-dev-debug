@@ -1,0 +1,5 @@
+include(cuda-debug)
+
+[options]
+plantsim/*:with_tests=True
+plantsim/*:with_benchmarks=True

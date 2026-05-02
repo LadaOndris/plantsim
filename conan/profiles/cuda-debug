@@ -1,0 +1,4 @@
+include(cuda-release)
+
+[settings]
+build_type=Debug

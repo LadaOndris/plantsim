@@ -3,8 +3,7 @@ find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
 find_package(Freetype REQUIRED)
-
-include(${CMAKE_SOURCE_DIR}/third-party/glad/glad.cmake)
+find_package(glad REQUIRED)
 
 add_library(plantsim_visualisation STATIC
     GraphicsContext.cpp
@@ -50,9 +49,9 @@ target_link_libraries(plantsim_visualisation PUBLIC
     OpenGL::GL
     glfw
     glm::glm
-    imgui
+    imgui::imgui
     Freetype::Freetype
-    glad
+    glad::glad
     plantsim_common
     plantsim_resources
 )

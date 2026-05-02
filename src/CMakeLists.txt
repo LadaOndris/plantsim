@@ -1,9 +1,10 @@
 add_subdirectory(common)
-add_subdirectory(resources)
 add_subdirectory(simulation)
-add_subdirectory(visualisation)
 
-if(BUILD_MAIN)
+if(BUILD_VISUALIZATION)
+    add_subdirectory(resources)
+    add_subdirectory(visualisation)
+
     foreach(BACKEND ${BACKEND_LIST})
         string(TOUPPER "${BACKEND}" BACKEND_UPPER)
         string(TOLOWER "${BACKEND}" BACKEND_LOWER)
@@ -12,7 +13,7 @@ if(BUILD_MAIN)
 
         set_target_properties(plantsim_${BACKEND_LOWER} PROPERTIES
             OUTPUT_NAME plantsim
-            RUNTIME_OUTPUT_DIRECTORY ${PLANTSIM_BIN_DIR}/${BACKEND_LOWER}
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${BACKEND_LOWER}
         )
 
         target_link_libraries(plantsim_${BACKEND_LOWER} PRIVATE

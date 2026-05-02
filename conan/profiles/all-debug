@@ -1,0 +1,4 @@
+include(all-release)
+
+[settings]
+build_type=Debug

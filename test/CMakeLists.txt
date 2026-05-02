@@ -1,11 +1,6 @@
 project(tests)
 
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-FetchContent_MakeAvailable(googletest)
+find_package(GTest REQUIRED)
 
 set(TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation/stages/LightComputationTests.cpp
@@ -20,11 +15,7 @@ set(TEST_SOURCES
 add_executable(plantsim_tests ${TEST_SOURCES})
 
 target_link_libraries(plantsim_tests PRIVATE
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
     plantsim_simulation_cpu
-)
-
-target_include_directories(plantsim_tests PRIVATE
-    ${gtest_SOURCE_DIR}/include
 )

@@ -1,4 +1,4 @@
-include(${CMAKE_SOURCE_DIR}/third-party/cmrc/cmrc.cmake)
+include(CMakeRC)
 
 cmrc_add_resource_library(plantsim_shaders
     ALIAS plantsim::shaders

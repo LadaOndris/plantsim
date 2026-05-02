@@ -42,3 +42,6 @@ venv/
 out/
 perf.*
 imgui.ini
+
+# Conan
+CMakeUserPresets.json
