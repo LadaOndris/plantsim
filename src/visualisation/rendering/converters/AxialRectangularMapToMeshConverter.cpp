@@ -18,9 +18,7 @@ MeshData AxialRectangularMapToMeshConverter::convert(const GridTopology &topolog
 
     MeshData meshData{};
 
-    constexpr int indicesPerCell = 18;
-    constexpr int verticesPerCell = 7;
-    std::vector<unsigned int> singleCellIndices(indicesPerCell); // 6 triangles * 3 vertices = 18
+    std::vector<unsigned int> singleCellIndices(INDICES_PER_CELL); // 6 triangles * 3 vertices = 18
     for (int i = 0; i < 6; ++i) {
         singleCellIndices[i * 3 + 0] = 0; // The center of the cell
         singleCellIndices[i * 3 + 1] = i + 1; // First vertex on the boundary
@@ -33,12 +31,11 @@ MeshData AxialRectangularMapToMeshConverter::convert(const GridTopology &topolog
 
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
-            auto currentCellVertexIndices = &meshData.cellVerticesMap[std::make_pair(i, j)];
             std::vector<unsigned int> currentCellIndices{singleCellIndices};
             // Shift the base cell indices to form indices for the current cell.
             std::transform(currentCellIndices.begin(), currentCellIndices.end(), currentCellIndices.begin(),
-                           [i, j, height](auto &item) {
-                               return item + (i * height + j) * verticesPerCell;
+                           [i, j, width](auto &item) {
+                               return item + cellVertexBaseIndex(i, j, width);
                            });
             meshData.indices.insert(meshData.indices.end(), currentCellIndices.begin(), currentCellIndices.end());
 
@@ -52,14 +49,12 @@ MeshData AxialRectangularMapToMeshConverter::convert(const GridTopology &topolog
                 centerY -= triangleHeight;
             }
 
-            currentCellVertexIndices->push_back(meshData.vertices.size());
             meshData.vertices.push_back(GLVertex{{centerX, centerY, 0}});
 
             for (int k = 0; k < 6; ++k) {
                 float x = centerX + cellRadius * cos(k * (2.0f * M_PI) / 6.0f);
                 float y = centerY + cellRadius * sin(k * (2.0f * M_PI) / 6.0f);
 
-                currentCellVertexIndices->push_back(meshData.vertices.size());
                 meshData.vertices.push_back(GLVertex{x, y, 0});
             }
         }

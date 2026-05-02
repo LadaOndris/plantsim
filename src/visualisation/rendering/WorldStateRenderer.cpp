@@ -110,10 +110,9 @@ void WorldStateRenderer::updateVisualizationInternalState(const RenderingOptions
 
             glm::vec3 pointColor = computeCellColor(plantSugar, water, mineral, health, light, pointType, options);
 
-            auto &verticesIndices = meshData.cellVerticesMap[std::make_pair(row, col)];
-
-            for (auto &index: verticesIndices) {
-                auto& colorVector = this->meshData.vertices[index].color;
+            const std::size_t vbase = cellVertexBaseIndex(row, col, topology.width);
+            for (std::size_t k = 0; k < VERTICES_PER_CELL; ++k) {
+                auto& colorVector = meshData.vertices[vbase + k].color;
                 colorVector[0] = pointColor[0];
                 colorVector[1] = pointColor[1];
                 colorVector[2] = pointColor[2];
