@@ -29,8 +29,6 @@ foreach(BACKEND ${BACKEND_LIST})
             set(CMAKE_CUDA_ARCHITECTURES "61;86" CACHE STRING "CUDA architectures" FORCE)
         endif()
         enable_language(CUDA)
-        set(CMAKE_CUDA_STANDARD 17)
-        set(CMAKE_CUDA_STANDARD_REQUIRED ON)
         find_package(CUDAToolkit REQUIRED)
         list(APPEND SIMULATION_SOURCES
             cuda/CudaSimulator.cu
@@ -63,11 +61,7 @@ foreach(BACKEND ${BACKEND_LIST})
 
     elseif(BACKEND_UPPER STREQUAL "CUDA")
         target_link_libraries(${SIM_LIB} PUBLIC CUDA::cudart)
-        set_target_properties(${SIM_LIB} PROPERTIES
-            CUDA_SEPARABLE_COMPILATION ON
-            CUDA_STANDARD 17
-            CUDA_STANDARD_REQUIRED ON
-        )
+        set_target_properties(${SIM_LIB} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
     elseif(BACKEND_UPPER STREQUAL "SYCL")
         target_link_libraries(${SIM_LIB} PUBLIC sycl ${OpenMP_libiomp5_LIBRARY})

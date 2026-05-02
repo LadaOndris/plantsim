@@ -12,7 +12,7 @@ if(BUILD_MAIN)
 
         set_target_properties(plantsim_${BACKEND_LOWER} PROPERTIES
             OUTPUT_NAME plantsim
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${BACKEND_LOWER}
+            RUNTIME_OUTPUT_DIRECTORY ${PLANTSIM_BIN_DIR}/${BACKEND_LOWER}
         )
 
         target_link_libraries(plantsim_${BACKEND_LOWER} PRIVATE

@@ -11,7 +11,8 @@
         "BUILD_MAIN": "ON",
         "BUILD_BENCH": "OFF",
         "BUILD_TEST": "OFF",
-        "BUILD_EXPERIMENTS": "OFF"
+        "BUILD_EXPERIMENTS": "OFF",
+        "CMAKE_CXX_COMPILER": "g++"
       }
     },
     {
@@ -27,7 +28,10 @@
       "hidden": true,
       "inherits": "base",
       "cacheVariables": {
-        "BACKEND_LIST": "CUDA"
+        "BACKEND_LIST": "CUDA",
+        "CMAKE_CUDA_COMPILER": "nvcc",
+        "CMAKE_CUDA_STANDARD": "17",
+        "CMAKE_CUDA_STANDARD_REQUIRED": "ON"
       }
     },
     {
@@ -35,7 +39,10 @@
       "hidden": true,
       "inherits": "base",
       "cacheVariables": {
-        "BACKEND_LIST": "CPU;CUDA;SYCL"
+        "BACKEND_LIST": "CPU;CUDA;SYCL",
+        "CMAKE_CUDA_COMPILER": "nvcc",
+        "CMAKE_CUDA_STANDARD": "17",
+        "CMAKE_CUDA_STANDARD_REQUIRED": "ON"
       }
     },
     {
@@ -131,16 +138,16 @@
     }
   ],
   "buildPresets": [
-    {"name": "cpu-debug",            "configurePreset": "cpu-debug"},
-    {"name": "cpu-release",          "configurePreset": "cpu-release"},
-    {"name": "cuda-debug",           "configurePreset": "cuda-debug"},
-    {"name": "cuda-release",         "configurePreset": "cuda-release"},
-    {"name": "all-debug",            "configurePreset": "all-debug"},
-    {"name": "all-release",          "configurePreset": "all-release"},
-    {"name": "cpu-dev-debug",        "configurePreset": "cpu-dev-debug"},
-    {"name": "cpu-dev-release",      "configurePreset": "cpu-dev-release"},
-    {"name": "cuda-dev-debug",       "configurePreset": "cuda-dev-debug"},
-    {"name": "cuda-dev-release",     "configurePreset": "cuda-dev-release"},
-    {"name": "cpu-release-profiling","configurePreset": "cpu-release-profiling"}
+    { "name": "cpu-debug",             "configurePreset": "cpu-debug" },
+    { "name": "cpu-release",           "configurePreset": "cpu-release" },
+    { "name": "cuda-debug",            "configurePreset": "cuda-debug" },
+    { "name": "cuda-release",          "configurePreset": "cuda-release" },
+    { "name": "all-debug",             "configurePreset": "all-debug" },
+    { "name": "all-release",           "configurePreset": "all-release" },
+    { "name": "cpu-dev-debug",         "configurePreset": "cpu-dev-debug" },
+    { "name": "cpu-dev-release",       "configurePreset": "cpu-dev-release" },
+    { "name": "cuda-dev-debug",        "configurePreset": "cuda-dev-debug" },
+    { "name": "cuda-dev-release",      "configurePreset": "cuda-dev-release" },
+    { "name": "cpu-release-profiling", "configurePreset": "cpu-release-profiling" }
   ]
 }
