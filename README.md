@@ -55,7 +55,7 @@ Build the main application (CPU backend):
 ```bash
 conan install . -pr conan/profiles/cpu-release --build=missing
 conan build . -pr conan/profiles/cpu-release
-./build/cpu-release/Release/bin/cpu/plantsim
+./build/Release/bin/cpu/plantsim
 ```
 
 ### Available profiles

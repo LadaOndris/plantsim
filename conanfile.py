@@ -1,5 +1,7 @@
+import os
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
+from conan.tools.files import copy
 
 
 class PlantsimConan(ConanFile):
@@ -53,6 +55,9 @@ class PlantsimConan(ConanFile):
         cmake_layout(self)
 
     def generate(self):
+        if self.options.with_visualization:
+            self._copy_imgui_backend_sources()
+
         tc = CMakeToolchain(self)
 
         backends = []
@@ -74,6 +79,13 @@ class PlantsimConan(ConanFile):
 
         deps = CMakeDeps(self)
         deps.generate()
+
+    def _copy_imgui_backend_sources(self):
+        src_dir = os.path.join(self.dependencies["imgui"].package_folder, "res", "bindings")
+        dst_dir = os.path.join(self.source_folder, "src", "visualisation", "imgui_backends")
+
+        copy(self, "*glfw*", src_dir, dst_dir)
+        copy(self, "*opengl3*", src_dir, dst_dir)
 
     def build(self):
         cmake = CMake(self)

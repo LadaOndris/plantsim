@@ -5,6 +5,13 @@ find_package(imgui REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(glad REQUIRED)
 
+set(IMGUI_BACKEND_SOURCES
+    imgui_backends/imgui_impl_glfw.cpp
+    imgui_backends/imgui_impl_glfw.h
+    imgui_backends/imgui_impl_opengl3.cpp
+    imgui_backends/imgui_impl_opengl3.h
+)
+
 add_library(plantsim_visualisation STATIC
     GraphicsContext.cpp
     GraphicsContext.h
@@ -43,7 +50,9 @@ add_library(plantsim_visualisation STATIC
     rendering/shaders/ShaderProgram.h
     rendering/shaders/ProgramBuilder.cpp
     rendering/shaders/ProgramBuilder.h
+    ${IMGUI_BACKEND_SOURCES}
 )
+target_include_directories(plantsim_visualisation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui_backends)
 
 target_link_libraries(plantsim_visualisation PUBLIC
     OpenGL::GL
